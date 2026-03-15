@@ -1,0 +1,1042 @@
+[
+  {
+    "stage": "Group A",
+    "dateTimeUTC": "2026-06-11T18:00:00.000Z",
+    "teamA": "Mexico",
+    "teamB": "South Africa",
+    "matchNumber": 1,
+    "stadium": "Estadio Azteca",
+    "city": "Mexico City",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group A",
+    "dateTimeUTC": "2026-06-12T01:00:00.000Z",
+    "teamA": "South Korea",
+    "teamB": "UEFA D",
+    "matchNumber": 2,
+    "stadium": "Estadio Akron",
+    "city": "Zapopan",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group B",
+    "dateTimeUTC": "2026-06-12T18:00:00.000Z",
+    "teamA": "Canada",
+    "teamB": "UEFA A",
+    "matchNumber": 3,
+    "stadium": "BMO Field",
+    "city": "Toronto",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group D",
+    "dateTimeUTC": "2026-06-13T00:00:00.000Z",
+    "teamA": "United States",
+    "teamB": "Paraguay",
+    "matchNumber": 4,
+    "stadium": "SoFi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group B",
+    "dateTimeUTC": "2026-06-13T18:00:00.000Z",
+    "teamA": "Qatar",
+    "teamB": "Switzerland",
+    "matchNumber": 8,
+    "stadium": "Levi's Stadium",
+    "city": "Santa Clara",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group C",
+    "dateTimeUTC": "2026-06-13T21:00:00.000Z",
+    "teamA": "Brazil",
+    "teamB": "Morocco",
+    "matchNumber": 7,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group C",
+    "dateTimeUTC": "2026-06-14T00:00:00.000Z",
+    "teamA": "Haiti",
+    "teamB": "Scotland",
+    "matchNumber": 5,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group D",
+    "dateTimeUTC": "2026-06-14T02:59:00.000Z",
+    "teamA": "Australia",
+    "teamB": "UEFA C",
+    "matchNumber": 6,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group E",
+    "dateTimeUTC": "2026-06-14T16:00:00.000Z",
+    "teamA": "Germany",
+    "teamB": "Curacao",
+    "matchNumber": 10,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group F",
+    "dateTimeUTC": "2026-06-14T19:00:00.000Z",
+    "teamA": "Netherlands",
+    "teamB": "Japan",
+    "matchNumber": 11,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group E",
+    "dateTimeUTC": "2026-06-14T22:00:00.000Z",
+    "teamA": "Ivory Coast",
+    "teamB": "Ecuador",
+    "matchNumber": 9,
+    "stadium": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group F",
+    "dateTimeUTC": "2026-06-15T01:00:00.000Z",
+    "teamA": "UEFA B",
+    "teamB": "Tunisia",
+    "matchNumber": 12,
+    "stadium": "Estadio BBVA",
+    "city": "Guadalupe",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group H",
+    "dateTimeUTC": "2026-06-15T15:00:00.000Z",
+    "teamA": "Spain",
+    "teamB": "Cape Verde",
+    "matchNumber": 14,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group G",
+    "dateTimeUTC": "2026-06-15T18:00:00.000Z",
+    "teamA": "Belgium",
+    "teamB": "Egypt",
+    "matchNumber": 16,
+    "stadium": "Lumen Field",
+    "city": "Seattle",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group H",
+    "dateTimeUTC": "2026-06-15T21:00:00.000Z",
+    "teamA": "Saudi Arabia",
+    "teamB": "Uruguay",
+    "matchNumber": 13,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group G",
+    "dateTimeUTC": "2026-06-16T00:00:00.000Z",
+    "teamA": "Iran",
+    "teamB": "New Zealand",
+    "matchNumber": 15,
+    "stadium": "SoFi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group I",
+    "dateTimeUTC": "2026-06-16T18:00:00.000Z",
+    "teamA": "France",
+    "teamB": "Senegal",
+    "matchNumber": 17,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group I",
+    "dateTimeUTC": "2026-06-16T21:00:00.000Z",
+    "teamA": "FIFA 2",
+    "teamB": "Norway",
+    "matchNumber": 18,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group J",
+    "dateTimeUTC": "2026-06-17T00:00:00.000Z",
+    "teamA": "Argentina",
+    "teamB": "Algeria",
+    "matchNumber": 19,
+    "stadium": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group J",
+    "dateTimeUTC": "2026-06-17T02:59:00.000Z",
+    "teamA": "Austria",
+    "teamB": "Jordan",
+    "matchNumber": 20,
+    "stadium": "Levi's Stadium",
+    "city": "Santa Clara",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group K",
+    "dateTimeUTC": "2026-06-17T16:00:00.000Z",
+    "teamA": "Portugal",
+    "teamB": "FIFA 1",
+    "matchNumber": 23,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group L",
+    "dateTimeUTC": "2026-06-17T19:00:00.000Z",
+    "teamA": "England",
+    "teamB": "Croatia",
+    "matchNumber": 21,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group L",
+    "dateTimeUTC": "2026-06-17T22:00:00.000Z",
+    "teamA": "Ghana",
+    "teamB": "Panama",
+    "matchNumber": 22,
+    "stadium": "BMO Field",
+    "city": "Toronto",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group K",
+    "dateTimeUTC": "2026-06-18T01:00:00.000Z",
+    "teamA": "Uzbekistan",
+    "teamB": "Colombia",
+    "matchNumber": 24,
+    "stadium": "Estadio Azteca",
+    "city": "Mexico City",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group A",
+    "dateTimeUTC": "2026-06-18T15:00:00.000Z",
+    "teamA": "UEFA D",
+    "teamB": "South Africa",
+    "matchNumber": 25,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group B",
+    "dateTimeUTC": "2026-06-18T18:00:00.000Z",
+    "teamA": "Switzerland",
+    "teamB": "UEFA A",
+    "matchNumber": 26,
+    "stadium": "SoFi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group B",
+    "dateTimeUTC": "2026-06-18T21:00:00.000Z",
+    "teamA": "Canada",
+    "teamB": "Qatar",
+    "matchNumber": 27,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group A",
+    "dateTimeUTC": "2026-06-19T00:00:00.000Z",
+    "teamA": "Mexico",
+    "teamB": "South Korea",
+    "matchNumber": 28,
+    "stadium": "Estadio Akron",
+    "city": "Zapopan",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group D",
+    "dateTimeUTC": "2026-06-19T18:00:00.000Z",
+    "teamA": "United States",
+    "teamB": "Australia",
+    "matchNumber": 32,
+    "stadium": "Lumen Field",
+    "city": "Seattle",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group C",
+    "dateTimeUTC": "2026-06-19T21:00:00.000Z",
+    "teamA": "Scotland",
+    "teamB": "Morocco",
+    "matchNumber": 30,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group C",
+    "dateTimeUTC": "2026-06-20T00:00:00.000Z",
+    "teamA": "Brazil",
+    "teamB": "Haiti",
+    "matchNumber": 29,
+    "stadium": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group D",
+    "dateTimeUTC": "2026-06-20T02:59:00.000Z",
+    "teamA": "UEFA C",
+    "teamB": "Paraguay",
+    "matchNumber": 31,
+    "stadium": "Levi's Stadium",
+    "city": "Santa Clara",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group F",
+    "dateTimeUTC": "2026-06-20T16:00:00.000Z",
+    "teamA": "Netherlands",
+    "teamB": "UEFA B",
+    "matchNumber": 35,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group E",
+    "dateTimeUTC": "2026-06-20T19:00:00.000Z",
+    "teamA": "Germany",
+    "teamB": "Ivory Coast",
+    "matchNumber": 33,
+    "stadium": "BMO Field",
+    "city": "Toronto",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group E",
+    "dateTimeUTC": "2026-06-20T23:00:00.000Z",
+    "teamA": "Ecuador",
+    "teamB": "Curacao",
+    "matchNumber": 34,
+    "stadium": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group F",
+    "dateTimeUTC": "2026-06-21T02:59:00.000Z",
+    "teamA": "Tunisia",
+    "teamB": "Japan",
+    "matchNumber": 36,
+    "stadium": "Estadio BBVA",
+    "city": "Guadalupe",
+    "competitionRound": 1
+  },
+  {
+    "stage": "Group H",
+    "dateTimeUTC": "2026-06-21T15:00:00.000Z",
+    "teamA": "Spain",
+    "teamB": "Saudi Arabia",
+    "matchNumber": 38,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group G",
+    "dateTimeUTC": "2026-06-21T18:00:00.000Z",
+    "teamA": "Belgium",
+    "teamB": "Iran",
+    "matchNumber": 39,
+    "stadium": "Sofi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group H",
+    "dateTimeUTC": "2026-06-21T21:00:00.000Z",
+    "teamA": "Uruguay",
+    "teamB": "Cape Verde",
+    "matchNumber": 37,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group G",
+    "dateTimeUTC": "2026-06-22T00:00:00.000Z",
+    "teamA": "New Zealand",
+    "teamB": "Egypt",
+    "matchNumber": 40,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group J",
+    "dateTimeUTC": "2026-06-22T16:00:00.000Z",
+    "teamA": "Argentina",
+    "teamB": "Austria",
+    "matchNumber": 43,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group I",
+    "dateTimeUTC": "2026-06-22T20:00:00.000Z",
+    "teamA": "France",
+    "teamB": "FIFA 2",
+    "matchNumber": 42,
+    "stadium": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group I",
+    "dateTimeUTC": "2026-06-22T23:00:00.000Z",
+    "teamA": "Norway",
+    "teamB": "Senegal",
+    "matchNumber": 41,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group J",
+    "dateTimeUTC": "2026-06-23T02:00:00.000Z",
+    "teamA": "Jordan",
+    "teamB": "Algeria",
+    "matchNumber": 44,
+    "stadium": "Levi's Stadium",
+    "city": "Santa Clara",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group K",
+    "dateTimeUTC": "2026-06-23T16:00:00.000Z",
+    "teamA": "Portugal",
+    "teamB": "Uzbekistan",
+    "matchNumber": 47,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group L",
+    "dateTimeUTC": "2026-06-23T19:00:00.000Z",
+    "teamA": "England",
+    "teamB": "Ghana",
+    "matchNumber": 45,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group L",
+    "dateTimeUTC": "2026-06-23T22:00:00.000Z",
+    "teamA": "Panama",
+    "teamB": "Croatia",
+    "matchNumber": 46,
+    "stadium": "BMO Field",
+    "city": "Toronto",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group K",
+    "dateTimeUTC": "2026-06-24T01:00:00.000Z",
+    "teamA": "Colombia",
+    "teamB": "FIFA 1",
+    "matchNumber": 48,
+    "stadium": "Estadio Akron",
+    "city": "Zapopan",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group B",
+    "dateTimeUTC": "2026-06-24T18:00:00.000Z",
+    "teamA": "Switzerland",
+    "teamB": "Canada",
+    "matchNumber": 51,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group B",
+    "dateTimeUTC": "2026-06-24T18:00:00.000Z",
+    "teamA": "UEFA A",
+    "teamB": "Qatar",
+    "matchNumber": 52,
+    "stadium": "Lumen Field",
+    "city": "Seattle",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group C",
+    "dateTimeUTC": "2026-06-24T21:00:00.000Z",
+    "teamA": "Scotland",
+    "teamB": "Brazil",
+    "matchNumber": 49,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group C",
+    "dateTimeUTC": "2026-06-24T21:00:00.000Z",
+    "teamA": "Morocco",
+    "teamB": "Haiti",
+    "matchNumber": 50,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group A",
+    "dateTimeUTC": "2026-06-25T00:00:00.000Z",
+    "teamA": "UEFA D",
+    "teamB": "Mexico",
+    "matchNumber": 53,
+    "stadium": "Estadio Azteca",
+    "city": "Mexico City",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group A",
+    "dateTimeUTC": "2026-06-25T00:00:00.000Z",
+    "teamA": "South Africa",
+    "teamB": "South Korea",
+    "matchNumber": 54,
+    "stadium": "Estadio BBVA",
+    "city": "Guadalupe",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group E",
+    "dateTimeUTC": "2026-06-25T19:00:00.000Z",
+    "teamA": "Curacao",
+    "teamB": "Ivory Coast",
+    "matchNumber": 55,
+    "stadium": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group E",
+    "dateTimeUTC": "2026-06-25T19:00:00.000Z",
+    "teamA": "Ecuador",
+    "teamB": "Germany",
+    "matchNumber": 56,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group F",
+    "dateTimeUTC": "2026-06-25T22:00:00.000Z",
+    "teamA": "Japan",
+    "teamB": "UEFA B",
+    "matchNumber": 57,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group F",
+    "dateTimeUTC": "2026-06-25T22:00:00.000Z",
+    "teamA": "Tunisia",
+    "teamB": "Netherlands",
+    "matchNumber": 58,
+    "stadium": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group D",
+    "dateTimeUTC": "2026-06-26T01:00:00.000Z",
+    "teamA": "UEFA C",
+    "teamB": "United States",
+    "matchNumber": 59,
+    "stadium": "SoFi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group D",
+    "dateTimeUTC": "2026-06-26T01:00:00.000Z",
+    "teamA": "Paraguay",
+    "teamB": "Australia",
+    "matchNumber": 60,
+    "stadium": "Levi's Stadium",
+    "city": "Santa Clara",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group I",
+    "dateTimeUTC": "2026-06-26T18:00:00.000Z",
+    "teamA": "Norway",
+    "teamB": "France",
+    "matchNumber": 61,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group I",
+    "dateTimeUTC": "2026-06-26T18:00:00.000Z",
+    "teamA": "Senegal",
+    "teamB": "FIFA 2",
+    "matchNumber": 62,
+    "stadium": "BMO Field",
+    "city": "Toronto",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group H",
+    "dateTimeUTC": "2026-06-26T23:00:00.000Z",
+    "teamA": "Cape Verde",
+    "teamB": "Saudi Arabia",
+    "matchNumber": 65,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group H",
+    "dateTimeUTC": "2026-06-26T23:00:00.000Z",
+    "teamA": "Uruguay",
+    "teamB": "Spain",
+    "matchNumber": 66,
+    "stadium": "Estadio Akron",
+    "city": "Zapopan",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group G",
+    "dateTimeUTC": "2026-06-27T02:00:00.000Z",
+    "teamA": "Egypt",
+    "teamB": "Iran",
+    "matchNumber": 63,
+    "stadium": "Lumen Field",
+    "city": "Seattle",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group G",
+    "dateTimeUTC": "2026-06-27T02:00:00.000Z",
+    "teamA": "New Zealand",
+    "teamB": "Belgium",
+    "matchNumber": 64,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group L",
+    "dateTimeUTC": "2026-06-27T20:00:00.000Z",
+    "teamA": "Panama",
+    "teamB": "England",
+    "matchNumber": 67,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group L",
+    "dateTimeUTC": "2026-06-27T20:00:00.000Z",
+    "teamA": "Croatia",
+    "teamB": "Ghana",
+    "matchNumber": 68,
+    "stadium": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group K",
+    "dateTimeUTC": "2026-06-27T22:30:00.000Z",
+    "teamA": "Colombia",
+    "teamB": "Portugal",
+    "matchNumber": 71,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group K",
+    "dateTimeUTC": "2026-06-27T22:30:00.000Z",
+    "teamA": "FIFA 1",
+    "teamB": "Uzbekistan",
+    "matchNumber": 72,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group J",
+    "dateTimeUTC": "2026-06-28T01:00:00.000Z",
+    "teamA": "Algeria",
+    "teamB": "Austria",
+    "matchNumber": 69,
+    "stadium": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Group J",
+    "dateTimeUTC": "2026-06-28T01:00:00.000Z",
+    "teamA": "Jordan",
+    "teamB": "Argentina",
+    "matchNumber": 70,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 2
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-06-28T18:00:00.000Z",
+    "teamA": "2A",
+    "teamB": "2B",
+    "matchNumber": 73,
+    "stadium": "Sofi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-06-29T16:00:00.000Z",
+    "teamA": "1C",
+    "teamB": "2F",
+    "matchNumber": 76,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-06-29T19:30:00.000Z",
+    "teamA": "1E",
+    "teamB": "3ABCDF",
+    "matchNumber": 74,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-06-30T00:00:00.000Z",
+    "teamA": "1F",
+    "teamB": "2C",
+    "matchNumber": 75,
+    "stadium": "Estadio BBVA",
+    "city": "Guadalupe",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-06-30T17:00:00.000Z",
+    "teamA": "2E",
+    "teamB": "2I",
+    "matchNumber": 78,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-06-30T20:00:00.000Z",
+    "teamA": "1I",
+    "teamB": "3CDFGH",
+    "matchNumber": 77,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-01T00:00:00.000Z",
+    "teamA": "1A",
+    "teamB": "3CEFHI",
+    "matchNumber": 79,
+    "stadium": "Estadio Azteca",
+    "city": "Mexico City",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-01T15:00:00.000Z",
+    "teamA": "1L",
+    "teamB": "3EHIJK",
+    "matchNumber": 80,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-01T19:00:00.000Z",
+    "teamA": "1G",
+    "teamB": "3AEHIJ",
+    "matchNumber": 82,
+    "stadium": "Lumen Field",
+    "city": "Seattle",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-01T23:00:00.000Z",
+    "teamA": "1D",
+    "teamB": "3BEFIJ",
+    "matchNumber": 81,
+    "stadium": "Levi's Stadium",
+    "city": "Santa Clara",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-02T18:00:00.000Z",
+    "teamA": "1H",
+    "teamB": "2J",
+    "matchNumber": 84,
+    "stadium": "Sofi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-02T22:00:00.000Z",
+    "teamA": "2K",
+    "teamB": "2L",
+    "matchNumber": 83,
+    "stadium": "BMO Field",
+    "city": "Toronto",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-03T02:00:00.000Z",
+    "teamA": "2B",
+    "teamB": "3EFGIJ",
+    "matchNumber": 85,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-03T17:00:00.000Z",
+    "teamA": "2D",
+    "teamB": "2G",
+    "matchNumber": 88,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-03T21:00:00.000Z",
+    "teamA": "1J",
+    "teamB": "2H",
+    "matchNumber": 86,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 32",
+    "dateTimeUTC": "2026-07-04T00:30:00.000Z",
+    "teamA": "1K",
+    "teamB": "3DEIJL",
+    "matchNumber": 87,
+    "stadium": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-04T16:00:00.000Z",
+    "teamA": "W73",
+    "teamB": "W75",
+    "matchNumber": 90,
+    "stadium": "NRG Stadium",
+    "city": "Houston",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-04T20:00:00.000Z",
+    "teamA": "W74",
+    "teamB": "W77",
+    "matchNumber": 89,
+    "stadium": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-05T19:00:00.000Z",
+    "teamA": "W76",
+    "teamB": "W78",
+    "matchNumber": 91,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-05T23:00:00.000Z",
+    "teamA": "W79",
+    "teamB": "W80",
+    "matchNumber": 92,
+    "stadium": "Estadio Azteca",
+    "city": "Mexico City",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-06T18:00:00.000Z",
+    "teamA": "W83",
+    "teamB": "W84",
+    "matchNumber": 93,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-06T23:00:00.000Z",
+    "teamA": "W81",
+    "teamB": "W82",
+    "matchNumber": 94,
+    "stadium": "Lumen Field",
+    "city": "Seattle",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-07T15:00:00.000Z",
+    "teamA": "W86",
+    "teamB": "W88",
+    "matchNumber": 95,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Round of 16",
+    "dateTimeUTC": "2026-07-07T19:00:00.000Z",
+    "teamA": "W85",
+    "teamB": "W87",
+    "matchNumber": 96,
+    "stadium": "BC Place",
+    "city": "Vancouver",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Quarterfinals",
+    "dateTimeUTC": "2026-07-09T19:00:00.000Z",
+    "teamA": "W89",
+    "teamB": "W90",
+    "matchNumber": 97,
+    "stadium": "Gillette Stadium",
+    "city": "Foxborough",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Quarterfinals",
+    "dateTimeUTC": "2026-07-10T18:00:00.000Z",
+    "teamA": "W93",
+    "teamB": "W94",
+    "matchNumber": 98,
+    "stadium": "Sofi Stadium",
+    "city": "Inglewood",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Quarterfinals",
+    "dateTimeUTC": "2026-07-11T20:00:00.000Z",
+    "teamA": "W91",
+    "teamB": "W92",
+    "matchNumber": 99,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Quarterfinals",
+    "dateTimeUTC": "2026-07-12T00:00:00.000Z",
+    "teamA": "W95",
+    "teamB": "W96",
+    "matchNumber": 100,
+    "stadium": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Semifinals",
+    "dateTimeUTC": "2026-07-14T18:00:00.000Z",
+    "teamA": "W97",
+    "teamB": "W98",
+    "matchNumber": 101,
+    "stadium": "AT&T Stadium",
+    "city": "Arlington",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Semifinals",
+    "dateTimeUTC": "2026-07-15T18:00:00.000Z",
+    "teamA": "W99",
+    "teamB": "W100",
+    "matchNumber": 102,
+    "stadium": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Third Place",
+    "dateTimeUTC": "2026-07-18T20:00:00.000Z",
+    "teamA": "L101",
+    "teamB": "L102",
+    "matchNumber": 103,
+    "stadium": "Hard Rock Stadium",
+    "city": "Miami Gardens",
+    "competitionRound": 3
+  },
+  {
+    "stage": "Final",
+    "dateTimeUTC": "2026-07-19T18:00:00.000Z",
+    "teamA": "W191",
+    "teamB": "W102",
+    "matchNumber": 104,
+    "stadium": "MetLife Stadium",
+    "city": "East Rutherford",
+    "competitionRound": 3
+  }
+]

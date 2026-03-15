@@ -1,0 +1,95 @@
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Auth API
+export const authAPI = {
+  login: (username: string, password: string) =>
+    api.post('/auth/login', { username, password }),
+
+  logout: () => api.post('/auth/logout'),
+
+  register: (data: {
+    username: string
+    first_name: string
+    surname: string
+    email: string
+    timezone: string
+    tournament_winner_id: number
+  }) => api.post('/auth/register', data),
+
+  resetPassword: (username: string) =>
+    api.post('/auth/reset-password', { username }),
+
+  getCurrentUser: () => api.get('/auth/me'),
+}
+
+// Games API
+export const gamesAPI = {
+  getUpcoming: () => api.get('/games/upcoming'),
+  getClosed: () => api.get('/games/closed'),
+  getGame: (gameId: number) => api.get(`/games/${gameId}`),
+}
+
+// Predictions API
+export const predictionsAPI = {
+  getPredictions: () => api.get('/predictions/'),
+  createPrediction: (data: {
+    game_id: number
+    team_a_score: number
+    team_b_score: number
+  }) => api.post('/predictions/', data),
+  getGamePredictions: (gameId: number) => api.get(`/predictions/${gameId}`),
+}
+
+// Rankings API
+export const rankingsAPI = {
+  getOverall: () => api.get('/rankings/overall'),
+  getRound: (roundId: number) => api.get(`/rankings/round/${roundId}`),
+  getHistory: (userId: number, roundId?: number) => {
+    const params = roundId ? `?round_id=${roundId}` : ''
+    return api.get(`/rankings/history/${userId}${params}`)
+  },
+  getRounds: () => api.get('/rankings/rounds'),
+}
+
+// Players API
+export const playersAPI = {
+  getAll: () => api.get('/players/'),
+  getPlayer: (userId: number) => api.get(`/players/${userId}`),
+  getWinnerPredictions: () => api.get('/players/winner-predictions'),
+}
+
+// News API
+export const newsAPI = {
+  getAll: () => api.get('/news/'),
+  getOne: (newsId: number) => api.get(`/news/${newsId}`),
+  create: (data: { title: string; content: string; image_url?: string }) =>
+    api.post('/news/', data),
+  update: (newsId: number, data: Partial<{ title: string; content: string; image_url?: string }>) =>
+    api.put(`/news/${newsId}`, data),
+  delete: (newsId: number) => api.delete(`/news/${newsId}`),
+}
+
+// Admin API
+export const adminAPI = {
+  recordPayment: (userId: number) => api.post(`/admin/payment/${userId}`),
+  enterScore: (gameId: number, data: { team_a_score: number; team_b_score: number }) =>
+    api.post(`/admin/score/${gameId}`, data),
+  setTournamentWinner: (winnerTeamId: number) =>
+    api.post('/admin/tournament-winner', { winner_team_id: winnerTeamId }),
+  getUsersPaymentStatus: () => api.get('/admin/users'),
+}
+
+// Teams API
+export const teamsAPI = {
+  getAll: () => api.get('/teams/'),
+}
+
+export default api
