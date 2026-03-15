@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import ReCAPTCHA from 'react-google-recaptcha'
 import { authAPI, teamsAPI } from '../services/api'
 import { Team } from '../types'
+
+// Development: Google's public test site key (always passes).
+// Production: replace with your real site key from https://www.google.com/recaptcha/admin
+const RECAPTCHA_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
 
 const TIMEZONES = [
   { value: 'UTC', label: 'UTC' },
@@ -86,8 +91,10 @@ export default function RegisterPage() {
   const [teams, setTeams] = useState<Team[]>([])
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [generatedPassword, setGeneratedPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(30)
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -162,18 +169,27 @@ export default function RegisterPage() {
       return
     }
 
+    const captchaToken = recaptchaRef.current?.getValue() || ''
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA.')
+      return
+    }
+
     setLoading(true)
 
     try {
       const registrationData = {
         ...formData,
         tournament_winner_id: parseInt(formData.tournament_winner_id),
+        captcha_token: captchaToken,
       }
-      await authAPI.register(registrationData)
+      const response = await authAPI.register(registrationData)
+      setGeneratedPassword(response.data.password || '')
       setLoading(false)
       setSuccess(true)
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.')
+      recaptchaRef.current?.reset()
       setLoading(false)
     }
   }
@@ -185,8 +201,13 @@ export default function RegisterPage() {
           <h1>Registration Successful!</h1>
           <div className="success-message">
             <p>✅ Your account has been created successfully.</p>
-            <p>A password has been sent to your email address: <strong>{formData.email}</strong></p>
-            <p>Please check your inbox and use the password to log in.</p>
+            {generatedPassword && (
+              <div className="generated-password-box">
+                <p>Your password is:</p>
+                <code className="generated-password">{generatedPassword}</code>
+                <p className="password-note">Note it down — it has also been sent to <strong>{formData.email}</strong></p>
+              </div>
+            )}
             <p>Redirecting to login page in <strong>{countdown}</strong> second{countdown !== 1 ? 's' : ''}...</p>
           </div>
           <div className="links">
@@ -295,6 +316,10 @@ export default function RegisterPage() {
           <div className="registration-fee-notice">
             <p><strong>Registration Fee:</strong> 5 GBP (6.5 EUR, 7.5 USD, 9.5 AUD)</p>
             <p>Payment must be made to an administrator before the first game.</p>
+          </div>
+
+          <div className="captcha-wrapper">
+            <ReCAPTCHA ref={recaptchaRef} sitekey={RECAPTCHA_SITE_KEY} />
           </div>
 
           <button type="submit" disabled={loading}>

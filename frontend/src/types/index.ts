@@ -96,4 +96,5 @@ export interface CompetitionRound {
   start_date?: string | null
   end_date?: string | null
   is_current: boolean
+  game_count?: number
 }

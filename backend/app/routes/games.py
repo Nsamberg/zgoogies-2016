@@ -22,6 +22,12 @@ def get_upcoming_games():
         'location': g.location.city,
         'stage': g.stage,
         'group': g.group,
+        'competition_round': {
+            'id': g.competition_round.id,
+            'name': g.competition_round.name,
+            'round_number': g.competition_round.round_number
+        } if g.competition_round else None,
+        'is_double_points': g.is_double_points(),
         'prediction_deadline': g.get_prediction_deadline().isoformat()
     } for g in games]), 200
 
@@ -41,8 +47,15 @@ def get_closed_games():
         'team_b': {'id': g.team_b.id, 'name': g.team_b.name, 'score': g.team_b_score},
         'game_date': g.game_date.isoformat(),
         'location': g.location.city,
+        'stage': g.stage,
+        'group': g.group,
+        'competition_round': {
+            'id': g.competition_round.id,
+            'name': g.competition_round.name,
+            'round_number': g.competition_round.round_number
+        } if g.competition_round else None,
         'is_scored': g.is_scored,
-        'is_double_points': g.is_double_points
+        'is_double_points': g.is_double_points()
     } for g in games]), 200
 
 

@@ -10,8 +10,8 @@ const api = axios.create({
 
 // Auth API
 export const authAPI = {
-  login: (username: string, password: string) =>
-    api.post('/auth/login', { username, password }),
+  login: (username: string, password: string, captchaToken: string) =>
+    api.post('/auth/login', { username, password, captcha_token: captchaToken }),
 
   logout: () => api.post('/auth/logout'),
 
@@ -22,12 +22,19 @@ export const authAPI = {
     email: string
     timezone: string
     tournament_winner_id: number
+    captcha_token: string
   }) => api.post('/auth/register', data),
 
-  resetPassword: (username: string) =>
-    api.post('/auth/reset-password', { username }),
+  resetPassword: (identifier: string) =>
+    api.post('/auth/reset-password', { identifier }),
 
   getCurrentUser: () => api.get('/auth/me'),
+
+  updateProfile: (data: { first_name?: string; surname?: string; email?: string; timezone?: string; tournament_winner_id?: number | null }) =>
+    api.put('/auth/profile', data),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.put('/auth/change-password', { current_password: currentPassword, new_password: newPassword }),
 }
 
 // Games API
@@ -63,6 +70,7 @@ export const rankingsAPI = {
 export const playersAPI = {
   getAll: () => api.get('/players/'),
   getPlayer: (userId: number) => api.get(`/players/${userId}`),
+  getPlayerPredictions: (userId: number) => api.get(`/players/${userId}/predictions`),
   getWinnerPredictions: () => api.get('/players/winner-predictions'),
 }
 

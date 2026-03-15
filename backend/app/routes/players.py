@@ -1,8 +1,10 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required
+from sqlalchemy import func
 from app import db
 from app.models.user import User
 from app.models.team import Team
+from app.models.prediction import Prediction
 
 bp = Blueprint('players', __name__, url_prefix='/api/players')
 
@@ -11,7 +13,7 @@ bp = Blueprint('players', __name__, url_prefix='/api/players')
 @login_required
 def get_players():
     """Get all players"""
-    players = User.query.order_by(User.username).all()
+    players = User.query.order_by(func.lower(User.username)).all()
 
     return jsonify([{
         'id': p.id,
@@ -19,7 +21,10 @@ def get_players():
         'first_name': p.first_name,
         'surname': p.surname,
         'has_paid': p.has_paid,
-        'timezone': p.timezone
+        'timezone': p.timezone,
+        'is_player': p.is_player,
+        'is_cachier': p.is_cachier,
+        'is_admin': p.is_admin
     } for p in players]), 200
 
 
@@ -37,6 +42,44 @@ def get_player(user_id):
         'has_paid': player.has_paid,
         'tournament_winner_id': player.tournament_winner_id
     }), 200
+
+
+@bp.route('/<int:user_id>/predictions', methods=['GET'])
+@login_required
+def get_player_predictions(user_id):
+    """Get a player's predictions for closed games (visible after prediction window closes)"""
+    player = User.query.get_or_404(user_id)
+    predictions = Prediction.query.filter_by(user_id=player.id).all()
+
+    result = []
+    for pred in predictions:
+        game = pred.game
+        if not game.is_prediction_closed():
+            continue  # Skip games still open for predictions
+        result.append({
+            'game_id': game.id,
+            'team_a': {'id': game.team_a.id, 'name': game.team_a.name, 'score': game.team_a_score},
+            'team_b': {'id': game.team_b.id, 'name': game.team_b.name, 'score': game.team_b_score},
+            'game_date': game.game_date.isoformat(),
+            'location': game.location.city,
+            'stage': game.stage,
+            'group': game.group,
+            'competition_round': {
+                'id': game.competition_round.id,
+                'name': game.competition_round.name,
+            } if game.competition_round else None,
+            'is_scored': game.is_scored,
+            'is_double_points': game.is_double_points(),
+            'prediction': {
+                'team_a_score': pred.team_a_score,
+                'team_b_score': pred.team_b_score,
+                'points': pred.points if game.is_scored else None,
+            }
+        })
+
+    # Sort newest first
+    result.sort(key=lambda x: x['game_date'], reverse=True)
+    return jsonify(result), 200
 
 
 @bp.route('/winner-predictions', methods=['GET'])

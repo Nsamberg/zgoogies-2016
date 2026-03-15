@@ -3,6 +3,7 @@ from flask_login import login_required
 from app.models.ranking import Ranking
 from app.models.ranking_history import RankingHistory
 from app.models.competition_round import CompetitionRound
+from app.models.game import Game
 
 bp = Blueprint('rankings', __name__, url_prefix='/api/rankings')
 
@@ -71,11 +72,18 @@ def get_ranking_history(user_id):
 @login_required
 def get_rounds():
     """Get all competition rounds"""
-    rounds = CompetitionRound.query.order_by(CompetitionRound.order).all()
+    rounds = CompetitionRound.query.order_by(CompetitionRound.round_number).all()
 
-    return jsonify([{
-        'id': r.id,
-        'name': r.name,
-        'order': r.order,
-        'is_current': r.is_current
-    } for r in rounds]), 200
+    result = []
+    for r in rounds:
+        game_count = Game.query.filter_by(competition_round_id=r.id).count()
+        if game_count > 0:
+            result.append({
+                'id': r.id,
+                'name': r.name,
+                'round_number': r.round_number,
+                'is_current': r.is_current,
+                'game_count': game_count
+            })
+
+    return jsonify(result), 200

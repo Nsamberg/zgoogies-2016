@@ -137,7 +137,11 @@ npm run dev
 
 ### 3. Access the Application
 
-Open your browser and go to: **http://localhost:5173**
+| What | URL |
+|------|-----|
+| Application | http://localhost:5173 |
+| Backend API | http://localhost:5000 |
+| DB Browser (Flask-Admin) | http://localhost:5000/db-admin |
 
 Login with:
 - **Username**: `admin`
@@ -252,16 +256,17 @@ Get-NetTCPConnection -LocalPort 5000,5173 -ErrorAction SilentlyContinue | ForEac
 
 ### Database Management
 
-**View database:**
-```bash
-cd backend
-python
->>> from app import create_app, db
->>> from app.models import *
->>> app = create_app()
->>> with app.app_context():
-...     users = User.query.all()
-...     print(users)
+**Web-based DB browser (Flask-Admin):**
+
+With the backend running, open: **http://localhost:5000/db-admin**
+
+Provides a full table browser for all models (Users, Teams, Games, Predictions, Rankings, News, etc.) with search, filters, and CSV export. No authentication is required in development mode.
+
+**Desktop SQLite browser (offline, no backend needed):**
+
+Install [DB Browser for SQLite](https://sqlitebrowser.org) (free), then open:
+```
+backend\zgoogies.db
 ```
 
 **Reset database:**

@@ -472,6 +472,194 @@ Both backend and frontend are now operational:
 
 ---
 
+## Production Deployment Checklist
+
+Complete these steps when deploying to production for the first time.
+
+### 1. Google reCAPTCHA — Real Keys
+
+The current code uses Google's **test keys** (always pass). Replace them before going live:
+
+1. Go to https://www.google.com/recaptcha/admin
+2. Create a new site → choose **reCAPTCHA v2 "I'm not a robot"**
+3. Add your production domain (and `localhost` for local testing if needed)
+4. Copy the **Site Key** and **Secret Key**
+
+**Frontend** — replace the test key in two files:
+- `frontend/src/pages/LoginPage.tsx` line 9: `const RECAPTCHA_SITE_KEY = '<your-real-site-key>'`
+- `frontend/src/pages/RegisterPage.tsx` line 9: `const RECAPTCHA_SITE_KEY = '<your-real-site-key>'`
+
+**Backend** — set in `backend/.env`:
+```
+RECAPTCHA_SECRET_KEY=<your-real-secret-key>
+```
+
+---
+
+### 2. Backend — Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and fill in every value:
+
+```env
+FLASK_ENV=production
+SECRET_KEY=<long-random-string-min-32-chars>
+DATABASE_URL=<see section 3>
+
+# Email — Yahoo account
+MAIL_SERVER=smtp.mail.yahoo.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=zgoogiesgame@yahoo.com
+MAIL_PASSWORD=<yahoo-app-password>        # see note below
+MAIL_DEFAULT_SENDER=zgoogiesgame@yahoo.com
+
+CORS_ORIGINS=https://your-production-domain.com
+SESSION_COOKIE_SECURE=True
+
+RECAPTCHA_SECRET_KEY=<your-real-recaptcha-secret>
+```
+
+**Generating the Yahoo app password** (required — Yahoo blocks plain password access):
+1. Log into https://yahoo.com with the `zgoogiesgame@yahoo.com` account
+2. Go to **Account Security** → **Generate app password**
+3. Choose "Other app", name it "ZGoogies", click Generate
+4. Copy the 16-character password and paste it as `MAIL_PASSWORD`
+
+To generate a secure SECRET_KEY:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+---
+
+### 3. Database — Switch from SQLite to PostgreSQL (recommended)
+
+SQLite is fine for development but not for a multi-user production deployment.
+
+1. Install PostgreSQL and create a database:
+```sql
+CREATE DATABASE zgoogies;
+CREATE USER zgoogies_user WITH PASSWORD 'strong-password';
+GRANT ALL PRIVILEGES ON DATABASE zgoogies TO zgoogies_user;
+```
+
+2. Add `psycopg2-binary` to `backend/requirements.txt`
+
+3. Set in `backend/.env`:
+```
+DATABASE_URL=postgresql://zgoogies_user:strong-password@localhost/zgoogies
+```
+
+4. Re-run database setup:
+```bash
+cd backend
+source venv/Scripts/activate
+python init_db.py
+python create_admin.py
+python import_tournament_games.py
+```
+
+---
+
+### 4. Backend — Production Server (Gunicorn)
+
+Do not use Flask's built-in dev server in production.
+
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 "app:create_app('production')"
+```
+
+Or as a systemd service (`/etc/systemd/system/zgoogies.service`):
+```ini
+[Unit]
+Description=ZGoogies Flask App
+
+[Service]
+User=www-data
+WorkingDirectory=/path/to/2016app/backend
+ExecStart=/path/to/venv/bin/gunicorn -w 4 -b 127.0.0.1:5000 "app:create_app('production')"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+### 5. Frontend — Production Build
+
+```bash
+cd frontend
+npm run build          # outputs to frontend/dist/
+```
+
+Serve `frontend/dist/` via nginx or a static host (Vercel, Netlify, etc.).
+
+**If using nginx**, point API calls to the Flask backend:
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    root /path/to/frontend/dist;
+    index index.html;
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API to Flask
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+---
+
+### 6. SSL / HTTPS
+
+Always run with HTTPS in production. Options:
+- **Let's Encrypt** (free): `sudo certbot --nginx -d your-domain.com`
+- **Managed platform** (Render, Railway, fly.io): HTTPS included automatically
+
+Also set in `backend/.env`:
+```
+SESSION_COOKIE_SECURE=True
+```
+
+---
+
+### 7. Git — Merge dev → production
+
+When the application is tested on `dev` and ready to deploy:
+```bash
+git checkout production
+git merge dev
+git push origin production
+```
+
+Then deploy from the `production` branch on your hosting platform.
+
+---
+
+### 8. Post-Deploy Verification
+
+- [ ] Login works (CAPTCHA fires correctly)
+- [ ] Registration sends a real password email
+- [ ] Forgot password sends a real reset email
+- [ ] Predictions page loads games
+- [ ] Rankings page shows tabs
+- [ ] Admin page accessible only to admin users
+- [ ] HTTPS active and SESSION_COOKIE_SECURE=True
+- [ ] No test reCAPTCHA keys in use
+
+---
+
 **Last Updated**: March 14, 2026
 **Backend Status**: ✅ Running on http://localhost:5000
 **Frontend Status**: ✅ Running on http://localhost:5174

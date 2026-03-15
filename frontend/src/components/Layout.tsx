@@ -20,15 +20,14 @@ export default function Layout() {
     <div className="app-layout">
       <header className="header">
         <div className="container">
-          <h1 className="logo">ZGoogies</h1>
+          <h1 className="logo">⚽ ZGoogies</h1>
           <nav className="nav">
-            <Link to="/">Home</Link>
-            <Link to="/news">News</Link>
             <Link to="/predictions">Predictions</Link>
             <Link to="/rankings">Rankings</Link>
+            <Link to="/news">News</Link>
             <Link to="/players">Players</Link>
-            <Link to="/account">Account</Link>
-            {user?.is_admin && <Link to="/admin">Admin</Link>}
+            <Link to="/account">My Account</Link>
+            {(user?.is_admin || user?.is_cachier) && <Link to="/admin">Admin</Link>}
           </nav>
           <div className="user-info">
             <span>Welcome, {user?.first_name}!</span>
@@ -45,7 +44,7 @@ export default function Layout() {
 
       <footer className="footer">
         <div className="container">
-          <p>&copy; 2024 ZGoogies. All rights reserved.</p>
+          <p>&copy; 2026 ZGoogies &mdash; FIFA World Cup 2026 Prediction Game</p>
         </div>
       </footer>
     </div>

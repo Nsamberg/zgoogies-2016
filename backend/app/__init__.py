@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -26,8 +26,13 @@ def create_app(config_name='default'):
     CORS(app, origins=app.config['CORS_ORIGINS'], supports_credentials=True)
 
     # Configure login manager
-    login_manager.login_view = 'auth.login'
-    login_manager.session_protection = 'strong'
+    # No login_view redirect — this is a pure API, return 401 JSON instead
+    # 'basic' marks the session non-fresh on IP/UA mismatch instead of destroying it
+    login_manager.session_protection = 'basic'
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify({'error': 'Authentication required'}), 401
 
     # Register blueprints
     from app.routes import auth, predictions, rankings, players, admin, games, news, teams
