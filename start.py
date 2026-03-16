@@ -67,13 +67,21 @@ def start_backend():
     # Start backend
     try:
         run_script = os.path.join(backend_dir, 'run.py')
-        process = subprocess.Popen(
-            [python_cmd, run_script],
-            cwd=backend_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            creationflags=subprocess.CREATE_NEW_CONSOLE if system == "Windows" else 0
-        )
+        # On Windows, CREATE_NEW_CONSOLE opens a visible console window for the
+        # server output — do NOT also pipe stdout/stderr (incompatible on Windows).
+        if system == "Windows":
+            process = subprocess.Popen(
+                [python_cmd, run_script],
+                cwd=backend_dir,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+        else:
+            process = subprocess.Popen(
+                [python_cmd, run_script],
+                cwd=backend_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
 
         # Wait a moment to check if it started
         time.sleep(2)
@@ -146,14 +154,20 @@ def start_frontend():
     # Start frontend
     try:
         system = platform.system()
-        process = subprocess.Popen(
-            [npm_cmd, 'run', 'dev'],
-            cwd=frontend_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=(system == "Windows"),  # Use shell on Windows for .cmd files
-            creationflags=subprocess.CREATE_NEW_CONSOLE if system == "Windows" else 0
-        )
+        if system == "Windows":
+            process = subprocess.Popen(
+                [npm_cmd, 'run', 'dev'],
+                cwd=frontend_dir,
+                shell=True,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+        else:
+            process = subprocess.Popen(
+                [npm_cmd, 'run', 'dev'],
+                cwd=frontend_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
 
         # Wait a moment to check if it started
         time.sleep(3)
