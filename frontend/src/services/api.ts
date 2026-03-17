@@ -87,12 +87,38 @@ export const newsAPI = {
 
 // Admin API
 export const adminAPI = {
+  // Users & payments
+  getUsers: () => api.get('/admin/users'),
   recordPayment: (userId: number) => api.post(`/admin/payment/${userId}`),
+  removePayment: (userId: number) => api.delete(`/admin/payment/${userId}`),
+  deleteUser: (userId: number) => api.delete(`/admin/users/${userId}`),
+  updateUserRole: (userId: number, roles: { is_admin?: boolean; is_cachier?: boolean; is_player?: boolean }) =>
+    api.put(`/admin/users/${userId}/role`, roles),
+
+  // Score entry
+  getGames: () => api.get('/admin/games'),
   enterScore: (gameId: number, data: { team_a_score: number; team_b_score: number }) =>
     api.post(`/admin/score/${gameId}`, data),
+  rollbackScore: (gameId: number) => api.delete(`/admin/score/${gameId}`),
+
+  // Tournament winner
+  getTournamentWinner: () => api.get('/admin/tournament-winner'),
   setTournamentWinner: (winnerTeamId: number) =>
     api.post('/admin/tournament-winner', { winner_team_id: winnerTeamId }),
-  getUsersPaymentStatus: () => api.get('/admin/users'),
+  rollbackTournamentWinner: () => api.delete('/admin/tournament-winner'),
+
+  // News management
+  getNews: () => api.get('/admin/news'),
+  createNews: (data: { title: string; content: string; image_url?: string }) =>
+    api.post('/admin/news', data),
+  updateNews: (newsId: number, data: { title?: string; content?: string; image_url?: string }) =>
+    api.put(`/admin/news/${newsId}`, data),
+  deleteNews: (newsId: number) => api.delete(`/admin/news/${newsId}`),
+
+  // Datetime override
+  getDatetimeOverride: () => api.get('/admin/datetime-override'),
+  setDatetimeOverride: (datetime: string) => api.post('/admin/datetime-override', { datetime }),
+  clearDatetimeOverride: () => api.delete('/admin/datetime-override'),
 }
 
 // Teams API

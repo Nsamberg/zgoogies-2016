@@ -45,6 +45,10 @@ def create_app(config_name='default'):
     app.register_blueprint(news.bp)
     app.register_blueprint(teams.bp)
 
+    # Ensure all tables exist (including newly added models)
+    with app.app_context():
+        db.create_all()
+
     # User loader
     from app.models.user import User
 

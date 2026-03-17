@@ -9,6 +9,7 @@ from app.models.ranking_history import RankingHistory
 from app.models.competition_round import CompetitionRound
 from app.models.news import News
 from app.models.access_log import AccessLog
+from app.models.app_setting import AppSetting
 
 __all__ = [
     'User',
@@ -21,5 +22,6 @@ __all__ = [
     'RankingHistory',
     'CompetitionRound',
     'News',
-    'AccessLog'
+    'AccessLog',
+    'AppSetting'
 ]

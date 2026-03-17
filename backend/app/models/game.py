@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from app import db
+from app.utils.datetime_utils import get_current_utc
 
 
 class Game(db.Model):
@@ -37,7 +38,7 @@ class Game(db.Model):
     def is_prediction_closed(self):
         """Check if prediction window is closed (2 hours before game)"""
         deadline = self.game_date - timedelta(hours=2)
-        return datetime.utcnow() >= deadline
+        return get_current_utc() >= deadline
 
     def get_prediction_deadline(self):
         """Get the prediction deadline"""

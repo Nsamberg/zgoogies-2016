@@ -18,6 +18,7 @@ export interface Team {
   name: string
   code: string
   flag_url?: string
+  score?: number | null  // present on team objects returned by closed games endpoint
 }
 
 // Game types

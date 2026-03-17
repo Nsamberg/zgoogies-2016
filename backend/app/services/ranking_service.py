@@ -150,6 +150,86 @@ def update_overall_ranking(game):
     db.session.commit()
 
 
+def recalculate_rankings_for_round(competition_round_id):
+    """Recalculate round ranking from scratch (used after score rollback)"""
+    users = User.query.all()
+    user_points = []
+    for user in users:
+        points = calculate_user_points(user.id, competition_round_id)
+        user_points.append((user.id, points))
+
+    user_points.sort(key=lambda x: x[1], reverse=True)
+
+    current_rank = 1
+    for i, (user_id, points) in enumerate(user_points):
+        if i > 0 and user_points[i - 1][1] == points:
+            rank = current_rank - 1
+        else:
+            rank = current_rank
+
+        ranking = Ranking.query.filter_by(
+            user_id=user_id,
+            competition_round_id=competition_round_id
+        ).first()
+
+        if ranking:
+            ranking.previous_rank = ranking.rank
+            ranking.rank = rank
+            ranking.total_points = points
+        else:
+            ranking = Ranking(
+                user_id=user_id,
+                competition_round_id=competition_round_id,
+                rank=rank,
+                total_points=points
+            )
+            db.session.add(ranking)
+
+        current_rank += 1
+
+    db.session.commit()
+
+
+def recalculate_overall_rankings():
+    """Recalculate overall ranking from scratch (used after score rollback)"""
+    users = User.query.all()
+    user_points = []
+    for user in users:
+        points = calculate_user_points(user.id)
+        user_points.append((user.id, points))
+
+    user_points.sort(key=lambda x: x[1], reverse=True)
+
+    current_rank = 1
+    for i, (user_id, points) in enumerate(user_points):
+        if i > 0 and user_points[i - 1][1] == points:
+            rank = current_rank - 1
+        else:
+            rank = current_rank
+
+        ranking = Ranking.query.filter_by(
+            user_id=user_id,
+            competition_round_id=None
+        ).first()
+
+        if ranking:
+            ranking.previous_rank = ranking.rank
+            ranking.rank = rank
+            ranking.total_points = points
+        else:
+            ranking = Ranking(
+                user_id=user_id,
+                competition_round_id=None,
+                rank=rank,
+                total_points=points
+            )
+            db.session.add(ranking)
+
+        current_rank += 1
+
+    db.session.commit()
+
+
 def award_tournament_winner_bonus(winner_team_id):
     """Award bonus points to users who predicted the tournament winner correctly"""
     from app.models.game import Game

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
-import { authAPI } from './services/api'
+import { authAPI, adminAPI } from './services/api'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -14,11 +14,17 @@ import AdminPage from './pages/AdminPage'
 import NewsPage from './pages/NewsPage'
 
 function App() {
-  const { setUser, setInitialized } = useAuthStore()
+  const { setUser, setInitialized, setSystemDateOverride } = useAuthStore()
 
   useEffect(() => {
     authAPI.getCurrentUser()
-      .then((res) => setUser(res.data))
+      .then((res) => {
+        setUser(res.data)
+        // Fetch datetime override for all logged-in users (shown in header when active)
+        adminAPI.getDatetimeOverride()
+          .then(r => setSystemDateOverride(r.data.override ?? null))
+          .catch(() => {})
+      })
       .catch(() => setUser(null))
       .finally(() => setInitialized())
   }, [])

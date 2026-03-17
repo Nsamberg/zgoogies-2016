@@ -2,8 +2,16 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../services/api'
 
+function formatOverride(iso: string) {
+  const d = new Date(iso + 'Z') // treat as UTC
+  return d.toLocaleString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+  }) + ' UTC'
+}
+
 export default function Layout() {
-  const { user, logout } = useAuthStore()
+  const { user, logout, systemDateOverride } = useAuthStore()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -30,7 +38,14 @@ export default function Layout() {
             {(user?.is_admin || user?.is_cachier) && <Link to="/admin">Admin</Link>}
           </nav>
           <div className="user-info">
-            <span>Welcome, {user?.first_name}!</span>
+            <div>
+              <span>Welcome, {user?.first_name}!</span>
+              {systemDateOverride && (
+                <div className="datetime-override-notice">
+                  ⏱ Simulated: {formatOverride(systemDateOverride)}
+                </div>
+              )}
+            </div>
             <button onClick={handleLogout}>Logout</button>
           </div>
         </div>

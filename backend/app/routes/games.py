@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
+from datetime import timedelta
 from app.models.game import Game
+from app.utils.datetime_utils import get_current_utc
 
 bp = Blueprint('games', __name__, url_prefix='/api/games')
 
@@ -9,8 +11,7 @@ bp = Blueprint('games', __name__, url_prefix='/api/games')
 @login_required
 def get_upcoming_games():
     """Get games where predictions are still open"""
-    from datetime import datetime, timedelta
-    deadline = datetime.utcnow() + timedelta(hours=2)
+    deadline = get_current_utc() + timedelta(hours=2)
 
     games = Game.query.filter(Game.game_date >= deadline).order_by(Game.game_date).all()
 
@@ -36,8 +37,7 @@ def get_upcoming_games():
 @login_required
 def get_closed_games():
     """Get games where predictions are closed"""
-    from datetime import datetime, timedelta
-    deadline = datetime.utcnow() + timedelta(hours=2)
+    deadline = get_current_utc() + timedelta(hours=2)
 
     games = Game.query.filter(Game.game_date < deadline).order_by(Game.game_date.desc()).all()
 
