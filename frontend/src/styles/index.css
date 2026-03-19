@@ -659,6 +659,34 @@ button[type="submit"]:disabled {
   padding-top: 0.75rem;
 }
 
+.game-predictions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.gp-count {
+  font-size: 0.78rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+.gp-search {
+  flex: 1;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: 'Montserrat', sans-serif;
+  outline: none;
+}
+.gp-search:focus { border-color: var(--navy); }
+
 .game-predictions-table {
   width: 100%;
   border-collapse: collapse;

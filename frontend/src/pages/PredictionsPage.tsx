@@ -98,10 +98,12 @@ export default function PredictionsPage() {
   const [expandedGameId, setExpandedGameId] = useState<number | null>(null)
   const [gamePredictions, setGamePredictions] = useState<Record<number, any[]>>({})
   const [gamePredictionsLoading, setGamePredictionsLoading] = useState<number | null>(null)
+  const [gamePredSearch, setGamePredSearch] = useState('')
 
   const toggleGamePredictions = useCallback(async (gameId: number) => {
-    if (expandedGameId === gameId) { setExpandedGameId(null); return }
+    if (expandedGameId === gameId) { setExpandedGameId(null); setGamePredSearch(''); return }
     setExpandedGameId(gameId)
+    setGamePredSearch('')
     if (gamePredictions[gameId]) return  // already cached
     setGamePredictionsLoading(gameId)
     try {
@@ -416,28 +418,52 @@ export default function PredictionsPage() {
                       {gamePredictionsLoading === game.id && (
                         <p className="loading-text">Loading…</p>
                       )}
-                      {!gamePredictionsLoading && gamePredictions[game.id] && (
-                        gamePredictions[game.id].length === 0
-                          ? <p className="empty-state">No predictions submitted.</p>
-                          : <table className="game-predictions-table">
-                              <thead>
-                                <tr>
-                                  <th>Player</th>
-                                  <th>Prediction</th>
-                                  {game.is_scored && <th>Points</th>}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {gamePredictions[game.id].map((p: any) => (
-                                  <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
-                                    <td>{p.username}</td>
-                                    <td>{p.team_a_score} – {p.team_b_score}</td>
-                                    {game.is_scored && <td>{pointsLabel(p.points)}</td>}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                      )}
+                      {!gamePredictionsLoading && gamePredictions[game.id] && (() => {
+                        const all = gamePredictions[game.id]
+                        const sorted = [...all].sort((a, b) =>
+                          game.is_scored
+                            ? (b.points ?? -1) - (a.points ?? -1)   // high points first
+                            : a.username.localeCompare(b.username)   // alpha when unscored
+                        )
+                        const q = gamePredSearch.toLowerCase()
+                        const filtered = q
+                          ? sorted.filter(p => p.username.toLowerCase().includes(q))
+                          : sorted
+                        return (
+                          <>
+                            <div className="game-predictions-header">
+                              <span className="gp-count">{all.length} prediction{all.length !== 1 ? 's' : ''}</span>
+                              <input
+                                className="gp-search"
+                                placeholder="Search player…"
+                                value={gamePredSearch}
+                                onChange={e => setGamePredSearch(e.target.value)}
+                              />
+                            </div>
+                            {filtered.length === 0
+                              ? <p className="empty-state">No matching players.</p>
+                              : <table className="game-predictions-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Player</th>
+                                      <th>Prediction</th>
+                                      {game.is_scored && <th>Points</th>}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {filtered.map((p: any) => (
+                                      <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
+                                        <td>{p.username}</td>
+                                        <td>{p.team_a_score} – {p.team_b_score}</td>
+                                        {game.is_scored && <td>{pointsLabel(p.points)}</td>}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                            }
+                          </>
+                        )
+                      })()}
                     </div>
                   )}
                 </div>
