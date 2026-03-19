@@ -1,6 +1,6 @@
 # ZGoogies — Project Status
 
-**Last Updated**: March 19, 2026
+**Last Updated**: March 20, 2026
 **Repository**: `Nsamberg/zgoogies-2016` — branches: `dev` (active) / `production` (deployment pending)
 
 ---
@@ -25,7 +25,7 @@
 ### Backend — Python Flask
 - Authentication: login, logout, register, forgot password, change password, session restore
 - Games: upcoming (open for predictions), closed, with round/stage/group metadata
-- Predictions: submit, edit, fetch per user, fetch for other players (closed games only)
+- Predictions: submit, edit, fetch per user, fetch for other players (closed games only) — hardened against API injection (score validation, user_id locked to session)
 - Rankings: overall + per-round, with game count per round, medal positions
 - Players: list with roles, sorted alphabetically (case-insensitive), search by username
 - News: article list
@@ -40,7 +40,7 @@
 | Login | CAPTCHA, session restore on page load, restores datetime override state |
 | Register | CAPTCHA, shows generated password on success |
 | Forgot Password | Accepts username or email, sends new temp password by email |
-| Predictions | Open Games tab, Past Games tab, Other Players tab |
+| Predictions | Open Games tab, Closed Games tab, Other Players tab |
 | Rankings | Overall + per-round tabs (dynamic), medal badges, current user highlighted |
 | News | Article cards |
 | Players | Username search, role filter (multi-select), alpha sorted, expandable rows |
@@ -95,7 +95,7 @@
 
 | Suite | Command | Expected |
 |-------|---------|----------|
-| Backend (pytest) | `cd backend && venv/Scripts/python.exe -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py` | 83 passed |
+| Backend (pytest) | `cd backend && venv/Scripts/python.exe -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py` | 89 passed |
 | Frontend (vitest) | `cd frontend && npm test` | 15 passed |
 | TypeScript | `cd frontend && npx tsc --noEmit` | 0 errors |
 | API smoke test | See CLAUDE.md | All 12 endpoints 200 |

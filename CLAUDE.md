@@ -54,7 +54,7 @@ cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend" &
 Run **all** checks above and confirm:
 - Zero TypeScript errors
 - All 15 frontend vitest tests pass
-- All 83 backend pytest tests pass
+- All 89 backend pytest tests pass
 - All 12 API endpoints return 200
 
 ## After any significant change (frontend or backend)
@@ -77,7 +77,7 @@ Expected: zero TypeScript errors, 15 vitest tests pass.
 ```bash
 cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend" && venv/Scripts/python.exe -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py
 ```
-Expected: 83 passed, 0 failed.
+Expected: 89 passed, 0 failed.
 
 ### 4. API smoke test (backend) — requires backend running on port 5000
 ```bash
