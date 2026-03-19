@@ -1,6 +1,6 @@
 # ZGoogies — Project Status
 
-**Last Updated**: March 16, 2026
+**Last Updated**: March 19, 2026
 **Repository**: `Nsamberg/zgoogies-2016` — branches: `dev` (active) / `production` (deployment pending)
 
 ---
@@ -27,24 +27,39 @@
 - Games: upcoming (open for predictions), closed, with round/stage/group metadata
 - Predictions: submit, edit, fetch per user, fetch for other players (closed games only)
 - Rankings: overall + per-round, with game count per round, medal positions
-- Players: list with roles, search by username, expandable predictions
+- Players: list with roles, sorted alphabetically (case-insensitive), search by username
 - News: article list
-- Admin: placeholder routes
+- Admin (full): payments, score entry + rollback, tournament winner + rollback, user management, news management, datetime override, full reset
 - Email: Yahoo SMTP via Flask-Mail, background thread (non-blocking)
 - CAPTCHA: reCAPTCHA v2 on login and register — backend verification skipped in DEBUG mode
+- Datetime override: admin can simulate any UTC datetime via AppSetting; all time-sensitive logic routes through `get_current_utc()`
 
 ### Frontend — React 18 + TypeScript + Vite
 | Page | Features |
 |------|----------|
-| Login | CAPTCHA, session restore on page load |
+| Login | CAPTCHA, session restore on page load, restores datetime override state |
 | Register | CAPTCHA, shows generated password on success |
 | Forgot Password | Accepts username or email, sends new temp password by email |
 | Predictions | Open Games tab, Past Games tab, Other Players tab |
 | Rankings | Overall + per-round tabs (dynamic), medal badges, current user highlighted |
 | News | Article cards |
-| Players | Username search, role filter (multi-select), expandable rows |
+| Players | Username search, role filter (multi-select), alpha sorted, expandable rows |
 | My Account | Profile tab (edit name/email/timezone/winner) + Change Password tab |
-| Admin | Placeholder — not yet built |
+| Admin | 6 tabs: Payments · Score Entry · Tournament · News · Users · Settings |
+
+**Admin tabs detail:**
+| Tab | Access | Features |
+|-----|--------|----------|
+| Payments | Admin + Cashier | Mark paid/unpaid, search users, shows payment collector |
+| Score Entry | Admin only | Enter scores by round/status filter, rollback individual game scores |
+| Tournament | Admin only | Set tournament winner + award 15pt bonuses, rollback |
+| News | Admin + Cashier | Create / edit / delete articles inline |
+| Users | Admin only | Change roles, delete users with confirmation |
+| Settings | Admin only | Datetime override (set/clear simulated time), Full Reset |
+
+**Full Reset** (Admin > Settings): wipes all predictions, rankings, game scores and tournament winner. Requires typing `RESET ALL` to confirm.
+
+**Datetime Override** (Admin > Settings): persists in database across restarts and logout/login cycles. Banner shown in header to all logged-in users when active.
 
 **Theme**: FIFA World Cup 2026 — navy `#1B1464`, red `#C8102E`, gold `#D4AC0D`, Montserrat font
 **Nav order**: Predictions · Rankings · News · Players · My Account · Admin
@@ -54,17 +69,14 @@
 
 ## What Remains To Build
 
-### Admin Page (highest priority)
-- [ ] Payment management — mark users as paid/unpaid (cashier + admin)
-- [ ] Score entry — enter actual results for played games (admin only)
-- [ ] Score rollback — correct a wrong result entry (admin only)
-- [ ] Tournament winner selection + rollback (admin only)
-- [ ] User deletion with confirmation (admin only)
-- [ ] News publication — create/edit/delete articles (cashier + admin)
+### Nice-to-Have (post-launch)
+- [ ] Ranking history charts (Recharts is installed, not yet wired up — data already being saved in `ranking_history` table)
+- [ ] Game prediction statistics (distribution per game, e.g. "40% predicted France win")
 
-### Nice-to-Have (after admin)
-- [ ] Ranking history charts (Recharts is installed, not yet wired up)
-- [ ] Game prediction statistics (distribution per game, all predictions view)
+### Production
+- [ ] Deploy to production server
+- [ ] Set real reCAPTCHA keys, Yahoo app password, PostgreSQL DB
+- [ ] Push `dev` → `production` branch and run post-deploy checklist (see below)
 
 ---
 
@@ -76,6 +88,19 @@
 - **21 venues** — across USA, Canada, Mexico
 - **Dates**: June 11 – July 19, 2026
 - **Source**: `config/Tournament Games.json`
+
+---
+
+## Test Suite
+
+| Suite | Command | Expected |
+|-------|---------|----------|
+| Backend (pytest) | `cd backend && venv/Scripts/python.exe -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py` | 83 passed |
+| Frontend (vitest) | `cd frontend && npm test` | 15 passed |
+| TypeScript | `cd frontend && npx tsc --noEmit` | 0 errors |
+| API smoke test | See CLAUDE.md | All 12 endpoints 200 |
+
+Backend tests use an **in-memory SQLite database** (no running server needed). `TestingConfig` has `DEBUG=True` to enable CAPTCHA bypass in tests.
 
 ---
 
@@ -269,6 +294,9 @@ git push origin production
 - [ ] Predictions page loads games
 - [ ] Rankings tabs shown correctly
 - [ ] Admin page accessible only to admin/cashier users
+- [ ] Admin score entry updates rankings correctly
+- [ ] Datetime override banner shows in header when active
 - [ ] HTTPS active
 - [ ] `SESSION_COOKIE_SECURE=True` in `.env`
 - [ ] No test reCAPTCHA keys in use
+- [ ] Run full reset once to confirm clean slate before going live
