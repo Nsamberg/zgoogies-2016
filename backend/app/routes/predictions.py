@@ -26,7 +26,10 @@ def get_predictions():
 @login_required
 def create_prediction():
     """Create or update a prediction"""
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    if not data.get('game_id') or data.get('team_a_score') is None or data.get('team_b_score') is None:
+        return jsonify({'error': 'game_id, team_a_score and team_b_score are required'}), 400
 
     if not current_user.can_predict():
         return jsonify({'error': 'Payment required to make predictions'}), 403

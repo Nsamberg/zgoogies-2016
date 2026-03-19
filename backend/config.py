@@ -49,6 +49,7 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """Testing configuration"""
     TESTING = True
+    DEBUG = True  # enables CAPTCHA bypass and other dev-mode shortcuts
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
 

@@ -2,17 +2,23 @@
 
 ## After every frontend change
 
-Run the TypeScript compiler to catch type errors, missing imports, and broken components:
+Run the TypeScript compiler and the frontend unit tests:
 
 ```bash
-cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/frontend" && npx tsc --noEmit
+cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/frontend" && npx tsc --noEmit && npm test
 ```
 
-Zero output = all clear. Any errors must be fixed before moving on.
+Expected: zero TypeScript errors AND all vitest tests pass (currently 15 tests).
 
 ## After every backend change
 
-Run the API smoke test to verify all endpoints return 200:
+Run the backend unit tests, then the API smoke test:
+
+```bash
+cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend" && venv/Scripts/python.exe -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py -v
+```
+
+Expected: all 83 tests pass (0 failed). Then run the API smoke test to verify all endpoints return 200:
 
 ```bash
 "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend/venv/Scripts/python.exe" -c "
@@ -45,7 +51,11 @@ cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend" &
 
 ## Before every commit/push
 
-Run **both** checks above and confirm zero TypeScript errors and all API endpoints return 200.
+Run **all** checks above and confirm:
+- Zero TypeScript errors
+- All 15 frontend vitest tests pass
+- All 83 backend pytest tests pass
+- All 12 API endpoints return 200
 
 ## After any significant change (frontend or backend)
 
@@ -57,13 +67,19 @@ cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app" && python
 ```
 Expected: both backend (port 5000) and frontend (port 5173) start without errors.
 
-### 2. TypeScript check (frontend)
+### 2. Frontend checks (TypeScript + unit tests)
 ```bash
-cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/frontend" && npx tsc --noEmit
+cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/frontend" && npx tsc --noEmit && npm test
 ```
-Expected: zero output (zero errors).
+Expected: zero TypeScript errors, 15 vitest tests pass.
 
-### 3. API smoke test (backend) — requires backend running on port 5000
+### 3. Backend unit tests — does NOT require the server to be running
+```bash
+cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend" && venv/Scripts/python.exe -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py
+```
+Expected: 83 passed, 0 failed.
+
+### 4. API smoke test (backend) — requires backend running on port 5000
 ```bash
 "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend/venv/Scripts/python.exe" -c "
 import requests, sys
@@ -89,7 +105,7 @@ print('All checks passed.')
 ```
 Expected: all endpoints return [OK] 200.
 
-### 4. Page accessibility check — requires both servers running
+### 5. Page accessibility check — requires both servers running
 Verify every frontend page loads and the nav links work by hitting the Vite dev server:
 ```bash
 "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app/backend/venv/Scripts/python.exe" -c "
@@ -120,12 +136,12 @@ print('All pages accessible.')
 ```
 Expected: all pages return 200 and contain the React root div.
 
-### 5. Stop the application
+### 6. Stop the application
 ```bash
 cd "c:/Users/nsamberger/OneDrive - Amadeus Workplace/zgoogies/2016app" && python stop.py
 ```
 
-All 5 steps must pass before committing or declaring work done.
+All 6 steps must pass before committing or declaring work done.
 
 ## Project context
 
