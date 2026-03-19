@@ -75,7 +75,7 @@
 
 ### Production
 - [ ] Deploy to production server
-- [ ] Set real reCAPTCHA keys, Yahoo app password, PostgreSQL DB
+- [ ] Set real reCAPTCHA keys, Yahoo app password, SECRET_KEY in .env
 - [ ] Push `dev` → `production` branch and run post-deploy checklist (see below)
 
 ---
@@ -157,7 +157,7 @@ Copy `backend/.env.example` to `backend/.env` and fill in:
 ```env
 FLASK_ENV=production
 SECRET_KEY=<long-random-string-min-32-chars>
-DATABASE_URL=<see section 3>
+# DATABASE_URL is optional — defaults to sqlite:///zgoogies.db if not set
 
 MAIL_SERVER=smtp.mail.yahoo.com
 MAIL_PORT=587
@@ -184,25 +184,21 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
-### 3. Database — Switch to PostgreSQL (recommended)
+### 3. Database — SQLite (production)
 
-```sql
-CREATE DATABASE zgoogies;
-CREATE USER zgoogies_user WITH PASSWORD 'strong-password';
-GRANT ALL PRIVILEGES ON DATABASE zgoogies TO zgoogies_user;
-```
+SQLite is used in production. No migration needed — it works out of the box.
 
-Add `psycopg2-binary` to `backend/requirements.txt`, then set:
-```
-DATABASE_URL=postgresql://zgoogies_user:strong-password@localhost/zgoogies
-```
-
-Re-run setup:
+Run the setup scripts on the server to initialise the database:
 ```bash
 cd backend
 python init_db.py
 python create_admin.py
 python import_tournament_games.py
+```
+
+The `DATABASE_URL` in `.env` can be left unset (defaults to `sqlite:///zgoogies.db` inside the backend folder) or set explicitly:
+```
+DATABASE_URL=sqlite:////path/to/zgoogies.db
 ```
 
 ---
