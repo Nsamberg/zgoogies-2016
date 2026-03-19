@@ -639,6 +639,48 @@ button[type="submit"]:disabled {
   color: #1B1464;
 }
 
+/* Closed game — view all predictions toggle */
+.game-predictions-toggle {
+  margin-top: 0.75rem;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  color: #555;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+}
+.game-predictions-toggle:hover { background: #f5f5f5; border-color: #aaa; }
+
+.game-predictions-panel {
+  margin-top: 0.75rem;
+  border-top: 1px solid #eee;
+  padding-top: 0.75rem;
+}
+
+.game-predictions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.game-predictions-table th {
+  text-align: left;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  padding: 0 0.4rem 0.4rem;
+  border-bottom: 1px solid #eee;
+}
+.game-predictions-table td {
+  padding: 0.35rem 0.4rem;
+  color: #333;
+  border-bottom: 1px solid #f5f5f5;
+}
+.gp-row-self td { font-weight: 700; color: var(--navy); }
+
 /* ===== Shared page title ===== */
 .page-title {
   font-size: 1.5rem;

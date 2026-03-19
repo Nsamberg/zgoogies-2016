@@ -94,6 +94,26 @@ export default function PredictionsPage() {
   const [pastError, setPastError] = useState('')
   const [pastLoaded, setPastLoaded] = useState(false)
 
+  // Game predictions (all players for a selected closed game)
+  const [expandedGameId, setExpandedGameId] = useState<number | null>(null)
+  const [gamePredictions, setGamePredictions] = useState<Record<number, any[]>>({})
+  const [gamePredictionsLoading, setGamePredictionsLoading] = useState<number | null>(null)
+
+  const toggleGamePredictions = useCallback(async (gameId: number) => {
+    if (expandedGameId === gameId) { setExpandedGameId(null); return }
+    setExpandedGameId(gameId)
+    if (gamePredictions[gameId]) return  // already cached
+    setGamePredictionsLoading(gameId)
+    try {
+      const res = await predictionsAPI.getGamePredictions(gameId)
+      setGamePredictions(prev => ({ ...prev, [gameId]: res.data }))
+    } catch {
+      setGamePredictions(prev => ({ ...prev, [gameId]: [] }))
+    } finally {
+      setGamePredictionsLoading(null)
+    }
+  }, [expandedGameId, gamePredictions])
+
   // Other players
   const [players, setPlayers] = useState<Player[]>([])
   const [playersLoaded, setPlayersLoaded] = useState(false)
@@ -381,6 +401,45 @@ export default function PredictionsPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* View all predictions toggle */}
+                  <button
+                    className="game-predictions-toggle"
+                    onClick={() => toggleGamePredictions(game.id)}
+                  >
+                    {expandedGameId === game.id ? 'Hide predictions' : 'View all predictions'}
+                  </button>
+
+                  {/* Inline predictions panel */}
+                  {expandedGameId === game.id && (
+                    <div className="game-predictions-panel">
+                      {gamePredictionsLoading === game.id && (
+                        <p className="loading-text">Loading…</p>
+                      )}
+                      {!gamePredictionsLoading && gamePredictions[game.id] && (
+                        gamePredictions[game.id].length === 0
+                          ? <p className="empty-state">No predictions submitted.</p>
+                          : <table className="game-predictions-table">
+                              <thead>
+                                <tr>
+                                  <th>Player</th>
+                                  <th>Prediction</th>
+                                  {game.is_scored && <th>Points</th>}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {gamePredictions[game.id].map((p: any) => (
+                                  <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
+                                    <td>{p.username}</td>
+                                    <td>{p.team_a_score} – {p.team_b_score}</td>
+                                    {game.is_scored && <td>{pointsLabel(p.points)}</td>}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
