@@ -83,6 +83,9 @@ function PaymentsTab() {
   const togglePayment = async (u: AdminUser) => {
     setBusy(u.id)
     setMsg('')
+    // Optimistic update: flip has_paid immediately so the button reflects the
+    // new state without waiting for the full API round-trip.
+    setUsers(prev => prev.map(p => p.id === u.id ? { ...p, has_paid: !u.has_paid } : p))
     try {
       if (u.has_paid) {
         await adminAPI.removePayment(u.id)
@@ -91,9 +94,11 @@ function PaymentsTab() {
         await adminAPI.recordPayment(u.id)
         setMsg(`Payment recorded for ${u.username}`)
       }
-      // Silent refresh — no loading spinner, table stays visible
+      // Silent refresh to pull payment_date and payment_received_by from the server
       await load(true)
     } catch {
+      // Revert the optimistic update if the API call failed
+      setUsers(prev => prev.map(p => p.id === u.id ? { ...p, has_paid: u.has_paid } : p))
       setMsg('Error updating payment status')
     } finally {
       setBusy(null)
