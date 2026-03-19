@@ -119,6 +119,9 @@ export const adminAPI = {
   getDatetimeOverride: () => api.get('/admin/datetime-override'),
   setDatetimeOverride: (datetime: string) => api.post('/admin/datetime-override', { datetime }),
   clearDatetimeOverride: () => api.delete('/admin/datetime-override'),
+
+  // Full reset
+  resetAll: () => api.delete('/admin/reset-all', { data: { confirmation: 'RESET ALL' } }),
 }
 
 // Teams API

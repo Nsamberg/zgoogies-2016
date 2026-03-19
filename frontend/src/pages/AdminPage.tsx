@@ -700,6 +700,24 @@ function SettingsTab() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
+  // Full reset
+  const [resetConfirm, setResetConfirm] = useState('')
+  const [resetBusy, setResetBusy] = useState(false)
+  const [resetMsg, setResetMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
+  const [resetResult, setResetResult] = useState<Record<string, number> | null>(null)
+
+  const executeReset = async () => {
+    setResetBusy(true); setResetMsg(null); setResetResult(null)
+    try {
+      const res = await adminAPI.resetAll()
+      setResetResult(res.data.deleted)
+      setResetMsg({ text: res.data.message, type: 'ok' })
+      setResetConfirm('')
+    } catch (e: any) {
+      setResetMsg({ text: e.response?.data?.error ?? 'Reset failed', type: 'err' })
+    } finally { setResetBusy(false) }
+  }
+
   const save = async () => {
     if (!inputValue) { setMsg({ text: 'Please select a date and time', type: 'err' }); return }
     setBusy(true); setMsg(null)
@@ -784,6 +802,61 @@ function SettingsTab() {
             <li>Set to 2026-06-09 → test pre-tournament registration window</li>
             <li>Set to 2026-07-20 → test post-tournament state</li>
           </ul>
+        </div>
+      </div>
+
+      {/* ── Full Reset ─────────────────────────────────────────── */}
+      <div className="admin-section-header" style={{ marginTop: '2rem' }}>
+        <div>
+          <h2 style={{ color: 'var(--red)' }}>Full Reset</h2>
+          <p className="admin-subtitle">Permanently wipes all scores, predictions and rankings. Tournament winner is also cleared. Game fixtures and user accounts are kept. This action cannot be undone.</p>
+        </div>
+      </div>
+
+      <div className="admin-form-card" style={{ borderLeft: '4px solid var(--red)' }}>
+        <p style={{ fontSize: '0.85rem', marginBottom: '0.75rem', color: '#555' }}>
+          The following will be deleted:
+        </p>
+        <ul style={{ fontSize: '0.82rem', color: '#555', paddingLeft: '1.2rem', lineHeight: 1.9, marginBottom: '1.25rem' }}>
+          <li>All <strong>predictions</strong> (and their history) made by every player</li>
+          <li>All <strong>rankings</strong> (overall and per-round) and ranking history</li>
+          <li>All <strong>game scores</strong> (games revert to unscored)</li>
+          <li>The <strong>tournament winner</strong> setting and associated bonus points</li>
+        </ul>
+
+        {resetMsg && (
+          <div className={`admin-message ${resetMsg.type === 'err' ? 'admin-message-error' : ''}`} style={{ marginBottom: '1rem' }}>
+            {resetMsg.text}
+            {resetResult && (
+              <ul style={{ margin: '0.4rem 0 0 1rem', fontSize: '0.8rem' }}>
+                <li>Predictions deleted: {resetResult.predictions}</li>
+                <li>Prediction history deleted: {resetResult.prediction_history}</li>
+                <li>Rankings deleted: {resetResult.rankings}</li>
+                <li>Ranking history deleted: {resetResult.ranking_history}</li>
+                <li>Games reset: {resetResult.games_reset}</li>
+              </ul>
+            )}
+          </div>
+        )}
+
+        <div className="admin-form-group">
+          <label>Type <strong>RESET ALL</strong> to confirm</label>
+          <div className="override-input-row">
+            <input
+              className="admin-input"
+              style={{ maxWidth: 200 }}
+              placeholder="RESET ALL"
+              value={resetConfirm}
+              onChange={e => setResetConfirm(e.target.value)}
+            />
+            <button
+              className="admin-btn btn-danger"
+              onClick={executeReset}
+              disabled={resetConfirm !== 'RESET ALL' || resetBusy}
+            >
+              {resetBusy ? 'Resetting...' : 'Execute Full Reset'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

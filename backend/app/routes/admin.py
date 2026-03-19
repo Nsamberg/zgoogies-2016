@@ -393,6 +393,53 @@ def clear_datetime_override():
 
 
 # ---------------------------------------------------------------------------
+# Full reset
+# ---------------------------------------------------------------------------
+
+@bp.route('/reset-all', methods=['DELETE'])
+@login_required
+@admin_required
+def reset_all():
+    """Wipe all scores, predictions and rankings.
+    Requires confirmation token 'RESET ALL' in the request body."""
+    data = request.get_json() or {}
+    if data.get('confirmation') != 'RESET ALL':
+        return jsonify({'error': "Confirmation text must be exactly 'RESET ALL'"}), 400
+
+    # 1. Delete ranking history and rankings
+    deleted_rh = RankingHistory.query.delete()
+    deleted_r  = Ranking.query.delete()
+
+    # 2. Delete prediction history and predictions
+    deleted_ph = PredictionHistory.query.delete()
+    deleted_p  = Prediction.query.delete()
+
+    # 3. Reset all game scores
+    games = Game.query.all()
+    for g in games:
+        g.is_scored    = False
+        g.team_a_score = None
+        g.team_b_score = None
+        g.scored_at    = None
+
+    # 4. Clear tournament winner setting
+    AppSetting.delete(TOURNAMENT_WINNER_KEY)
+
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Full reset completed',
+        'deleted': {
+            'predictions':        deleted_p,
+            'prediction_history': deleted_ph,
+            'rankings':           deleted_r,
+            'ranking_history':    deleted_rh,
+            'games_reset':        len(games),
+        }
+    }), 200
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
