@@ -85,6 +85,31 @@ class TestPaymentManagement:
         r = player_client.post(f'/api/admin/payment/{uid}')
         assert r.status_code == 403
 
+    def test_mark_paid_is_non_blocking(self, app, admin_client):
+        """Payment endpoint must return within 2 seconds even when email cannot be sent.
+        Regression test for: send_payment_confirmation_email was called on the main
+        thread, causing the response to hang while waiting for SMTP timeout."""
+        import time
+        with app.app_context():
+            u = User.query.filter_by(username='player1').first()
+            uid = u.id
+
+        start = time.time()
+        r = admin_client.post(f'/api/admin/payment/{uid}')
+        elapsed = time.time() - start
+
+        assert r.status_code == 200
+        assert elapsed < 2.0, (
+            f"Payment endpoint took {elapsed:.1f}s — email is likely blocking the response"
+        )
+
+        # Restore
+        with app.app_context():
+            u = User.query.get(uid)
+            u.has_paid = False
+            u.payment_received_by_id = None
+            db.session.commit()
+
 
 class TestAdminGames:
     def test_get_games(self, admin_client):
