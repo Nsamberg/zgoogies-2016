@@ -972,6 +972,69 @@ button[type="submit"]:disabled {
   font-size: 1rem;
 }
 
+/* Clickable ranking rows */
+.ranking-row-clickable {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.ranking-row-clickable:hover { background: #f0f2fa; }
+
+.rankings-click-hint {
+  font-size: 0.75rem;
+  color: #aaa;
+  text-align: center;
+  margin-top: 0.6rem;
+}
+
+/* Player history view */
+.player-history-view { }
+
+.player-history-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.player-history-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0;
+}
+
+.player-history-sub {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.25rem 0 0;
+}
+
+.player-history-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.history-chart-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.history-chart-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 0.75rem;
+}
+
+.history-chart-hint {
+  font-weight: 400;
+  color: #999;
+  font-size: 0.78rem;
+}
+
 .summary-divider {
   color: #bbb;
 }

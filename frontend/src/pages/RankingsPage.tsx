@@ -1,9 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine
+} from 'recharts'
 import { rankingsAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
 type TabId = 'overall' | number
+
+interface HistoryPoint {
+  rank: number
+  total_points: number
+  game_id: number
+  created_at: string
+  label: string   // "Game N"
+}
 
 function TrendIcon({ rank, previous }: { rank: number; previous?: number | null }) {
   if (previous == null) return <span className="trend trend--neutral">—</span>
@@ -11,6 +23,151 @@ function TrendIcon({ rank, previous }: { rank: number; previous?: number | null 
   if (rank > previous) return <span className="trend trend--down">▼</span>
   return <span className="trend trend--neutral">—</span>
 }
+
+// ── Player history charts view ────────────────────────────────────────────────
+
+function PlayerHistoryView({
+  player,
+  rounds,
+  onBack,
+}: {
+  player: Ranking
+  rounds: CompetitionRound[]
+  onBack: () => void
+}) {
+  const [histTab, setHistTab] = useState<TabId>('overall')
+  const [history, setHistory] = useState<HistoryPoint[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchHistory = useCallback(async (tab: TabId) => {
+    setLoading(true)
+    try {
+      const roundId = tab === 'overall' ? undefined : (tab as number)
+      const res = await rankingsAPI.getHistory(player.user.id, roundId)
+      const pts: HistoryPoint[] = res.data.map((h: any, i: number) => ({
+        ...h,
+        label: `G${i + 1}`,
+      }))
+      setHistory(pts)
+    } catch {
+      setHistory([])
+    } finally {
+      setLoading(false)
+    }
+  }, [player.user.id])
+
+  useEffect(() => { fetchHistory('overall') }, [fetchHistory])
+
+  const handleHistTab = (tab: TabId) => {
+    setHistTab(tab)
+    fetchHistory(tab)
+  }
+
+  const maxRank = history.length > 0 ? Math.max(...history.map(h => h.rank)) + 1 : 10
+
+  return (
+    <div className="player-history-view">
+      <button className="back-btn" onClick={onBack}>← Back to Rankings</button>
+
+      <div className="player-history-header">
+        <div>
+          <h2 className="player-history-name">{player.user.username}</h2>
+          <p className="player-history-sub">
+            {player.user.first_name} {player.user.surname}
+            <span className="separator">·</span>
+            Rank #{player.rank}
+            <span className="separator">·</span>
+            {player.total_points} pts
+          </p>
+        </div>
+      </div>
+
+      {/* Round selector for history */}
+      <div className="page-tabs" style={{ marginBottom: '1.25rem' }}>
+        <button
+          className={`tab-btn${histTab === 'overall' ? ' active' : ''}`}
+          onClick={() => handleHistTab('overall')}
+        >Overall</button>
+        {rounds.map(r => (
+          <button
+            key={r.id}
+            className={`tab-btn${histTab === r.id ? ' active' : ''}`}
+            onClick={() => handleHistTab(r.id)}
+          >{r.name}</button>
+        ))}
+      </div>
+
+      {loading && <p className="loading-text">Loading history…</p>}
+
+      {!loading && history.length === 0 && (
+        <p className="empty-state">No history yet — rankings update after each scored game.</p>
+      )}
+
+      {!loading && history.length > 0 && (
+        <div className="player-history-charts">
+
+          {/* Points progression */}
+          <div className="history-chart-card">
+            <h3 className="history-chart-title">Points progression</h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={history} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                <Tooltip
+                  formatter={(val: number) => [`${val} pts`, 'Points']}
+                  labelFormatter={(l: string) => l}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total_points"
+                  stroke="#1B1464"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: '#1B1464' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Rank progression (inverted: lower rank = higher on chart) */}
+          <div className="history-chart-card">
+            <h3 className="history-chart-title">Rank progression <span className="history-chart-hint">(lower = better)</span></h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={history} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                <YAxis
+                  reversed
+                  domain={[1, maxRank]}
+                  allowDecimals={false}
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={(v: number) => `#${v}`}
+                />
+                <Tooltip
+                  formatter={(val: number) => [`#${val}`, 'Rank']}
+                  labelFormatter={(l: string) => l}
+                />
+                <ReferenceLine y={1} stroke="#D4AC0D" strokeDasharray="4 3" />
+                <Line
+                  type="monotone"
+                  dataKey="rank"
+                  stroke="#C8102E"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: '#C8102E' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main rankings page ────────────────────────────────────────────────────────
 
 export default function RankingsPage() {
   const { user } = useAuthStore()
@@ -20,11 +177,11 @@ export default function RankingsPage() {
   const [rankings, setRankings] = useState<Ranking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
-  // Cache rankings per tab to avoid redundant fetches
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
 
-  // Load rounds on mount, then load overall ranking
+  // Selected player for history view
+  const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -47,13 +204,9 @@ export default function RankingsPage() {
 
   const handleTabChange = async (tab: TabId) => {
     setActiveTab(tab)
+    setSelectedPlayer(null)
     const key = tab === 'overall' ? 'overall' : String(tab)
-
-    if (cache[key]) {
-      setRankings(cache[key])
-      return
-    }
-
+    if (cache[key]) { setRankings(cache[key]); return }
     setLoading(true)
     setError('')
     try {
@@ -70,6 +223,19 @@ export default function RankingsPage() {
     }
   }
 
+  // Player history view
+  if (selectedPlayer) {
+    return (
+      <div className="rankings-page">
+        <PlayerHistoryView
+          player={selectedPlayer}
+          rounds={rounds}
+          onBack={() => setSelectedPlayer(null)}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="rankings-page">
       <h2 className="page-title">Rankings</h2>
@@ -78,9 +244,7 @@ export default function RankingsPage() {
         <button
           className={`tab-btn${activeTab === 'overall' ? ' active' : ''}`}
           onClick={() => handleTabChange('overall')}
-        >
-          Overall
-        </button>
+        >Overall</button>
         {rounds.map((round) => (
           <button
             key={round.id}
@@ -117,7 +281,12 @@ export default function RankingsPage() {
               {rankings.map((r) => {
                 const isMe = r.user.id === user?.id
                 return (
-                  <tr key={r.user.id} className={isMe ? 'row-me' : ''}>
+                  <tr
+                    key={r.user.id}
+                    className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
+                    onClick={() => setSelectedPlayer(r)}
+                    title="View ranking history"
+                  >
                     <td className="col-rank">
                       {r.rank <= 3
                         ? <span className={`medal medal--${r.rank}`}>{r.rank}</span>
@@ -136,6 +305,7 @@ export default function RankingsPage() {
               })}
             </tbody>
           </table>
+          <p className="rankings-click-hint">Click any player to view their history</p>
         </div>
       )}
     </div>
