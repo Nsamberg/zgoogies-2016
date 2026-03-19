@@ -30,7 +30,7 @@
 - Players: list with roles, sorted alphabetically (case-insensitive), search by username
 - News: article list
 - Admin (full): payments, score entry + rollback, tournament winner + rollback, user management, news management, datetime override, full reset
-- Email: Yahoo SMTP via Flask-Mail, background thread (non-blocking)
+- Email: Gmail SMTP via Flask-Mail, background thread (non-blocking)
 - CAPTCHA: reCAPTCHA v2 on login and register — backend verification skipped in DEBUG mode
 - Datetime override: admin can simulate any UTC datetime via AppSetting; all time-sensitive logic routes through `get_current_utc()`
 
@@ -159,12 +159,12 @@ FLASK_ENV=production
 SECRET_KEY=<long-random-string-min-32-chars>
 # DATABASE_URL is optional — defaults to sqlite:///zgoogies.db if not set
 
-MAIL_SERVER=smtp.mail.yahoo.com
+MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USE_TLS=True
-MAIL_USERNAME=zgoogiesgame@yahoo.com
-MAIL_PASSWORD=<yahoo-app-password>
-MAIL_DEFAULT_SENDER=zgoogiesgame@yahoo.com
+MAIL_USERNAME=zgoogiesgame@gmail.com
+MAIL_PASSWORD=<gmail-app-password>
+MAIL_DEFAULT_SENDER=zgoogiesgame@gmail.com
 
 CORS_ORIGINS=https://your-production-domain.com
 SESSION_COOKIE_SECURE=True
@@ -177,10 +177,11 @@ Generate a secure SECRET_KEY:
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-**Yahoo app password** (required — Yahoo blocks regular passwords):
-1. Log into https://yahoo.com with `zgoogiesgame@yahoo.com`
-2. Account Security → Generate app password → "Other app" → name it "ZGoogies"
-3. Copy the 16-character password → paste as `MAIL_PASSWORD`
+**Gmail app password** (required — Google blocks regular passwords for SMTP):
+1. Ensure 2-factor authentication is enabled on `zgoogiesgame@gmail.com`
+2. Go to https://myaccount.google.com/apppasswords
+3. Create an app password → name it "ZGoogies"
+4. Copy the 16-character password → paste as `MAIL_PASSWORD`
 
 ---
 
