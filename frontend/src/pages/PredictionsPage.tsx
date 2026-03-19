@@ -94,27 +94,32 @@ export default function PredictionsPage() {
   const [pastError, setPastError] = useState('')
   const [pastLoaded, setPastLoaded] = useState(false)
 
-  // Game predictions (all players for a selected closed game)
-  const [expandedGameId, setExpandedGameId] = useState<number | null>(null)
-  const [gamePredictions, setGamePredictions] = useState<Record<number, any[]>>({})
-  const [gamePredictionsLoading, setGamePredictionsLoading] = useState<number | null>(null)
-  const [gamePredSearch, setGamePredSearch] = useState('')
+  // Game predictions page-view (selected closed game → show all predictions)
+  const [selectedClosedGame, setSelectedClosedGame] = useState<Game | null>(null)
+  const [closedGamePreds, setClosedGamePreds] = useState<any[] | null>(null)
+  const [closedGamePredsLoading, setClosedGamePredsLoading] = useState(false)
+  const [closedGameSearch, setClosedGameSearch] = useState('')
 
-  const toggleGamePredictions = useCallback(async (gameId: number) => {
-    if (expandedGameId === gameId) { setExpandedGameId(null); setGamePredSearch(''); return }
-    setExpandedGameId(gameId)
-    setGamePredSearch('')
-    if (gamePredictions[gameId]) return  // already cached
-    setGamePredictionsLoading(gameId)
+  const openGamePredictions = useCallback(async (game: Game) => {
+    setSelectedClosedGame(game)
+    setClosedGameSearch('')
+    setClosedGamePreds(null)
+    setClosedGamePredsLoading(true)
     try {
-      const res = await predictionsAPI.getGamePredictions(gameId)
-      setGamePredictions(prev => ({ ...prev, [gameId]: res.data }))
+      const res = await predictionsAPI.getGamePredictions(game.id)
+      setClosedGamePreds(res.data)
     } catch {
-      setGamePredictions(prev => ({ ...prev, [gameId]: [] }))
+      setClosedGamePreds([])
     } finally {
-      setGamePredictionsLoading(null)
+      setClosedGamePredsLoading(false)
     }
-  }, [expandedGameId, gamePredictions])
+  }, [])
+
+  const closeGamePredictions = useCallback(() => {
+    setSelectedClosedGame(null)
+    setClosedGamePreds(null)
+    setClosedGameSearch('')
+  }, [])
 
   // Other players
   const [players, setPlayers] = useState<Player[]>([])
@@ -356,16 +361,52 @@ export default function PredictionsPage() {
       {/* ── Closed Games ── */}
       {tab === 'past' && (
         <div className="tab-content">
-          {pastLoading && <p className="loading-text">Loading past games...</p>}
-          {pastError && <p className="error">{pastError}</p>}
-          {!pastLoading && !pastError && pastGames.length === 0 && (
-            <p className="empty-state">No past games yet.</p>
-          )}
-          <div className="games-list">
-            {pastGames.map((game) => {
-              const pred = pastPredictions[game.id]
-              return (
-                <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
+
+          {/* ── Game predictions detail view ── */}
+          {selectedClosedGame && (() => {
+            const game = selectedClosedGame
+            const pred = pastPredictions[game.id]
+            const all  = closedGamePreds ?? []
+            const sorted = [...all].sort((a, b) =>
+              game.is_scored
+                ? (b.points ?? -1) - (a.points ?? -1)
+                : a.username.localeCompare(b.username)
+            )
+            const q = closedGameSearch.toLowerCase()
+            const filtered = q ? sorted.filter(p => p.username.toLowerCase().includes(q)) : sorted
+
+            // Stats
+            const n = all.length
+            const homeW = all.filter((p: any) => p.team_a_score > p.team_b_score).length
+            const draws = all.filter((p: any) => p.team_a_score === p.team_b_score).length
+            const awayW = all.filter((p: any) => p.team_a_score < p.team_b_score).length
+            const scoreMap: Record<string, number> = {}
+            all.forEach((p: any) => {
+              const k = `${p.team_a_score}–${p.team_b_score}`
+              scoreMap[k] = (scoreMap[k] || 0) + 1
+            })
+            const topScore = n > 0
+              ? Object.entries(scoreMap).sort((a, b) => b[1] - a[1])[0]
+              : null
+
+            let exact = 0, correctResult = 0
+            if (game.is_scored && game.team_a.score != null && game.team_b.score != null) {
+              const ao = game.team_a.score > game.team_b.score ? 'h' : game.team_a.score < game.team_b.score ? 'a' : 'd'
+              all.forEach((p: any) => {
+                if (p.team_a_score === game.team_a.score && p.team_b_score === game.team_b.score) exact++
+                else {
+                  const po = p.team_a_score > p.team_b_score ? 'h' : p.team_a_score < p.team_b_score ? 'a' : 'd'
+                  if (po === ao) correctResult++
+                }
+              })
+            }
+
+            return (
+              <div className="gp-page">
+                <button className="back-btn" onClick={closeGamePredictions}>← Back to Closed Games</button>
+
+                {/* Game header */}
+                <div className={`game-card${game.is_double_points ? ' double-points' : ''}`} style={{ marginBottom: '1.25rem' }}>
                   <GameCardHeader game={game} />
                   <div className="game-teams">
                     <span className="team-name">{game.team_a.name}</span>
@@ -381,95 +422,170 @@ export default function PredictionsPage() {
                     <div className="result-block">
                       <span className="result-label">Result</span>
                       <span className="result-value">
-                        {game.is_scored
-                          ? `${game.team_a.score ?? '?'} – ${game.team_b.score ?? '?'}`
-                          : 'Not yet'}
+                        {game.is_scored ? `${game.team_a.score ?? '?'} – ${game.team_b.score ?? '?'}` : 'Not yet'}
                       </span>
                     </div>
                     <div className="result-block">
                       <span className="result-label">Your prediction</span>
                       <span className="result-value">
-                        {pred
-                          ? `${pred.team_a_score} – ${pred.team_b_score}`
-                          : <span className="no-prediction">No prediction</span>}
+                        {pred ? `${pred.team_a_score} – ${pred.team_b_score}` : <span className="no-prediction">—</span>}
                       </span>
                     </div>
-                    {game.is_scored && (
+                    {game.is_scored && pred && (
                       <div className="result-block points-block">
-                        <span className="result-label">Points</span>
-                        <span className="result-value points-value">
-                          {pred ? pointsLabel(pred.points) : '0 pts'}
-                        </span>
+                        <span className="result-label">Your points</span>
+                        <span className="result-value points-value">{pointsLabel(pred.points)}</span>
                       </div>
                     )}
                   </div>
-
-                  {/* View all predictions toggle */}
-                  <button
-                    className="game-predictions-toggle"
-                    onClick={() => toggleGamePredictions(game.id)}
-                  >
-                    {expandedGameId === game.id ? 'Hide predictions' : 'View all predictions'}
-                  </button>
-
-                  {/* Inline predictions panel */}
-                  {expandedGameId === game.id && (
-                    <div className="game-predictions-panel">
-                      {gamePredictionsLoading === game.id && (
-                        <p className="loading-text">Loading…</p>
-                      )}
-                      {!gamePredictionsLoading && gamePredictions[game.id] && (() => {
-                        const all = gamePredictions[game.id]
-                        const sorted = [...all].sort((a, b) =>
-                          game.is_scored
-                            ? (b.points ?? -1) - (a.points ?? -1)   // high points first
-                            : a.username.localeCompare(b.username)   // alpha when unscored
-                        )
-                        const q = gamePredSearch.toLowerCase()
-                        const filtered = q
-                          ? sorted.filter(p => p.username.toLowerCase().includes(q))
-                          : sorted
-                        return (
-                          <>
-                            <div className="game-predictions-header">
-                              <span className="gp-count">{all.length} prediction{all.length !== 1 ? 's' : ''}</span>
-                              <input
-                                className="gp-search"
-                                placeholder="Search player…"
-                                value={gamePredSearch}
-                                onChange={e => setGamePredSearch(e.target.value)}
-                              />
-                            </div>
-                            {filtered.length === 0
-                              ? <p className="empty-state">No matching players.</p>
-                              : <table className="game-predictions-table">
-                                  <thead>
-                                    <tr>
-                                      <th>Player</th>
-                                      <th>Prediction</th>
-                                      {game.is_scored && <th>Points</th>}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {filtered.map((p: any) => (
-                                      <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
-                                        <td>{p.username}</td>
-                                        <td>{p.team_a_score} – {p.team_b_score}</td>
-                                        {game.is_scored && <td>{pointsLabel(p.points)}</td>}
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                            }
-                          </>
-                        )
-                      })()}
-                    </div>
-                  )}
                 </div>
-              )
-            })}
-          </div>
+
+                {closedGamePredsLoading && <p className="loading-text">Loading predictions…</p>}
+
+                {!closedGamePredsLoading && closedGamePreds !== null && (
+                  <>
+                    {/* Stats row */}
+                    {n > 0 && (
+                      <div className="gp-stats-row">
+                        <div className="gp-stat">
+                          <span className="gp-stat-value">{n}</span>
+                          <span className="gp-stat-label">predictions</span>
+                        </div>
+                        {topScore && (
+                          <div className="gp-stat">
+                            <span className="gp-stat-value">{topScore[0]}</span>
+                            <span className="gp-stat-label">most popular ({topScore[1]}×)</span>
+                          </div>
+                        )}
+                        <div className="gp-stat">
+                          <span className="gp-stat-value">{homeW}</span>
+                          <span className="gp-stat-label">{game.team_a.name} win</span>
+                        </div>
+                        <div className="gp-stat">
+                          <span className="gp-stat-value">{draws}</span>
+                          <span className="gp-stat-label">draw</span>
+                        </div>
+                        <div className="gp-stat">
+                          <span className="gp-stat-value">{awayW}</span>
+                          <span className="gp-stat-label">{game.team_b.name} win</span>
+                        </div>
+                        {game.is_scored && (
+                          <>
+                            <div className="gp-stat gp-stat-exact">
+                              <span className="gp-stat-value">{exact}</span>
+                              <span className="gp-stat-label">exact score</span>
+                            </div>
+                            <div className="gp-stat">
+                              <span className="gp-stat-value">{correctResult}</span>
+                              <span className="gp-stat-label">correct result</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Search + table */}
+                    <div className="game-predictions-header">
+                      <span className="gp-count">{n} prediction{n !== 1 ? 's' : ''}</span>
+                      <input
+                        className="gp-search"
+                        placeholder="Search player…"
+                        value={closedGameSearch}
+                        onChange={e => setClosedGameSearch(e.target.value)}
+                      />
+                    </div>
+
+                    {n === 0
+                      ? <p className="empty-state">No predictions submitted for this game.</p>
+                      : filtered.length === 0
+                        ? <p className="empty-state">No matching players.</p>
+                        : <table className="game-predictions-table">
+                            <thead>
+                              <tr>
+                                <th>Player</th>
+                                <th>Prediction</th>
+                                {game.is_scored && <th>Points</th>}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filtered.map((p: any) => (
+                                <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
+                                  <td>{p.username}</td>
+                                  <td>{p.team_a_score} – {p.team_b_score}</td>
+                                  {game.is_scored && <td>{pointsLabel(p.points)}</td>}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                    }
+                  </>
+                )}
+              </div>
+            )
+          })()}
+
+          {/* ── Game list (shown when no game selected) ── */}
+          {!selectedClosedGame && (
+            <>
+              {pastLoading && <p className="loading-text">Loading past games...</p>}
+              {pastError && <p className="error">{pastError}</p>}
+              {!pastLoading && !pastError && pastGames.length === 0 && (
+                <p className="empty-state">No past games yet.</p>
+              )}
+              <div className="games-list">
+                {pastGames.map((game) => {
+                  const pred = pastPredictions[game.id]
+                  return (
+                    <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
+                      <GameCardHeader game={game} />
+                      <div className="game-teams">
+                        <span className="team-name">{game.team_a.name}</span>
+                        <span className="vs">vs</span>
+                        <span className="team-name">{game.team_b.name}</span>
+                      </div>
+                      <div className="game-meta">
+                        <span>{formatGameDate(game.game_date, timezone)}</span>
+                        <span className="separator">·</span>
+                        <span>{game.location}</span>
+                      </div>
+                      <div className="past-results-row">
+                        <div className="result-block">
+                          <span className="result-label">Result</span>
+                          <span className="result-value">
+                            {game.is_scored
+                              ? `${game.team_a.score ?? '?'} – ${game.team_b.score ?? '?'}`
+                              : 'Not yet'}
+                          </span>
+                        </div>
+                        <div className="result-block">
+                          <span className="result-label">Your prediction</span>
+                          <span className="result-value">
+                            {pred
+                              ? `${pred.team_a_score} – ${pred.team_b_score}`
+                              : <span className="no-prediction">No prediction</span>}
+                          </span>
+                        </div>
+                        {game.is_scored && (
+                          <div className="result-block points-block">
+                            <span className="result-label">Points</span>
+                            <span className="result-value points-value">
+                              {pred ? pointsLabel(pred.points) : '0 pts'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        className="game-predictions-toggle"
+                        onClick={() => openGamePredictions(game)}
+                      >
+                        View predictions →
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
 
