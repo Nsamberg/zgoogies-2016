@@ -64,6 +64,30 @@ class TestSubmitPrediction:
         r = player_client.post('/api/predictions/', json={'game_id': 1})
         assert r.status_code == 400
 
+    def test_predict_negative_score_rejected(self, app, player_client):
+        game_id = _get_open_game_id(app)
+        r = player_client.post('/api/predictions/',
+                               json={'game_id': game_id, 'team_a_score': -1, 'team_b_score': 0})
+        assert r.status_code == 400
+
+    def test_predict_float_score_rejected(self, app, player_client):
+        game_id = _get_open_game_id(app)
+        r = player_client.post('/api/predictions/',
+                               json={'game_id': game_id, 'team_a_score': 1.5, 'team_b_score': 0})
+        assert r.status_code == 400
+
+    def test_predict_string_score_rejected(self, app, player_client):
+        game_id = _get_open_game_id(app)
+        r = player_client.post('/api/predictions/',
+                               json={'game_id': game_id, 'team_a_score': 'two', 'team_b_score': 0})
+        assert r.status_code == 400
+
+    def test_predict_unreasonably_large_score_rejected(self, app, player_client):
+        game_id = _get_open_game_id(app)
+        r = player_client.post('/api/predictions/',
+                               json={'game_id': game_id, 'team_a_score': 99, 'team_b_score': 0})
+        assert r.status_code == 400
+
     def test_predict_and_update(self, app, player_client):
         game_id = _get_open_game_id(app)
         assert game_id is not None

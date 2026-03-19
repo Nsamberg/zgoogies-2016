@@ -31,6 +31,19 @@ def create_prediction():
     if not data.get('game_id') or data.get('team_a_score') is None or data.get('team_b_score') is None:
         return jsonify({'error': 'game_id, team_a_score and team_b_score are required'}), 400
 
+    # Validate scores are non-negative integers (reject floats, strings, negatives)
+    try:
+        score_a = int(data['team_a_score'])
+        score_b = int(data['team_b_score'])
+        if score_a != data['team_a_score'] or score_b != data['team_b_score']:
+            raise ValueError('must be exact integers')
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Scores must be non-negative integers'}), 400
+    if score_a < 0 or score_b < 0:
+        return jsonify({'error': 'Scores cannot be negative'}), 400
+    if score_a > 50 or score_b > 50:
+        return jsonify({'error': 'Score value is unreasonably large'}), 400
+
     if not current_user.can_predict():
         return jsonify({'error': 'Payment required to make predictions'}), 403
 
@@ -50,16 +63,16 @@ def create_prediction():
     action = 'E' if prediction else 'N'
 
     if prediction:
-        # Update existing prediction
-        prediction.team_a_score = data['team_a_score']
-        prediction.team_b_score = data['team_b_score']
+        # Update existing prediction (use validated integers, not raw request values)
+        prediction.team_a_score = score_a
+        prediction.team_b_score = score_b
     else:
         # Create new prediction
         prediction = Prediction(
             user_id=current_user.id,
             game_id=data['game_id'],
-            team_a_score=data['team_a_score'],
-            team_b_score=data['team_b_score']
+            team_a_score=score_a,
+            team_b_score=score_b
         )
         db.session.add(prediction)
 
@@ -67,8 +80,8 @@ def create_prediction():
     history = PredictionHistory(
         user_id=current_user.id,
         game_id=data['game_id'],
-        team_a_score=data['team_a_score'],
-        team_b_score=data['team_b_score'],
+        team_a_score=score_a,
+        team_b_score=score_b,
         action=action
     )
     db.session.add(history)
