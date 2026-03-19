@@ -68,13 +68,13 @@ function PaymentsTab() {
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState('')
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const res = await adminAPI.getUsers()
       setUsers(res.data)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [])
 
@@ -91,7 +91,8 @@ function PaymentsTab() {
         await adminAPI.recordPayment(u.id)
         setMsg(`Payment recorded for ${u.username}`)
       }
-      await load()
+      // Silent refresh — no loading spinner, table stays visible
+      await load(true)
     } catch {
       setMsg('Error updating payment status')
     } finally {
