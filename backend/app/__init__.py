@@ -4,6 +4,8 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_cors import CORS
+from sqlalchemy import event
+import sqlite3
 from config import config
 
 # Initialize extensions
@@ -47,6 +49,10 @@ def create_app(config_name='default'):
 
     # Ensure all tables exist (including newly added models)
     with app.app_context():
+        @event.listens_for(db.engine, "connect")
+        def set_sqlite_wal(dbapi_conn, connection_record):
+            if isinstance(dbapi_conn, sqlite3.Connection):
+                dbapi_conn.execute("PRAGMA journal_mode=WAL")
         db.create_all()
 
     # User loader

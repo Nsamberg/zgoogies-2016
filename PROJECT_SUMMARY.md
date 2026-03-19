@@ -1,6 +1,6 @@
 # ZGoogies — Project Status
 
-**Last Updated**: March 20, 2026
+**Last Updated**: March 21, 2026
 **Repository**: `Nsamberg/zgoogies-2016` — branches: `dev` (active) / `production` (deployment pending)
 
 ---
@@ -40,8 +40,8 @@
 | Login | CAPTCHA, session restore on page load, restores datetime override state |
 | Register | CAPTCHA, shows generated password on success |
 | Forgot Password | Accepts username or email, sends new temp password by email |
-| Predictions | Open Games tab, Closed Games tab, Other Players tab |
-| Rankings | Overall + per-round tabs (dynamic), medal badges, current user highlighted |
+| Predictions | Open Games tab, Closed Games tab (with all-players stats view), Other Players tab |
+| Rankings | Overall + per-round tabs, medal badges, click player → ranking history charts |
 | News | Article cards |
 | Players | Username search, role filter (multi-select), alpha sorted, expandable rows |
 | My Account | Profile tab (edit name/email/timezone/winner) + Change Password tab |
@@ -69,14 +69,14 @@
 
 ## What Remains To Build
 
-### Nice-to-Have (post-launch)
-- [ ] Ranking history charts (Recharts is installed, not yet wired up — data already being saved in `ranking_history` table)
-- [ ] Game prediction statistics (distribution per game, e.g. "40% predicted France win")
-
-### Production
+### Production (only remaining critical work)
 - [ ] Deploy to production server
-- [ ] Set real reCAPTCHA keys, Yahoo app password, SECRET_KEY in .env
+- [ ] Set real reCAPTCHA keys, Gmail app password already configured, SECRET_KEY in .env
 - [ ] Push `dev` → `production` branch and run post-deploy checklist (see below)
+
+### Nice-to-Have (optional, post-launch)
+- [x] Ranking history charts — **done** (Recharts line charts: points + rank over time)
+- [x] Game prediction statistics — **done** (stats panel on closed game predictions view)
 
 ---
 
