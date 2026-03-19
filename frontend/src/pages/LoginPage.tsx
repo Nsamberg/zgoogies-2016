@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import ReCAPTCHA from 'react-google-recaptcha'
-import { authAPI } from '../services/api'
+import { authAPI, adminAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 
 // Development: Google's public test site key (always passes).
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const navigate = useNavigate()
   const setUser = useAuthStore((state) => state.setUser)
+  const setSystemDateOverride = useAuthStore((state) => state.setSystemDateOverride)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +32,10 @@ export default function LoginPage() {
     try {
       const response = await authAPI.login(username, password, captchaToken)
       setUser(response.data.user)
+      // Restore datetime override state (persists in DB across sessions)
+      adminAPI.getDatetimeOverride()
+        .then(r => setSystemDateOverride(r.data.override ?? null))
+        .catch(() => {})
       navigate('/')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed')
