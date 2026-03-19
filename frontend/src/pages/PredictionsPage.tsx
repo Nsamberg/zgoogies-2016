@@ -244,7 +244,7 @@ export default function PredictionsPage() {
           className={`tab-btn${tab === 'past' ? ' active' : ''}`}
           onClick={() => handleTabChange('past')}
         >
-          Past Games
+          Closed Games
         </button>
         <button
           className={`tab-btn${tab === 'others' ? ' active' : ''}`}
@@ -331,7 +331,7 @@ export default function PredictionsPage() {
         </div>
       )}
 
-      {/* ── Past Games ── */}
+      {/* ── Closed Games ── */}
       {tab === 'past' && (
         <div className="tab-content">
           {pastLoading && <p className="loading-text">Loading past games...</p>}
