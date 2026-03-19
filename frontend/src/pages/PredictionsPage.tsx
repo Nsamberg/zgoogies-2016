@@ -361,7 +361,7 @@ export default function PredictionsPage() {
                       <span className="result-value">
                         {game.is_scored
                           ? `${game.team_a.score ?? '?'} – ${game.team_b.score ?? '?'}`
-                          : 'Not yet played'}
+                          : 'Not yet'}
                       </span>
                     </div>
                     <div className="result-block">
@@ -462,7 +462,7 @@ export default function PredictionsPage() {
                         <span className="result-value">
                           {item.is_scored
                             ? `${item.team_a.score ?? '?'} – ${item.team_b.score ?? '?'}`
-                            : 'Not yet played'}
+                            : 'Not yet'}
                         </span>
                       </div>
                       <div className="result-block">
