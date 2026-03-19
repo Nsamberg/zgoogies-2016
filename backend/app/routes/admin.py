@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
+import threading
 from app import db
 from app.models.user import User
 from app.models.game import Game
@@ -77,7 +78,7 @@ def record_payment(user_id):
     user.payment_received_by_id = current_user.id
     user.payment_date = db.func.now()
     db.session.commit()
-    send_payment_confirmation_email(user)
+    threading.Thread(target=send_payment_confirmation_email, args=(user,), daemon=True).start()
     return jsonify({'message': 'Payment recorded'}), 200
 
 
