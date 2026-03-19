@@ -132,45 +132,36 @@ function PaymentsTab() {
 
       {msg && <div className="admin-message">{msg}</div>}
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Paid on</th>
-              <th>Received by</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(u => (
-              <tr key={u.id} className={u.has_paid ? 'row-paid' : 'row-unpaid'}>
-                <td><strong>{u.username}</strong></td>
-                <td>{u.first_name} {u.surname}</td>
-                <td><span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span></td>
-                <td>
-                  <span className={`payment-badge ${u.has_paid ? 'paid' : 'unpaid'}`}>
-                    {u.has_paid ? 'Paid' : 'Unpaid'}
-                  </span>
-                </td>
-                <td>{u.payment_date ? formatDate(u.payment_date) : '—'}</td>
-                <td>{u.payment_received_by ?? '—'}</td>
-                <td>
-                  <button
-                    className={`admin-btn-sm ${u.has_paid ? 'btn-danger' : 'btn-success'}`}
-                    onClick={() => togglePayment(u)}
-                    disabled={busy === u.id}
-                  >
-                    {busy === u.id ? '...' : u.has_paid ? 'Remove' : 'Mark Paid'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="payment-list">
+        {filtered.map(u => (
+          <div key={u.id} className={`payment-card ${u.has_paid ? 'payment-card-paid' : 'payment-card-unpaid'}`}>
+            <div className="payment-card-main">
+              <div className="payment-card-identity">
+                <strong className="payment-card-username">{u.username}</strong>
+                <span className="payment-card-name">{u.first_name} {u.surname}</span>
+              </div>
+              <div className="payment-card-badges">
+                <span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span>
+                <span className={`payment-badge ${u.has_paid ? 'paid' : 'unpaid'}`}>
+                  {u.has_paid ? 'Paid' : 'Unpaid'}
+                </span>
+              </div>
+              <button
+                className={`admin-btn-sm ${u.has_paid ? 'btn-danger' : 'btn-success'}`}
+                onClick={() => togglePayment(u)}
+                disabled={busy === u.id}
+              >
+                {busy === u.id ? '...' : u.has_paid ? 'Remove' : 'Mark Paid'}
+              </button>
+            </div>
+            {u.has_paid && (
+              <div className="payment-card-meta">
+                {u.payment_date && <span>Paid: {formatDate(u.payment_date)}</span>}
+                {u.payment_received_by && <span>· Received by: {u.payment_received_by}</span>}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )

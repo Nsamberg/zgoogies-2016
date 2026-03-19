@@ -1457,6 +1457,55 @@ button[type="submit"]:disabled {
 .payment-badge.paid   { background: #d4edda; color: #155724; }
 .payment-badge.unpaid { background: #fff3cd; color: #856404; }
 
+/* Payment card list (replaces table for better mobile UX) */
+.payment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.payment-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #e5e7eb;
+}
+.payment-card-paid   { border-left-color: #28a745; }
+.payment-card-unpaid { border-left-color: #e8a000; }
+
+.payment-card-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.payment-card-identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  flex: 1;
+}
+.payment-card-username { font-size: 0.9rem; color: var(--navy); }
+.payment-card-name     { font-size: 0.78rem; color: #666; }
+
+.payment-card-badges {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.payment-card-meta {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #888;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
 /* Score Entry */
 .admin-games-list {
   display: flex;
