@@ -4,9 +4,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import { authAPI, adminAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 
-// Development: Google's public test site key (always passes).
-// Production: replace with your real site key from https://www.google.com/recaptcha/admin
-const RECAPTCHA_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+const RECAPTCHA_SITE_KEY = '6LcAMVwUAAAAADmWmG4kqXh68Dtc03tmXw_T5lcd'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')

@@ -67,12 +67,47 @@
 
 ---
 
+## Production Deployment Status
+
+> See `DEPLOY.md` for the full step-by-step guide.
+
+### Step-by-step tracker
+
+| Step | Description | Status | Notes |
+|------|-------------|--------|-------|
+| 0a | Buy domain (e.g. zgoogies.online) | [ ] pending | Needed before reCAPTCHA registration |
+| 0b | Create Hetzner CX23 server (Ubuntu 24.04) | [ ] pending | Note the public IP once created |
+| 0c | Point domain DNS A records → server IP | [ ] pending | Both `@` and `www` |
+| 0d | Register reCAPTCHA v2 keys for production domain | [ ] pending | https://www.google.com/recaptcha/admin |
+| 0e | Update `RECAPTCHA_SITE_KEY` in LoginPage.tsx + RegisterPage.tsx | [ ] pending | Currently using Google test key |
+| 0f | Merge `dev` → `production` and push | [ ] pending | Run after 0e |
+| 1 | SSH into server — initial setup (user, packages) | [ ] pending | See DEPLOY.md Part 3 |
+| 2 | Clone production branch, set up Python venv | [ ] pending | See DEPLOY.md Part 4a–4b |
+| 3 | Create `.env` with real SECRET_KEY, Gmail app password, reCAPTCHA secret | [ ] pending | See DEPLOY.md Part 4c |
+| 4 | Init DB (`init_db.py`, `create_admin.py`, `import_tournament_games.py`) | [ ] pending | See DEPLOY.md Part 4d |
+| 5 | Build React frontend (`npm run build`) | [ ] pending | See DEPLOY.md Part 4e |
+| 6 | Configure nginx site | [ ] pending | See DEPLOY.md Part 5 |
+| 7 | Create and start gunicorn systemd service | [ ] pending | See DEPLOY.md Part 6 |
+| 8 | Run certbot for HTTPS | [ ] pending | See DEPLOY.md Part 7 |
+| 9 | Post-deploy verification checklist | [ ] pending | See DEPLOY.md Part 8 |
+
+### Current blockers (need user action)
+- [ ] Buy domain
+- [ ] Create Hetzner CX23 server → get public IP
+- [ ] Point DNS A records to server IP
+- [ ] Register reCAPTCHA v2 keys at https://www.google.com/recaptcha/admin
+
+### Ready to go (no blockers)
+- reCAPTCHA test keys confirmed in both `LoginPage.tsx` and `RegisterPage.tsx` — ready to swap once real keys are available
+- `backend/.env.example` has all required fields for production
+- `DEPLOY.md` at project root has full copy-paste deployment guide
+- `production` branch exists on GitHub, ready to receive merge from `dev`
+
 ## What Remains To Build
 
-### Production (only remaining critical work)
-- [ ] Deploy to production server
-- [ ] Set real reCAPTCHA keys, Gmail app password already configured, SECRET_KEY in .env
-- [ ] Push `dev` → `production` branch and run post-deploy checklist (see below)
+### Nice-to-Have (optional, post-launch)
+- [x] Ranking history charts — **done** (Recharts line charts: points + rank over time)
+- [x] Game prediction statistics — **done** (stats panel on closed game predictions view)
 
 ### Nice-to-Have (optional, post-launch)
 - [x] Ranking history charts — **done** (Recharts line charts: points + rank over time)
