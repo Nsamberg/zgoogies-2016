@@ -19,7 +19,7 @@ Your login credentials:
 Username: {username}
 Password: {password}
 
-IMPORTANT: Please pay the registration fee (5 GBP / 6.5 EUR / 7.5 USD / 9.5 AUD) to one of the following cachiers:
+IMPORTANT: Please pay the registration fee (5 GBP) to one of the following cachiers:
 - Bruno Spada (Nice)
 - Patrick Hebant or Nikolaus Samberger (London)
 
@@ -43,7 +43,7 @@ The ZGoogies Team
     <strong>Password:</strong> {password}</p>
 
     <h3>Payment Information:</h3>
-    <p><strong>IMPORTANT:</strong> Please pay the registration fee (5 GBP / 6.5 EUR / 7.5 USD / 9.5 AUD) to one of the following cachiers:</p>
+    <p><strong>IMPORTANT:</strong> Please pay the registration fee (5 GBP) to one of the following cachiers:</p>
     <ul>
         <li>Bruno Spada (Nice)</li>
         <li>Patrick Hebant or Nikolaus Samberger (London)</li>

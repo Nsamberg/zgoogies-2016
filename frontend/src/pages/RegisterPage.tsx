@@ -313,7 +313,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="registration-fee-notice">
-            <p><strong>Registration Fee:</strong> 5 GBP (6.5 EUR, 7.5 USD, 9.5 AUD)</p>
+            <p><strong>Registration Fee:</strong> 5 GBP</p>
             <p>Payment must be made to an administrator before the first game.</p>
           </div>
 
