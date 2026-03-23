@@ -52,8 +52,14 @@ def register():
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
 
+    # Strip whitespace from text fields
+    username = data['username'].strip()
+    first_name = data['first_name'].strip()
+    surname = data['surname'].strip()
+    email = data['email'].strip()
+
     # Check if username already exists
-    if User.query.filter_by(username=data['username']).first():
+    if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Username already exists'}), 400
 
     # Generate random password
@@ -61,10 +67,10 @@ def register():
 
     # Create new user
     user = User(
-        username=data['username'],
-        first_name=data['first_name'],
-        surname=data['surname'],
-        email=data['email'],
+        username=username,
+        first_name=first_name,
+        surname=surname,
+        email=email,
         timezone=data['timezone'],
         tournament_winner_id=data['tournament_winner_id']
     )
