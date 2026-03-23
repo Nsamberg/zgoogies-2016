@@ -12,6 +12,7 @@ import PlayersPage from './pages/PlayersPage'
 import AccountPage from './pages/AccountPage'
 import AdminPage from './pages/AdminPage'
 import NewsPage from './pages/NewsPage'
+import RulesPage from './pages/RulesPage'
 
 function App() {
   const { setUser, setInitialized, setSystemDateOverride } = useAuthStore()
@@ -45,6 +46,7 @@ function App() {
             <Route path="/predictions" element={<PredictionsPage />} />
             <Route path="/rankings" element={<RankingsPage />} />
             <Route path="/players" element={<PlayersPage />} />
+            <Route path="/rules" element={<RulesPage />} />
             <Route path="/account" element={<AccountPage />} />
             {/* Admin-only routes */}
             <Route element={<AdminRoute />}>

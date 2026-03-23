@@ -54,6 +54,7 @@ export default function Layout() {
             <Link to="/rankings">Rankings</Link>
             <Link to="/news">News</Link>
             <Link to="/players">Players</Link>
+            <Link to="/rules">Rules</Link>
             <Link to="/account">My Account</Link>
             {(user?.is_admin || user?.is_cachier) && <Link to="/admin">Admin</Link>}
           </nav>
@@ -70,6 +71,7 @@ export default function Layout() {
                 <Link to="/rankings" onClick={() => setMenuOpen(false)}>Rankings</Link>
                 <Link to="/news" onClick={() => setMenuOpen(false)}>News</Link>
                 <Link to="/players" onClick={() => setMenuOpen(false)}>Players</Link>
+                <Link to="/rules" onClick={() => setMenuOpen(false)}>Rules</Link>
                 <Link to="/account" onClick={() => setMenuOpen(false)}>My Account</Link>
                 {(user?.is_admin || user?.is_cachier) &&
                   <Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link>}
