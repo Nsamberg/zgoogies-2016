@@ -5,6 +5,7 @@ import { authAPI, teamsAPI } from '../services/api'
 import { Team } from '../types'
 
 const RECAPTCHA_SITE_KEY = '6LcAMVwUAAAAADmWmG4kqXh68Dtc03tmXw_T5lcd'
+const IS_PROD = import.meta.env.PROD
 
 const TIMEZONES = [
   { value: 'UTC', label: 'UTC' },
@@ -167,8 +168,8 @@ export default function RegisterPage() {
       return
     }
 
-    const captchaToken = recaptchaRef.current?.getValue() || ''
-    if (!captchaToken) {
+    const captchaToken = IS_PROD ? (recaptchaRef.current?.getValue() || '') : 'dev'
+    if (IS_PROD && !captchaToken) {
       setError('Please complete the CAPTCHA.')
       return
     }
@@ -187,7 +188,7 @@ export default function RegisterPage() {
       setSuccess(true)
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.')
-      recaptchaRef.current?.reset()
+      if (IS_PROD) recaptchaRef.current?.reset()
       setLoading(false)
     }
   }
@@ -316,9 +317,11 @@ export default function RegisterPage() {
             <p>Payment must be made to an administrator before the first game.</p>
           </div>
 
-          <div className="captcha-wrapper">
-            <ReCAPTCHA ref={recaptchaRef} sitekey={RECAPTCHA_SITE_KEY} />
-          </div>
+          {IS_PROD && (
+            <div className="captcha-wrapper">
+              <ReCAPTCHA ref={recaptchaRef} sitekey={RECAPTCHA_SITE_KEY} />
+            </div>
+          )}
 
           <button type="submit" disabled={loading}>
             {loading ? 'Registering...' : 'Register'}

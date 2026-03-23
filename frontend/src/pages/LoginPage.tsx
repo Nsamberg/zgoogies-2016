@@ -5,6 +5,7 @@ import { authAPI, adminAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 
 const RECAPTCHA_SITE_KEY = '6LcAMVwUAAAAADmWmG4kqXh68Dtc03tmXw_T5lcd'
+const IS_PROD = import.meta.env.PROD
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -20,8 +21,8 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    const captchaToken = recaptchaRef.current?.getValue() || ''
-    if (!captchaToken) {
+    const captchaToken = IS_PROD ? (recaptchaRef.current?.getValue() || '') : 'dev'
+    if (IS_PROD && !captchaToken) {
       setError('Please complete the CAPTCHA.')
       return
     }
@@ -37,7 +38,7 @@ export default function LoginPage() {
       navigate('/')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed')
-      recaptchaRef.current?.reset()
+      if (IS_PROD) recaptchaRef.current?.reset()
     } finally {
       setLoading(false)
     }
@@ -67,9 +68,11 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div className="captcha-wrapper">
-            <ReCAPTCHA ref={recaptchaRef} sitekey={RECAPTCHA_SITE_KEY} />
-          </div>
+          {IS_PROD && (
+            <div className="captcha-wrapper">
+              <ReCAPTCHA ref={recaptchaRef} sitekey={RECAPTCHA_SITE_KEY} />
+            </div>
+          )}
           <button type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>

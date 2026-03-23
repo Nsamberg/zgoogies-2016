@@ -64,6 +64,103 @@ body {
   opacity: 0.8;
 }
 
+/* Hamburger button — hidden on desktop, shown on mobile via media query */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.hamburger-btn span {
+  display: block;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.hamburger-btn.open span:nth-child(1) { transform: translateY(8.5px) rotate(45deg); }
+.hamburger-btn.open span:nth-child(2) { opacity: 0; }
+.hamburger-btn.open span:nth-child(3) { transform: translateY(-8.5px) rotate(-45deg); }
+
+/* Mobile nav overlay — hidden by default, shown on mobile via media query */
+.mobile-nav-overlay {
+  display: none;
+}
+
+/* Mobile nav drawer */
+.mobile-nav {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(280px, 85vw);
+  height: 100%;
+  background: #1B1464;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.mobile-nav-username {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.mobile-nav-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-nav a {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1.25rem;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 44px;
+  transition: background 0.15s;
+}
+.mobile-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+.mobile-nav-logout {
+  margin: 1rem 1.25rem;
+  padding: 0.7rem 1rem;
+  background: rgba(200, 16, 46, 0.8);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  text-align: left;
+}
+
 .user-info {
   display: flex;
   align-items: center;
@@ -113,8 +210,7 @@ body {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+  width: min(400px, 92vw);
 }
 
 .login-container h1 {
@@ -246,8 +342,7 @@ button[type="submit"]:hover {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
+  width: min(600px, 92vw);
 }
 
 .register-container h1 {
@@ -1983,54 +2078,140 @@ button[type="submit"]:disabled {
 
 /* Responsive design */
 @media (max-width: 768px) {
+  /* Header: logo left, hamburger right */
   .header .container {
-    flex-direction: column;
-    gap: 1rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
+  }
+  .logo { font-size: 1.5rem; }
+  .hamburger-btn { display: flex; }
+  .nav { display: none; }
+  .user-info { display: none; }
+
+  /* Mobile nav overlay */
+  .mobile-nav-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
   }
 
-  .nav {
-    flex-wrap: wrap;
-    justify-content: center;
+  /* Layout spacing */
+  .container { padding: 0 0.75rem; }
+  .main-content { padding: 1rem 0; }
+  .predictions-page,
+  .news-page,
+  .rankings-page,
+  .players-page,
+  .account-page,
+  .admin-page { padding: 1rem 0.5rem; }
+
+  .page-title { font-size: 1.25rem; }
+
+  /* Forms */
+  .form-row { grid-template-columns: 1fr; }
+  .register-container { padding: 1.5rem; }
+  .login-page,
+  .register-page { padding: 1rem; padding-top: 2rem; }
+
+  /* Touch targets — minimum 44px height */
+  .tab-btn,
+  .admin-tab-btn,
+  .role-filter-btn,
+  .back-btn,
+  .save-btn,
+  .account-save-btn,
+  .admin-btn,
+  .admin-btn-sm,
+  .other-player-btn,
+  .player-row,
+  button[type="submit"] { min-height: 44px; }
+
+  /* iOS input zoom prevention (font-size >= 16px prevents auto-zoom) */
+  .form-group input,
+  .form-group select,
+  .score-input,
+  .admin-input,
+  .admin-textarea,
+  .admin-search,
+  .player-search,
+  .gp-search { font-size: 16px; }
+
+  /* Tabs */
+  .tab-btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
+
+  /* Game cards */
+  .game-card { padding: 0.75rem 1rem; }
+  .game-card-header { font-size: 0.75rem; }
+
+  /* Rankings table */
+  .rankings-table { font-size: 0.85rem; }
+  .rankings-table th,
+  .rankings-table td { padding: 0.5rem; }
+  .rankings-table .player-username {
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
   }
 
-  .user-info {
-    flex-direction: column;
-  }
+  /* Account readonly grid — single column */
+  .account-readonly-grid { grid-template-columns: 1fr; }
 
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .register-container {
-    padding: 1.5rem;
-  }
-
+  /* Admin */
   .admin-section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
+  .admin-filters { flex-wrap: wrap; }
+  .admin-game-teams { flex-direction: column; gap: 0.5rem; }
+  .admin-score-inputs,
+  .admin-score-display { justify-content: center; }
+  .admin-winner-controls { flex-direction: column; }
+  .admin-table th:nth-child(3),
+  .admin-table td:nth-child(3) { display: none; }
 
-  .admin-filters {
-    flex-wrap: wrap;
+  /* Admin table sticky first column */
+  .admin-table th:first-child,
+  .admin-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: inherit;
+    z-index: 1;
   }
+  .admin-table thead th:first-child { background: #1B1464; }
+}
 
-  .admin-game-teams {
+@media (max-width: 480px) {
+  /* Hide trend column in rankings on small phones */
+  .rankings-table th.col-trend,
+  .rankings-table td.col-trend { display: none; }
+
+  /* Stack prediction score inputs vertically */
+  .prediction-input-row {
     flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .save-btn { width: 100%; text-align: center; }
+
+  /* Stats row: 3-column grid */
+  .gp-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
   }
+  .gp-stat { min-width: unset; }
 
-  .admin-score-inputs,
-  .admin-score-display {
-    justify-content: center;
-  }
-
-  .admin-winner-controls {
+  /* Payment card stack */
+  .payment-card-main {
     flex-direction: column;
-  }
-
-  .admin-table th:nth-child(3),
-  .admin-table td:nth-child(3) {
-    display: none;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../services/api'
@@ -13,6 +14,14 @@ function formatOverride(iso: string) {
 export default function Layout() {
   const { user, logout, systemDateOverride } = useAuthStore()
   const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [menuOpen])
 
   const handleLogout = async () => {
     try {
@@ -29,6 +38,17 @@ export default function Layout() {
       <header className="header">
         <div className="container">
           <h1 className="logo">⚽ ZGoogies</h1>
+
+          {/* Hamburger button — visible on mobile only via CSS */}
+          <button
+            className={`hamburger-btn${menuOpen ? ' open' : ''}`}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle navigation"
+          >
+            <span /><span /><span />
+          </button>
+
+          {/* Desktop nav — hidden on mobile via CSS */}
           <nav className="nav">
             <Link to="/predictions">Predictions</Link>
             <Link to="/rankings">Rankings</Link>
@@ -37,6 +57,29 @@ export default function Layout() {
             <Link to="/account">My Account</Link>
             {(user?.is_admin || user?.is_cachier) && <Link to="/admin">Admin</Link>}
           </nav>
+
+          {/* Mobile nav overlay */}
+          {menuOpen && (
+            <div className="mobile-nav-overlay" onClick={() => setMenuOpen(false)}>
+              <nav className="mobile-nav" onClick={e => e.stopPropagation()}>
+                <div className="mobile-nav-header">
+                  <span className="mobile-nav-username">Welcome, {user?.first_name}!</span>
+                  <button className="mobile-nav-close" onClick={() => setMenuOpen(false)}>✕</button>
+                </div>
+                <Link to="/predictions" onClick={() => setMenuOpen(false)}>Predictions</Link>
+                <Link to="/rankings" onClick={() => setMenuOpen(false)}>Rankings</Link>
+                <Link to="/news" onClick={() => setMenuOpen(false)}>News</Link>
+                <Link to="/players" onClick={() => setMenuOpen(false)}>Players</Link>
+                <Link to="/account" onClick={() => setMenuOpen(false)}>My Account</Link>
+                {(user?.is_admin || user?.is_cachier) &&
+                  <Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link>}
+                <button className="mobile-nav-logout" onClick={() => { setMenuOpen(false); handleLogout() }}>
+                  Logout
+                </button>
+              </nav>
+            </div>
+          )}
+
           <div className="user-info">
             <div>
               <span>Welcome, {user?.first_name}!</span>
