@@ -123,7 +123,8 @@ Hello {first_name} {surname},
 
 Your payment has been received and confirmed!
 
-You can now make predictions for all tournament games.
+IMPORTANT: Please log out and log back in for the change to take effect.
+Once you have logged back in, you will be able to submit predictions for all tournament games.
 
 Good luck!
 
@@ -137,7 +138,8 @@ The ZGoogies Team
     <h2>Payment Confirmed!</h2>
     <p>Hello {first_name} {surname},</p>
     <p>Your payment has been received and confirmed!</p>
-    <p>You can now make predictions for all tournament games.</p>
+    <p><strong>IMPORTANT:</strong> Please <strong>log out and log back in</strong> for the change to take effect.
+    Once you have logged back in, you will be able to submit predictions for all tournament games.</p>
     <p>Good luck!</p>
     <p>Best regards,<br>The ZGoogies Team</p>
 </body>
