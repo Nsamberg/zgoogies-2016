@@ -3,20 +3,20 @@ from flask_mail import Message
 from app import mail
 
 
-def send_registration_email(user, password):
+def send_registration_email(email, first_name, surname, username, password):
     """Send registration confirmation email with login credentials"""
     msg = Message(
         'Welcome to ZGoogies!',
-        recipients=[user.email]
+        recipients=[email]
     )
 
     msg.body = f"""
-Hello {user.first_name} {user.surname},
+Hello {first_name} {surname},
 
 Welcome to ZGoogies! Your account has been successfully created.
 
 Your login credentials:
-Username: {user.username}
+Username: {username}
 Password: {password}
 
 IMPORTANT: Please pay the registration fee (5 GBP / 6.5 EUR / 7.5 USD / 9.5 AUD) to one of the following cachiers:
@@ -35,11 +35,11 @@ The ZGoogies Team
 <html>
 <body>
     <h2>Welcome to ZGoogies!</h2>
-    <p>Hello {user.first_name} {user.surname},</p>
+    <p>Hello {first_name} {surname},</p>
     <p>Your account has been successfully created.</p>
 
     <h3>Your login credentials:</h3>
-    <p><strong>Username:</strong> {user.username}<br>
+    <p><strong>Username:</strong> {username}<br>
     <strong>Password:</strong> {password}</p>
 
     <h3>Payment Information:</h3>
@@ -60,23 +60,23 @@ The ZGoogies Team
     try:
         mail.send(msg)
     except Exception as e:
-        current_app.logger.error(f"Failed to send registration email to {user.email}: {str(e)}")
+        current_app.logger.error(f"Failed to send registration email to {email}: {str(e)}")
 
 
-def send_password_reset_email(user, new_password):
+def send_password_reset_email(email, first_name, surname, username, new_password):
     """Send password reset email"""
     msg = Message(
         'ZGoogies - Password Reset',
-        recipients=[user.email]
+        recipients=[email]
     )
 
     msg.body = f"""
-Hello {user.first_name} {user.surname},
+Hello {first_name} {surname},
 
 Your password has been reset.
 
 Your new login credentials:
-Username: {user.username}
+Username: {username}
 Password: {new_password}
 
 Please change your password after logging in through your account settings.
@@ -89,11 +89,11 @@ The ZGoogies Team
 <html>
 <body>
     <h2>Password Reset</h2>
-    <p>Hello {user.first_name} {user.surname},</p>
+    <p>Hello {first_name} {surname},</p>
     <p>Your password has been reset.</p>
 
     <h3>Your new login credentials:</h3>
-    <p><strong>Username:</strong> {user.username}<br>
+    <p><strong>Username:</strong> {username}<br>
     <strong>Password:</strong> {new_password}</p>
 
     <p>Please change your password after logging in through your account settings.</p>
@@ -106,18 +106,18 @@ The ZGoogies Team
     try:
         mail.send(msg)
     except Exception as e:
-        current_app.logger.error(f"Failed to send password reset email to {user.email}: {str(e)}")
+        current_app.logger.error(f"Failed to send password reset email to {email}: {str(e)}")
 
 
-def send_payment_confirmation_email(user):
+def send_payment_confirmation_email(email, first_name, surname):
     """Send payment confirmation email"""
     msg = Message(
         'ZGoogies - Payment Confirmed',
-        recipients=[user.email]
+        recipients=[email]
     )
 
     msg.body = f"""
-Hello {user.first_name} {user.surname},
+Hello {first_name} {surname},
 
 Your payment has been received and confirmed!
 
@@ -133,7 +133,7 @@ The ZGoogies Team
 <html>
 <body>
     <h2>Payment Confirmed!</h2>
-    <p>Hello {user.first_name} {user.surname},</p>
+    <p>Hello {first_name} {surname},</p>
     <p>Your payment has been received and confirmed!</p>
     <p>You can now make predictions for all tournament games.</p>
     <p>Good luck!</p>
@@ -145,4 +145,4 @@ The ZGoogies Team
     try:
         mail.send(msg)
     except Exception as e:
-        current_app.logger.error(f"Failed to send payment confirmation email to {user.email}: {str(e)}")
+        current_app.logger.error(f"Failed to send payment confirmation email to {email}: {str(e)}")

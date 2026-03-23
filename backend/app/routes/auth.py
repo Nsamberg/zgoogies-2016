@@ -74,8 +74,11 @@ def register():
     db.session.commit()
 
     # Send registration email in background thread to avoid blocking the response
-    app = current_app._get_current_object()
-    thread = threading.Thread(target=send_registration_email, args=(user, password), daemon=True)
+    thread = threading.Thread(
+        target=send_registration_email,
+        args=(user.email, user.first_name, user.surname, user.username, password),
+        daemon=True
+    )
     thread.start()
 
     return jsonify({'message': 'Registration successful', 'user_id': user.id, 'password': password}), 201
@@ -157,9 +160,10 @@ def reset_password():
 
     # Send password reset email in background to avoid blocking
     import threading
-    app = current_app._get_current_object()
     thread = threading.Thread(
-        target=send_password_reset_email, args=(user, new_password), daemon=True
+        target=send_password_reset_email,
+        args=(user.email, user.first_name, user.surname, user.username, new_password),
+        daemon=True
     )
     thread.start()
 

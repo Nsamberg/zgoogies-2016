@@ -78,7 +78,7 @@ def record_payment(user_id):
     user.payment_received_by_id = current_user.id
     user.payment_date = db.func.now()
     db.session.commit()
-    threading.Thread(target=send_payment_confirmation_email, args=(user,), daemon=True).start()
+    threading.Thread(target=send_payment_confirmation_email, args=(user.email, user.first_name, user.surname), daemon=True).start()
     return jsonify({'message': 'Payment recorded'}), 200
 
 
