@@ -37,7 +37,14 @@ export default function Layout() {
     <div className="app-layout">
       <header className="header">
         <div className="container">
-          <h1 className="logo">⚽ ZGoogies</h1>
+          <div className="logo-wrapper">
+            <h1 className="logo">⚽ ZGoogies</h1>
+            {systemDateOverride && (
+              <div className="datetime-override-notice mobile-only">
+                ⏱ Simulated: {formatOverride(systemDateOverride)}
+              </div>
+            )}
+          </div>
 
           {/* Hamburger button — visible on mobile only via CSS */}
           <button

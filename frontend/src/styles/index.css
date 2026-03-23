@@ -1585,6 +1585,15 @@ button[type="submit"]:disabled {
   margin-top: 0.1rem;
 }
 
+.logo-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-only {
+  display: none;
+}
+
 /* ─── Admin Page ─────────────────────────────────────────────────────────── */
 
 .admin-page {
@@ -2173,6 +2182,8 @@ button[type="submit"]:disabled {
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .mobile-only { display: block; }
+
   /* Header: logo left, hamburger right */
   .header .container {
     flex-direction: row;
