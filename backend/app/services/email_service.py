@@ -1,16 +1,16 @@
-from flask import current_app
 from flask_mail import Message
 from app import mail
 
 
-def send_registration_email(email, first_name, surname, username, password):
+def send_registration_email(app, email, first_name, surname, username, password):
     """Send registration confirmation email with login credentials"""
-    msg = Message(
-        'Welcome to ZGoogies!',
-        recipients=[email]
-    )
+    with app.app_context():
+        msg = Message(
+            'Welcome to ZGoogies!',
+            recipients=[email]
+        )
 
-    msg.body = f"""
+        msg.body = f"""
 Hello {first_name} {surname},
 
 Welcome to ZGoogies! Your account has been successfully created.
@@ -31,7 +31,7 @@ Best regards,
 The ZGoogies Team
 """
 
-    msg.html = f"""
+        msg.html = f"""
 <html>
 <body>
     <h2>Welcome to ZGoogies!</h2>
@@ -57,20 +57,21 @@ The ZGoogies Team
 </html>
 """
 
-    try:
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Failed to send registration email to {email}: {str(e)}")
+        try:
+            mail.send(msg)
+        except Exception as e:
+            app.logger.error(f"Failed to send registration email to {email}: {str(e)}")
 
 
-def send_password_reset_email(email, first_name, surname, username, new_password):
+def send_password_reset_email(app, email, first_name, surname, username, new_password):
     """Send password reset email"""
-    msg = Message(
-        'ZGoogies - Password Reset',
-        recipients=[email]
-    )
+    with app.app_context():
+        msg = Message(
+            'ZGoogies - Password Reset',
+            recipients=[email]
+        )
 
-    msg.body = f"""
+        msg.body = f"""
 Hello {first_name} {surname},
 
 Your password has been reset.
@@ -85,7 +86,7 @@ Best regards,
 The ZGoogies Team
 """
 
-    msg.html = f"""
+        msg.html = f"""
 <html>
 <body>
     <h2>Password Reset</h2>
@@ -103,20 +104,21 @@ The ZGoogies Team
 </html>
 """
 
-    try:
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Failed to send password reset email to {email}: {str(e)}")
+        try:
+            mail.send(msg)
+        except Exception as e:
+            app.logger.error(f"Failed to send password reset email to {email}: {str(e)}")
 
 
-def send_payment_confirmation_email(email, first_name, surname):
+def send_payment_confirmation_email(app, email, first_name, surname):
     """Send payment confirmation email"""
-    msg = Message(
-        'ZGoogies - Payment Confirmed',
-        recipients=[email]
-    )
+    with app.app_context():
+        msg = Message(
+            'ZGoogies - Payment Confirmed',
+            recipients=[email]
+        )
 
-    msg.body = f"""
+        msg.body = f"""
 Hello {first_name} {surname},
 
 Your payment has been received and confirmed!
@@ -129,7 +131,7 @@ Best regards,
 The ZGoogies Team
 """
 
-    msg.html = f"""
+        msg.html = f"""
 <html>
 <body>
     <h2>Payment Confirmed!</h2>
@@ -142,7 +144,7 @@ The ZGoogies Team
 </html>
 """
 
-    try:
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Failed to send payment confirmation email to {email}: {str(e)}")
+        try:
+            mail.send(msg)
+        except Exception as e:
+            app.logger.error(f"Failed to send payment confirmation email to {email}: {str(e)}")
