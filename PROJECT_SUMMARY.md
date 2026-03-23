@@ -75,12 +75,12 @@
 
 | Step | Description | Status | Notes |
 |------|-------------|--------|-------|
-| 0a | Buy domain (e.g. zgoogies.online) | [ ] pending | Needed before reCAPTCHA registration |
-| 0b | Create Hetzner CX23 server (Ubuntu 24.04) | [ ] pending | Note the public IP once created |
-| 0c | Point domain DNS A records → server IP | [ ] pending | Both `@` and `www` |
-| 0d | Register reCAPTCHA v2 keys for production domain | [ ] pending | https://www.google.com/recaptcha/admin |
-| 0e | Update `RECAPTCHA_SITE_KEY` in LoginPage.tsx + RegisterPage.tsx | [ ] pending | Currently using Google test key |
-| 0f | Merge `dev` → `production` and push | [ ] pending | Run after 0e |
+| 0a | Buy domain | [x] done | zgoogies.online |
+| 0b | Create Hetzner CX23 server (Ubuntu 24.04) | [x] done | IP: 204.168.166.141 |
+| 0c | Point domain DNS A records → server IP | [x] done | `@` and `www` → 204.168.166.141 |
+| 0d | Register reCAPTCHA v2 keys for production domain | [x] done | Site key + secret key obtained |
+| 0e | Update `RECAPTCHA_SITE_KEY` in LoginPage.tsx + RegisterPage.tsx | [x] done | Real key set, TS + 15 tests pass |
+| 0f | Merge `dev` → `production` and push | [x] done | Both branches up to date on GitHub |
 | 1 | SSH into server — initial setup (user, packages) | [ ] pending | See DEPLOY.md Part 3 |
 | 2 | Clone production branch, set up Python venv | [ ] pending | See DEPLOY.md Part 4a–4b |
 | 3 | Create `.env` with real SECRET_KEY, Gmail app password, reCAPTCHA secret | [ ] pending | See DEPLOY.md Part 4c |
@@ -92,16 +92,13 @@
 | 9 | Post-deploy verification checklist | [ ] pending | See DEPLOY.md Part 8 |
 
 ### Current blockers (need user action)
-- [ ] Buy domain
-- [ ] Create Hetzner CX23 server → get public IP
-- [ ] Point DNS A records to server IP
-- [ ] Register reCAPTCHA v2 keys at https://www.google.com/recaptcha/admin
+- none — ready to start server setup (Part 3 of DEPLOY.md)
 
 ### Ready to go (no blockers)
-- reCAPTCHA test keys confirmed in both `LoginPage.tsx` and `RegisterPage.tsx` — ready to swap once real keys are available
-- `backend/.env.example` has all required fields for production
+- Real reCAPTCHA keys set in `LoginPage.tsx` and `RegisterPage.tsx`
+- `production` branch fully up to date on GitHub — ready to clone on server
 - `DEPLOY.md` at project root has full copy-paste deployment guide
-- `production` branch exists on GitHub, ready to receive merge from `dev`
+- Secret key for `.env` — generate with: `python -c "import secrets; print(secrets.token_hex(32))"`
 
 ## What Remains To Build
 

@@ -2,83 +2,26 @@
 
 ## Overview
 
-- **Server**: Hetzner CX22 (Ubuntu 24.04 LTS, 2 vCPU, 2 GB RAM, ~€3.85/month)
+- **Server**: Hetzner CX23 (Ubuntu 24.04 LTS, 2 vCPU, 2 GB RAM) — IP: `204.168.166.141`
 - **Architecture**: nginx (static React + reverse proxy) → gunicorn (Flask) → SQLite
-- **Domain**: your own domain (e.g. www.zgoogies.online) pointed to the server IP
+- **Domain**: `zgoogies.online` / `www.zgoogies.online`
 
 ---
 
-## Part 0 — Before You Start (do this on your local machine)
+## Parts 0–2 — COMPLETED
 
-### 0a. Update reCAPTCHA site key in the frontend
-
-The frontend has a test/development reCAPTCHA key hardcoded in two files.
-You must replace it with your real production key before building.
-
-1. Go to https://www.google.com/recaptcha/admin
-2. Register a new site → reCAPTCHA v2 "I'm not a robot" → add your production domain
-3. Copy the **Site Key** and **Secret Key**
-
-Replace the placeholder in both files:
-
-**`frontend/src/pages/LoginPage.tsx`** and **`frontend/src/pages/RegisterPage.tsx`**:
-```typescript
-// Replace this line in both files:
-const RECAPTCHA_SITE_KEY = '<your-real-site-key-here>'
-```
-
-### 0b. Generate a SECRET_KEY
-
-Run this on your local machine and save the output — you'll need it for the `.env`:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-### 0c. Commit and push to production branch
-
-```bash
-git add -A
-git commit -m "Set production reCAPTCHA site key"
-git checkout production
-git merge dev
-git push origin production
-```
-
----
-
-## Part 1 — Create the Hetzner Server
-
-1. Sign up at https://www.hetzner.com/cloud
-2. Create a new project (e.g. "zgoogies")
-3. Add a server:
-   - **Location**: choose closest to your users
-   - **Image**: Ubuntu 24.04
-   - **Type**: CX22 (2 vCPU, 2 GB RAM)
-   - **SSH key**: add your public key (recommended) OR use password
-   - **Firewall**: create a firewall with these rules:
-     - Inbound TCP 22 (SSH)
-     - Inbound TCP 80 (HTTP)
-     - Inbound TCP 443 (HTTPS)
-4. Note the server's **public IP address** (e.g. 1.2.3.4)
-
----
-
-## Part 2 — Point Your Domain to the Server
-
-At your domain registrar (where you bought the domain):
-
-1. Create an **A record**: `@` → your server IP
-2. Create an **A record**: `www` → your server IP
-
-DNS propagation takes up to 24 hours but usually under 30 minutes.
+- [x] Real reCAPTCHA site key set in `LoginPage.tsx` + `RegisterPage.tsx`
+- [x] `dev` merged → `production` pushed to GitHub
+- [x] Hetzner CX23 created — IP: `204.168.166.141`
+- [x] DNS A records (`@` and `www`) → `204.168.166.141` for `zgoogies.online`
 
 ---
 
 ## Part 3 — Initial Server Setup
 
-SSH into the server (replace `1.2.3.4` with your actual IP):
+SSH into the server:
 ```bash
-ssh root@1.2.3.4
+ssh root@204.168.166.141
 ```
 
 ### 3a. Update system and create a non-root user
@@ -125,7 +68,7 @@ su - deploy
 ```bash
 cd /home/deploy
 git clone -b production https://github.com/Nsamberg/zgoogies-2016.git zgoogies
-cd zgoogies/2016app
+cd zgoogies
 ```
 
 ### 4b. Set up the Python backend
@@ -140,7 +83,7 @@ deactivate
 
 ### 4c. Create the production .env file
 ```bash
-cd /home/deploy/zgoogies/2016app/backend
+cd /home/deploy/zgoogies/backend
 cp .env.example .env
 nano .env
 ```
@@ -167,7 +110,7 @@ Save and exit: `Ctrl+O`, `Enter`, `Ctrl+X`
 
 ### 4d. Initialise the database
 ```bash
-cd /home/deploy/zgoogies/2016app/backend
+cd /home/deploy/zgoogies/backend
 source venv/bin/activate
 python init_db.py
 python create_admin.py
@@ -181,7 +124,7 @@ Expected output from `import_tournament_games.py`: 104 games imported
 
 ### 4e. Build the React frontend
 ```bash
-cd /home/deploy/zgoogies/2016app/frontend
+cd /home/deploy/zgoogies/frontend
 npm install
 npm run build
 ```
@@ -202,13 +145,13 @@ exit   # back to root, or prefix commands below with sudo
 nano /etc/nginx/sites-available/zgoogies
 ```
 
-Paste the following (replace `zgoogies.online` with your actual domain):
+Paste the following:
 ```nginx
 server {
     listen 80;
     server_name zgoogies.online www.zgoogies.online;
 
-    root /home/deploy/zgoogies/2016app/frontend/dist;
+    root /home/deploy/zgoogies/frontend/dist;
     index index.html;
 
     # Serve React SPA — all unknown paths return index.html
@@ -258,9 +201,9 @@ After=network.target
 [Service]
 User=deploy
 Group=deploy
-WorkingDirectory=/home/deploy/zgoogies/2016app/backend
-Environment="PATH=/home/deploy/zgoogies/2016app/backend/venv/bin"
-ExecStart=/home/deploy/zgoogies/2016app/backend/venv/bin/gunicorn \
+WorkingDirectory=/home/deploy/zgoogies/backend
+Environment="PATH=/home/deploy/zgoogies/backend/venv/bin"
+ExecStart=/home/deploy/zgoogies/backend/venv/bin/gunicorn \
     --workers 2 \
     --bind 127.0.0.1:5000 \
     --timeout 60 \
@@ -340,8 +283,8 @@ git merge dev
 git push origin production
 
 # On the server (as deploy user):
-ssh deploy@your-server-ip
-cd /home/deploy/zgoogies/2016app
+ssh deploy@204.168.166.141
+cd /home/deploy/zgoogies
 git pull origin production
 
 # If backend changed:
@@ -367,11 +310,11 @@ sudo systemctl reload nginx
 | Item | Value |
 |------|-------|
 | Server user | `deploy` |
-| App directory | `/home/deploy/zgoogies/2016app` |
-| Frontend build | `/home/deploy/zgoogies/2016app/frontend/dist` |
-| Backend venv | `/home/deploy/zgoogies/2016app/backend/venv` |
-| .env file | `/home/deploy/zgoogies/2016app/backend/.env` |
-| SQLite database | `/home/deploy/zgoogies/2016app/backend/zgoogies.db` |
+| App directory | `/home/deploy/zgoogies` |
+| Frontend build | `/home/deploy/zgoogies/frontend/dist` |
+| Backend venv | `/home/deploy/zgoogies/backend/venv` |
+| .env file | `/home/deploy/zgoogies/backend/.env` |
+| SQLite database | `/home/deploy/zgoogies/backend/zgoogies.db` |
 | nginx config | `/etc/nginx/sites-available/zgoogies` |
 | systemd service | `/etc/systemd/system/zgoogies.service` |
 | App logs | `/var/log/zgoogies/` |
@@ -400,5 +343,5 @@ sudo systemctl reload nginx
 sudo certbot certificates
 
 # Manual database backup
-cp /home/deploy/zgoogies/2016app/backend/zgoogies.db ~/zgoogies_backup_$(date +%Y%m%d).db
+cp /home/deploy/zgoogies/backend/zgoogies.db ~/zgoogies_backup_$(date +%Y%m%d).db
 ```
