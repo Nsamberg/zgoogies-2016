@@ -97,7 +97,7 @@ def login():
     if not verify_recaptcha(data.get('captcha_token')):
         return jsonify({'error': 'CAPTCHA verification failed. Please try again.'}), 400
 
-    user = User.query.filter_by(username=data['username']).first()
+    user = User.query.filter(User.username.ilike(data['username'])).first()
 
     if not user or not user.check_password(data['password']):
         return jsonify({'error': 'Invalid credentials'}), 401
