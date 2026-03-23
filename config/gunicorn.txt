@@ -1,0 +1,14 @@
+[Unit]
+Description=ZGoogies Flask App
+After=network.target
+
+[Service]
+User=deploy
+WorkingDirectory=/home/deploy/zgoogies/backend
+Environment="PATH=/home/deploy/zgoogies/backend/venv/bin"
+EnvironmentFile=/home/deploy/zgoogies/backend/.env
+ExecStart=/home/deploy/zgoogies/backend/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 run:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
