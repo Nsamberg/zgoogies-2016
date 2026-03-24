@@ -1,7 +1,7 @@
 # ZGoogies — Project Status
 
-**Last Updated**: March 21, 2026
-**Repository**: `Nsamberg/zgoogies-2016` — branches: `dev` (active) / `production` (deployment pending)
+**Last Updated**: March 24, 2026
+**Repository**: `Nsamberg/zgoogies-2016` — branches: `dev` (active) / `production` (live)
 
 ---
 
@@ -9,35 +9,36 @@
 
 | Component | Status |
 |-----------|--------|
-| Backend (Flask) | Running on http://localhost:5000 |
-| Frontend (React/Vite) | Running on http://localhost:5173 |
+| Backend (Flask) | Live at https://zgoogies.online/api |
+| Frontend (React/Vite) | Live at https://zgoogies.online |
 | Database | SQLite — 104 games, 112 teams, 21 locations, 3 rounds |
-| Git | All changes committed and pushed to `dev` |
+| Git | All changes committed and pushed to `dev` + `production` |
 
-**Start the app**: `python start.py` (opens two console windows: Flask + Vite)
-**Login**: `admin` / `admin123`
-**DB browser**: http://localhost:5000/db-admin (DEBUG mode only)
+**Production**: https://zgoogies.online
+**Server**: Hetzner CX23 — IP 204.168.166.141
+**Admin login**: `admin` / `admin123`
+**Local dev**: `python start.py` (opens Flask on :5000 + Vite on :5173)
 
 ---
 
 ## What Is Built
 
 ### Backend — Python Flask
-- Authentication: login, logout, register, forgot password, change password, session restore
+- Authentication: login (case-insensitive username), logout, register (strips whitespace), forgot password, change password, session restore
 - Games: upcoming (open for predictions), closed, with round/stage/group metadata
 - Predictions: submit, edit, fetch per user, fetch for other players (closed games only) — hardened against API injection (score validation, user_id locked to session)
 - Rankings: overall + per-round, with game count per round, medal positions
 - Players: list with roles, sorted alphabetically (case-insensitive), search by username
 - News: article list
 - Admin (full): payments, score entry + rollback, tournament winner + rollback, user management, news management, datetime override, full reset
-- Email: Gmail SMTP via Flask-Mail, background thread (non-blocking)
+- Email: Gmail SMTP via Flask-Mail, background thread (non-blocking) — all emails pass app context via `app._get_current_object()`
 - CAPTCHA: reCAPTCHA v2 on login and register — backend verification skipped in DEBUG mode
 - Datetime override: admin can simulate any UTC datetime via AppSetting; all time-sensitive logic routes through `get_current_utc()`
 
 ### Frontend — React 18 + TypeScript + Vite
 | Page | Features |
 |------|----------|
-| Login | CAPTCHA, session restore on page load, restores datetime override state |
+| Login | CAPTCHA, session restore on page load, password reveal toggle |
 | Register | CAPTCHA, shows generated password on success |
 | Forgot Password | Accepts username or email, sends new temp password by email |
 | Predictions | Open Games tab, Closed Games tab (with all-players stats view), Other Players tab |
@@ -46,6 +47,7 @@
 | Players | Username search, role filter (multi-select), alpha sorted, expandable rows |
 | My Account | Profile tab (edit name/email/timezone/winner) + Change Password tab |
 | Admin | 6 tabs: Payments · Score Entry · Tournament · News · Users · Settings |
+| Rules | Scoring system, competition rounds, deadline and fee info |
 
 **Admin tabs detail:**
 | Tab | Access | Features |
@@ -59,10 +61,10 @@
 
 **Full Reset** (Admin > Settings): wipes all predictions, rankings, game scores and tournament winner. Requires typing `RESET ALL` to confirm.
 
-**Datetime Override** (Admin > Settings): persists in database across restarts and logout/login cycles. Banner shown in header to all logged-in users when active.
+**Datetime Override** (Admin > Settings): persists in database across restarts and logout/login cycles. Banner shown in header to all logged-in users when active. Also shown below logo on mobile.
 
 **Theme**: FIFA World Cup 2026 — navy `#1B1464`, red `#C8102E`, gold `#D4AC0D`, Montserrat font
-**Nav order**: Predictions · Rankings · News · Players · My Account · Admin
+**Nav order**: Predictions · Rankings · Rules · News · Players · My Account · Admin
 **Default route**: `/predictions`
 
 ---
@@ -75,40 +77,44 @@
 
 | Step | Description | Status | Notes |
 |------|-------------|--------|-------|
-| 0a | Buy domain | [x] done | zgoogies.online |
+| 0a | Buy domain | [x] done | zgoogies.online (Gandi registrar) |
 | 0b | Create Hetzner CX23 server (Ubuntu 24.04) | [x] done | IP: 204.168.166.141 |
 | 0c | Point domain DNS A records → server IP | [x] done | `@` and `www` → 204.168.166.141 |
-| 0d | Register reCAPTCHA v2 keys for production domain | [x] done | Site key + secret key obtained |
-| 0e | Update `RECAPTCHA_SITE_KEY` in LoginPage.tsx + RegisterPage.tsx | [x] done | Real key set, TS + 15 tests pass |
+| 0d | Register reCAPTCHA v2 keys for production domain | [x] done | Real keys in LoginPage.tsx + RegisterPage.tsx |
+| 0e | Update `RECAPTCHA_SITE_KEY` in LoginPage.tsx + RegisterPage.tsx | [x] done | Key: `6LcAMVwUAAAAADmWmG4kqXh68Dtc03tmXw_T5lcd` |
 | 0f | Merge `dev` → `production` and push | [x] done | Both branches up to date on GitHub |
-| 1 | SSH into server — initial setup (user, packages) | [ ] pending | See DEPLOY.md Part 3 |
-| 2 | Clone production branch, set up Python venv | [ ] pending | See DEPLOY.md Part 4a–4b |
-| 3 | Create `.env` with real SECRET_KEY, Gmail app password, reCAPTCHA secret | [ ] pending | See DEPLOY.md Part 4c |
-| 4 | Init DB (`init_db.py`, `create_admin.py`, `import_tournament_games.py`) | [ ] pending | See DEPLOY.md Part 4d |
-| 5 | Build React frontend (`npm run build`) | [ ] pending | See DEPLOY.md Part 4e |
-| 6 | Configure nginx site | [ ] pending | See DEPLOY.md Part 5 |
-| 7 | Create and start gunicorn systemd service | [ ] pending | See DEPLOY.md Part 6 |
-| 8 | Run certbot for HTTPS | [ ] pending | See DEPLOY.md Part 7 |
-| 9 | Post-deploy verification checklist | [ ] pending | See DEPLOY.md Part 8 |
+| 1 | SSH into server — initial setup (user, packages) | [x] done | deploy user created, nginx + python3 + nodejs installed |
+| 2 | Clone production branch, set up Python venv | [x] done | `/home/deploy/zgoogies/` |
+| 3 | Create `.env` with real SECRET_KEY, Gmail app password, reCAPTCHA secret | [x] done | DATABASE_URL set to absolute path |
+| 4 | Init DB (`init_db.py`, `create_admin.py`, `import_tournament_games.py`) | [x] done | 104 games, admin user created |
+| 5 | Build React frontend (`npm run build`) | [x] done | dist served from `/home/deploy/zgoogies/frontend/dist` |
+| 6 | Configure nginx site | [x] done | `/etc/nginx/sites-available/zgoogies` |
+| 7 | Create and start gunicorn systemd service | [x] done | `systemctl enable zgoogies` — 3 workers on 127.0.0.1:5000 |
+| 8 | Run certbot for HTTPS | [x] done | Certificate valid until 2026-06-21, auto-renew configured |
+| 9 | Post-deploy verification | [x] done | Site live, login working, emails working |
 
-### Current blockers (need user action)
-- none — ready to start server setup (Part 3 of DEPLOY.md)
+### Production server details
+- **Path**: `/home/deploy/zgoogies/` (repo root)
+- **DB**: `/home/deploy/zgoogies/backend/zgoogies.db` (absolute path set in `.env`)
+- **Service**: `systemctl status zgoogies`
+- **Logs**: `journalctl -u zgoogies -n 50`
+- **nginx config**: `/etc/nginx/sites-available/zgoogies`
+- **Cert**: `/etc/letsencrypt/live/zgoogies.online/`
+- **Deploy update**: `git pull origin production && cd frontend && npm run build && systemctl restart zgoogies`
 
-### Ready to go (no blockers)
-- Real reCAPTCHA keys set in `LoginPage.tsx` and `RegisterPage.tsx`
-- `production` branch fully up to date on GitHub — ready to clone on server
-- `DEPLOY.md` at project root has full copy-paste deployment guide
-- Secret key for `.env` — generate with: `python -c "import secrets; print(secrets.token_hex(32))"`
+### Known production gotchas
+- nginx needs `chmod 755 /home/deploy` to serve frontend files
+- SQLite path must be absolute in `.env`: `DATABASE_URL=sqlite:////home/deploy/zgoogies/backend/zgoogies.db`
+- Email background threads require `app._get_current_object()` passed explicitly (app context issue)
+- `instance/zgoogies.db` was created by Flask when using relative SQLite URI — deleted, absolute path used instead
+
+---
 
 ## What Remains To Build
 
 ### Nice-to-Have (optional, post-launch)
-- [x] Ranking history charts — **done** (Recharts line charts: points + rank over time)
-- [x] Game prediction statistics — **done** (stats panel on closed game predictions view)
-
-### Nice-to-Have (optional, post-launch)
-- [x] Ranking history charts — **done** (Recharts line charts: points + rank over time)
-- [x] Game prediction statistics — **done** (stats panel on closed game predictions view)
+- [ ] Ranking history charts — Recharts installed, backend snapshots exist
+- [ ] Game prediction statistics/analytics
 
 ---
 
@@ -154,7 +160,7 @@ cd frontend && npm install
 
 | Feature | Local | Production |
 |---------|-------|------------|
-| Yahoo SMTP (port 587/465) | Blocked by firewall | Works |
+| Gmail SMTP (port 587) | Blocked by firewall | Works |
 | Google reCAPTCHA verification | Blocked by proxy | Works |
 
 Both are bypassed silently in development (`DEBUG=True`). No code changes needed for production — just set real keys in `.env`.
@@ -165,31 +171,16 @@ Both are bypassed silently in development (`DEBUG=True`). No code changes needed
 
 ### 1. Google reCAPTCHA — Real Keys
 
-1. Go to https://www.google.com/recaptcha/admin
-2. Create site → reCAPTCHA v2 "I'm not a robot" → add your production domain
-3. Copy Site Key and Secret Key
-
-**Frontend** — update in both login and register pages:
-```typescript
-const RECAPTCHA_SITE_KEY = '<your-real-site-key>'
-```
-(`frontend/src/pages/LoginPage.tsx` and `frontend/src/pages/RegisterPage.tsx`)
-
-**Backend** — set in `backend/.env`:
-```
-RECAPTCHA_SECRET_KEY=<your-real-secret-key>
-```
-
----
+Site key: `6LcAMVwUAAAAADmWmG4kqXh68Dtc03tmXw_T5lcd`
+Secret key: in `/home/deploy/zgoogies/backend/.env` as `RECAPTCHA_SECRET_KEY`
 
 ### 2. Backend — Environment Variables
 
-Copy `backend/.env.example` to `backend/.env` and fill in:
-
+`/home/deploy/zgoogies/backend/.env`:
 ```env
 FLASK_ENV=production
-SECRET_KEY=<long-random-string-min-32-chars>
-# DATABASE_URL is optional — defaults to sqlite:///zgoogies.db if not set
+SECRET_KEY=0335a526a2b6ce721494dc27921a63d3d9b1e683bc924130fa1e10a0b3e8e5ce
+DATABASE_URL=sqlite:////home/deploy/zgoogies/backend/zgoogies.db
 
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
@@ -198,134 +189,33 @@ MAIL_USERNAME=zgoogiesgame@gmail.com
 MAIL_PASSWORD=<gmail-app-password>
 MAIL_DEFAULT_SENDER=zgoogiesgame@gmail.com
 
-CORS_ORIGINS=https://your-production-domain.com
+CORS_ORIGINS=https://zgoogies.online,https://www.zgoogies.online
 SESSION_COOKIE_SECURE=True
 
-RECAPTCHA_SECRET_KEY=<your-real-recaptcha-secret>
+RECAPTCHA_SECRET_KEY=6LcAMVwUAAAAAHs2Foz01-thRqpuTgX-_o-aPpVp
 ```
 
-Generate a secure SECRET_KEY:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-**Gmail app password** (required — Google blocks regular passwords for SMTP):
-1. Ensure 2-factor authentication is enabled on `zgoogiesgame@gmail.com`
-2. Go to https://myaccount.google.com/apppasswords
-3. Create an app password → name it "ZGoogies"
-4. Copy the 16-character password → paste as `MAIL_PASSWORD`
-
----
-
-### 3. Database — SQLite (production)
-
-SQLite is used in production. No migration needed — it works out of the box.
-
-Run the setup scripts on the server to initialise the database:
-```bash
-cd backend
-python init_db.py
-python create_admin.py
-python import_tournament_games.py
-```
-
-The `DATABASE_URL` in `.env` can be left unset (defaults to `sqlite:///zgoogies.db` inside the backend folder) or set explicitly:
-```
-DATABASE_URL=sqlite:////path/to/zgoogies.db
-```
-
----
-
-### 4. Backend — Production Server (Gunicorn)
+### 3. Deploying an update
 
 ```bash
-pip install gunicorn
-gunicorn -w 4 -b 127.0.0.1:5000 "app:create_app('production')"
+# On the server as root or deploy user:
+cd /home/deploy/zgoogies
+git pull origin production
+cd frontend && npm run build
+systemctl restart zgoogies
 ```
 
-Systemd service (`/etc/systemd/system/zgoogies.service`):
-```ini
-[Unit]
-Description=ZGoogies Flask App
+### 4. Post-Deploy Verification
 
-[Service]
-User=www-data
-WorkingDirectory=/path/to/2016app/backend
-ExecStart=/path/to/venv/bin/gunicorn -w 4 -b 127.0.0.1:5000 "app:create_app('production')"
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
----
-
-### 5. Frontend — Production Build
-
-```bash
-cd frontend
-npm run build        # outputs to frontend/dist/
-```
-
-Serve `frontend/dist/` via nginx or a static host (Vercel, Netlify, etc.).
-
-**nginx config**:
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    root /path/to/frontend/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
----
-
-### 6. SSL / HTTPS
-
-```bash
-sudo certbot --nginx -d your-domain.com
-```
-
-Also set in `backend/.env`:
-```
-SESSION_COOKIE_SECURE=True
-```
-
----
-
-### 7. Deploy from production branch
-
-```bash
-git checkout production
-git merge dev
-git push origin production
-```
-
----
-
-### 8. Post-Deploy Verification
-
-- [ ] Login works with real CAPTCHA
-- [ ] Registration sends password email
-- [ ] Forgot password sends reset email
-- [ ] Predictions page loads games
-- [ ] Rankings tabs shown correctly
-- [ ] Admin page accessible only to admin/cashier users
-- [ ] Admin score entry updates rankings correctly
-- [ ] Datetime override banner shows in header when active
-- [ ] HTTPS active
-- [ ] `SESSION_COOKIE_SECURE=True` in `.env`
-- [ ] No test reCAPTCHA keys in use
-- [ ] Run full reset once to confirm clean slate before going live
+- [x] Login works with real CAPTCHA
+- [x] Registration sends password email
+- [x] Forgot password sends reset email
+- [x] Payment confirmation email sent on marking paid
+- [x] Predictions page loads games
+- [x] Rankings tabs shown correctly
+- [x] Admin page accessible only to admin/cashier users
+- [x] Admin score entry updates rankings correctly
+- [x] Datetime override banner shows in header when active
+- [x] HTTPS active (certbot)
+- [x] `SESSION_COOKIE_SECURE=True` in `.env`
+- [x] Real reCAPTCHA keys in use

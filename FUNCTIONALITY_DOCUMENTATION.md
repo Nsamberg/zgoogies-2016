@@ -12,7 +12,7 @@ ZGoogies is a football tournament prediction game for the FIFA World Cup 2026. P
 
 ## Registration Fee
 
-- 5 GBP (6.5 EUR / 7.5 USD / 9.5 AUD), paid before the first game
+- **5 GBP**, paid before the first game
 - 90% redistributed as prizes; 10% donated to Alexander Divine charity
 - Payment made to a cashier (Bruno Spada in Nice; Patrick Hebant or Nikolaus Samberger in London)
 
@@ -22,13 +22,16 @@ ZGoogies is a football tournament prediction game for the FIFA World Cup 2026. P
 
 ### Registration
 - Users create an account with: username, first name, surname, email, timezone, tournament winner prediction
+- Leading/trailing whitespace is automatically stripped from username, name and email fields
 - System generates a random 10-character alphanumeric password
-- Confirmation email sent with credentials and payment instructions
+- Confirmation email sent with credentials and payment instructions (fee stated as 5 GBP)
 - Registration closes 2 hours before the first game starts
 - Username must be unique
 
 ### Login & Authentication
 - Username + password login with reCAPTCHA v2
+- Username is case-insensitive at login
+- Password reveal toggle available on the login page
 - Session-based authentication; session persists until explicit logout
 - Access logs recorded on login/logout
 
@@ -51,7 +54,7 @@ ZGoogies is a football tournament prediction game for the FIFA World Cup 2026. P
 ### Payment Status
 - Users cannot make predictions until payment is recorded
 - Recorded by a cashier or admin
-- Email confirmation sent when payment is received
+- Email confirmation sent when payment is received, stating the user must log out and log in again for it to take effect, after which predictions can be submitted
 
 ---
 
@@ -162,11 +165,11 @@ Breakdown:
 
 ---
 
-## 6. Game Statistics & Analytics (planned)
+## 6. Rules Page
 
-- Prediction distribution per game (score groups, win/draw/loss percentages)
-- Filter by predicted score to find like-minded predictors
-- All players' predictions visible after game closes for predictions
+- Accessible from the main navigation (between Rankings and News)
+- Visible to all authenticated users
+- Displays: scoring system table, competition rounds explanation, deadline rules, registration fee (5 GBP), prize distribution
 
 ---
 
@@ -175,7 +178,7 @@ Breakdown:
 ### Payment Management (Cashier + Admin)
 - Mark users as paid / unpaid
 - Record which cashier received the payment
-- Sends email confirmation to user on payment
+- Sends email confirmation to user on payment — email instructs user to log out and log in again to activate prediction ability
 - Activates prediction ability immediately
 
 ### Score Entry (Admin only)
@@ -221,6 +224,7 @@ Breakdown:
 
 ### Device Compatibility
 - Responsive design — desktop and mobile
+- Simulated datetime shown below logo on mobile when active
 - Compatible with Edge, Chrome, Safari, Firefox
 
 ### Session Management
@@ -229,8 +233,8 @@ Breakdown:
 - No expiry on navigation or page reload
 
 ### Email Notifications
-- Registration confirmation (credentials + payment instructions)
-- Payment confirmation
+- Registration confirmation (credentials + payment instructions, fee stated as 5 GBP)
+- Payment confirmation (with logout/login instruction)
 - Password reset
 - All sent automatically in background (non-blocking)
 
@@ -265,7 +269,7 @@ Breakdown:
 | Access Level | Can Do |
 |-------------|--------|
 | Public | View login/register/forgot password pages |
-| Authenticated | View predictions, rankings, players, news, account |
+| Authenticated | View predictions, rankings, rules, players, news, account |
 | Paid player | Make and edit predictions |
 | Cashier | + Record payments, publish news |
 | Admin | + Enter scores, select winner, delete users, DB access |
@@ -282,3 +286,5 @@ Breakdown:
 - Last competition round always worth 2× points
 - Tied ranks share prizes proportionally
 - Admin cannot delete their own account
+- Registration fee is 5 GBP only
+- Payment activation requires logout + login to take effect
