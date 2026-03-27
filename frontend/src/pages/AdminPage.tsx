@@ -701,6 +701,25 @@ function SettingsTab() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
+  // AI daily limit
+  const [aiLimit, setAiLimit] = useState('50')
+  const [aiLimitBusy, setAiLimitBusy] = useState(false)
+  const [aiLimitMsg, setAiLimitMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
+
+  useEffect(() => {
+    adminAPI.getAiLimit().then(r => setAiLimit(String(r.data.limit))).catch(() => {})
+  }, [])
+
+  const saveAiLimit = async () => {
+    setAiLimitBusy(true); setAiLimitMsg(null)
+    try {
+      const res = await adminAPI.setAiLimit(parseInt(aiLimit))
+      setAiLimitMsg({ text: res.data.message, type: 'ok' })
+    } catch (e: any) {
+      setAiLimitMsg({ text: e.response?.data?.error ?? 'Error saving limit', type: 'err' })
+    } finally { setAiLimitBusy(false) }
+  }
+
   // Full reset
   const [resetConfirm, setResetConfirm] = useState('')
   const [resetBusy, setResetBusy] = useState(false)
@@ -803,6 +822,34 @@ function SettingsTab() {
             <li>Set to 2026-06-09 → test pre-tournament registration window</li>
             <li>Set to 2026-07-20 → test post-tournament state</li>
           </ul>
+        </div>
+      </div>
+
+      {/* ── AI Daily Call Limit ─────────────────────────────────── */}
+      <div className="admin-section-header" style={{ marginTop: '2rem' }}>
+        <div>
+          <h2>AI Assistant — Daily Call Limit</h2>
+          <p className="admin-subtitle">Maximum number of MCP tool calls per user per day. Resets at midnight UTC. Default: 50 (covers ~2 full chat sessions). 20 users × 50 = 1,000 calls/day — within Gemini free tier (1,500/day).</p>
+        </div>
+      </div>
+      {aiLimitMsg && <div className={`admin-message ${aiLimitMsg.type === 'err' ? 'admin-message-error' : ''}`}>{aiLimitMsg.text}</div>}
+      <div className="admin-form-card">
+        <div className="admin-form-group">
+          <label>Daily call limit per user</label>
+          <div className="override-input-row">
+            <input
+              type="number"
+              className="admin-input"
+              style={{ maxWidth: 120 }}
+              min={1}
+              max={1000}
+              value={aiLimit}
+              onChange={e => setAiLimit(e.target.value)}
+            />
+            <button className="admin-btn btn-primary" onClick={saveAiLimit} disabled={aiLimitBusy}>
+              {aiLimitBusy ? 'Saving...' : 'Save'}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { authAPI, teamsAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Team } from '../types'
@@ -71,7 +71,7 @@ interface AccountData {
   tournament_winner_locked: boolean
 }
 
-type Tab = 'profile' | 'password'
+type Tab = 'profile' | 'password' | 'ai'
 
 export default function AccountPage() {
   const { setUser } = useAuthStore()
@@ -90,6 +90,51 @@ export default function AccountPage() {
   const [winnerId, setWinnerId] = useState<string>('')
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // AI Assistant state
+  const [apiToken, setApiToken] = useState<string | null>(null)
+  const [tokenVisible, setTokenVisible] = useState(false)
+  const [tokenLoading, setTokenLoading] = useState(false)
+  const [tokenMsg, setTokenMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [regenerating, setRegenerating] = useState(false)
+
+  const loadToken = useCallback(async () => {
+    setTokenLoading(true)
+    try {
+      const res = await authAPI.getApiToken()
+      setApiToken(res.data.token)
+    } catch {
+      setTokenMsg({ type: 'error', text: 'Failed to load token.' })
+    } finally {
+      setTokenLoading(false)
+    }
+  }, [])
+
+  const handleRegenerateToken = async () => {
+    if (!confirm('Regenerate your API token? The old token will stop working immediately.')) return
+    setRegenerating(true)
+    setTokenMsg(null)
+    try {
+      const res = await authAPI.regenerateApiToken()
+      setApiToken(res.data.token)
+      setTokenVisible(true)
+      setTokenMsg({ type: 'success', text: 'Token regenerated. Update your AI assistant connection.' })
+    } catch {
+      setTokenMsg({ type: 'error', text: 'Failed to regenerate token.' })
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
+  const handleCopyToken = async () => {
+    if (!apiToken) return
+    try {
+      await navigator.clipboard.writeText(apiToken)
+      setTokenMsg({ type: 'success', text: 'Token copied to clipboard.' })
+    } catch {
+      setTokenMsg({ type: 'error', text: 'Copy failed — please select and copy the token manually.' })
+    }
+  }
 
   // Password form state
   const [currentPw, setCurrentPw] = useState('')
@@ -182,6 +227,12 @@ export default function AccountPage() {
           onClick={() => setTab('password')}
         >
           Change Password
+        </button>
+        <button
+          className={`tab-btn${tab === 'ai' ? ' active' : ''}`}
+          onClick={() => { setTab('ai'); if (!apiToken) loadToken() }}
+        >
+          AI Assistant
         </button>
       </div>
 
@@ -276,6 +327,89 @@ export default function AccountPage() {
               {profileSaving ? 'Saving...' : 'Save Profile'}
             </button>
           </form>
+        </section>
+      )}
+
+      {tab === 'ai' && (
+        <section className="account-section">
+          <h3 className="account-section-title">AI Assistant</h3>
+          <p className="account-help-text">
+            Connect your personal ZGoogies token to an AI assistant (Claude.ai or Google AI Studio)
+            to view your predictions, check rankings, and submit bets via natural conversation.
+          </p>
+
+          {tokenLoading && <p className="loading-text">Loading token...</p>}
+
+          {!tokenLoading && apiToken && (
+            <div className="ai-token-block">
+              <label className="account-label">Your API token</label>
+              <div className="ai-token-row">
+                <input
+                  type={tokenVisible ? 'text' : 'password'}
+                  className="ai-token-input"
+                  value={apiToken}
+                  readOnly
+                />
+                <button
+                  type="button"
+                  className="account-save-btn"
+                  onClick={() => setTokenVisible((v) => !v)}
+                >
+                  {tokenVisible ? 'Hide' : 'Reveal'}
+                </button>
+                <button
+                  type="button"
+                  className="account-save-btn"
+                  onClick={handleCopyToken}
+                >
+                  Copy
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className="account-save-btn account-save-btn--secondary"
+                onClick={handleRegenerateToken}
+                disabled={regenerating}
+                style={{ marginTop: '0.75rem' }}
+              >
+                {regenerating ? 'Regenerating...' : 'Regenerate token'}
+              </button>
+
+              {tokenMsg && (
+                <p className={tokenMsg.type === 'success' ? 'account-success-msg' : 'error'} style={{ marginTop: '0.5rem' }}>
+                  {tokenMsg.text}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="ai-setup-guide">
+            <h4>How to connect</h4>
+            <div className="ai-setup-option">
+              <strong>Option A — Google AI Studio (free)</strong>
+              <ol>
+                <li>Go to <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer">aistudio.google.com</a> and sign in with a Google account</li>
+                <li>Click <em>Build</em> → <em>Create agent</em></li>
+                <li>Add MCP server URL: <code>https://zgoogies.online/api/mcp</code></li>
+                <li>Paste the system prompt (ask your admin for it)</li>
+                <li>Share the agent link with other players</li>
+              </ol>
+            </div>
+            <div className="ai-setup-option">
+              <strong>Option B — Claude.ai (Claude Pro required)</strong>
+              <ol>
+                <li>Go to <a href="https://claude.ai/" target="_blank" rel="noreferrer">claude.ai</a> → Settings → Integrations</li>
+                <li>Add MCP server: <code>https://zgoogies.online/api/mcp</code></li>
+                <li>Create a Project with the ZGoogies system prompt as instructions</li>
+                <li>The Project will use your token automatically when you chat</li>
+              </ol>
+            </div>
+            <p className="account-help-text" style={{ marginTop: '0.75rem' }}>
+              When the AI assistant asks for your token, paste it from above.
+              Your token gives the AI access to your ZGoogies data only — it cannot change your password or account settings.
+            </p>
+          </div>
         </section>
       )}
 

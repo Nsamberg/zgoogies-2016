@@ -408,6 +408,34 @@ def clear_datetime_override():
 
 
 # ---------------------------------------------------------------------------
+# AI daily call limit
+# ---------------------------------------------------------------------------
+
+@bp.route('/ai-limit', methods=['GET'])
+@login_required
+def get_ai_limit():
+    """Return the current AI daily call limit per user."""
+    limit = AppSetting.get('ai_daily_limit', '50')
+    return jsonify({'limit': int(limit)}), 200
+
+
+@bp.route('/ai-limit', methods=['POST'])
+@login_required
+@admin_required
+def set_ai_limit():
+    """Set the AI daily call limit per user (1–1000)."""
+    data = request.get_json() or {}
+    try:
+        limit = int(data.get('limit'))
+        if limit < 1 or limit > 1000:
+            return jsonify({'error': 'Limit must be between 1 and 1000'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Limit must be an integer'}), 400
+    AppSetting.set('ai_daily_limit', str(limit))
+    return jsonify({'message': f'AI daily limit set to {limit}', 'limit': limit}), 200
+
+
+# ---------------------------------------------------------------------------
 # Full reset
 # ---------------------------------------------------------------------------
 

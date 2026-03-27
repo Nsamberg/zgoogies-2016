@@ -35,6 +35,9 @@ export const authAPI = {
 
   changePassword: (currentPassword: string, newPassword: string) =>
     api.put('/auth/change-password', { current_password: currentPassword, new_password: newPassword }),
+
+  getApiToken: () => api.get('/auth/token'),
+  regenerateApiToken: () => api.post('/auth/token/regenerate'),
 }
 
 // Games API
@@ -122,6 +125,10 @@ export const adminAPI = {
 
   // Full reset
   resetAll: () => api.delete('/admin/reset-all', { data: { confirmation: 'RESET ALL' } }),
+
+  // AI daily limit
+  getAiLimit: () => api.get('/admin/ai-limit'),
+  setAiLimit: (limit: number) => api.post('/admin/ai-limit', { limit }),
 }
 
 // Teams API

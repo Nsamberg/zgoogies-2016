@@ -1490,6 +1490,78 @@ button[type="submit"]:disabled {
   font-size: 0.9rem;
 }
 
+.account-save-btn--secondary {
+  background: #6c757d;
+}
+
+.account-save-btn--secondary:hover {
+  background: #5a6268;
+}
+
+.account-help-text {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.ai-token-block {
+  margin-bottom: 1.5rem;
+}
+
+.ai-token-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.ai-token-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  background: #F4F5F7;
+  color: #333;
+}
+
+.ai-setup-guide {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1.25rem;
+}
+
+.ai-setup-guide h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1B1464;
+  margin: 0 0 0.75rem 0;
+}
+
+.ai-setup-option {
+  margin-bottom: 1rem;
+}
+
+.ai-setup-option ol {
+  margin: 0.4rem 0 0 1.25rem;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #444;
+  line-height: 1.7;
+}
+
+.ai-setup-option code {
+  background: #F4F5F7;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.82rem;
+  font-family: monospace;
+}
+
 .account-locked {
   display: flex;
   align-items: center;

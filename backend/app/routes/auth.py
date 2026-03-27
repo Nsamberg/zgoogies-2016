@@ -7,6 +7,7 @@ from app.services.email_service import send_registration_email, send_password_re
 import secrets
 import string
 import threading
+import uuid
 import requests as http_requests
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -238,3 +239,22 @@ def change_password():
     current_user.set_password(data['new_password'])
     db.session.commit()
     return jsonify({'message': 'Password changed successfully'}), 200
+
+
+@bp.route('/token', methods=['GET'])
+@login_required
+def get_api_token():
+    """Return the user's personal API token, generating one if needed."""
+    if not current_user.api_token:
+        current_user.api_token = uuid.uuid4().hex
+        db.session.commit()
+    return jsonify({'token': current_user.api_token}), 200
+
+
+@bp.route('/token/regenerate', methods=['POST'])
+@login_required
+def regenerate_api_token():
+    """Issue a new API token, invalidating the previous one."""
+    current_user.api_token = uuid.uuid4().hex
+    db.session.commit()
+    return jsonify({'token': current_user.api_token}), 200

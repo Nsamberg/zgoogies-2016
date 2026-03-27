@@ -30,7 +30,8 @@
 - Rankings: overall + per-round, with game count per round, medal positions
 - Players: list with roles, sorted alphabetically (case-insensitive), search by username
 - News: article list
-- Admin (full): payments, score entry + rollback, tournament winner + rollback, user management, news management, datetime override, full reset
+- Admin (full): payments, score entry + rollback, tournament winner + rollback, user management, news management, datetime override, AI daily call limit, full reset
+- MCP server (`GET /api/mcp`): Streamable HTTP MCP server for AI assistant integration — 6 tools (get_my_predictions, get_upcoming_games, get_my_ranking, get_all_rankings, submit_prediction, get_game_list). Each user has a personal API token; per-user daily call limit enforced (default 50, configurable by admin)
 - Email: Gmail SMTP via Flask-Mail, background thread (non-blocking) — all emails pass app context via `app._get_current_object()`
 - CAPTCHA: reCAPTCHA v2 on login and register — backend verification skipped in DEBUG mode
 - Datetime override: admin can simulate any UTC datetime via AppSetting; all time-sensitive logic routes through `get_current_utc()`
@@ -45,7 +46,7 @@
 | Rankings | Overall + per-round tabs, medal badges, click player → ranking history charts |
 | News | Article cards |
 | Players | Username search, role filter (multi-select), alpha sorted, expandable rows |
-| My Account | Profile tab (edit name/email/timezone/winner) + Change Password tab |
+| My Account | Profile tab (edit name/email/timezone/winner) + Change Password tab + AI Assistant tab (token management) |
 | Admin | 6 tabs: Payments · Score Entry · Tournament · News · Users · Settings |
 | Rules | Scoring system, competition rounds, deadline and fee info |
 
@@ -57,11 +58,13 @@
 | Tournament | Admin only | Set tournament winner + award 15pt bonuses, rollback |
 | News | Admin + Cashier | Create / edit / delete articles inline |
 | Users | Admin only | Change roles, delete users with confirmation |
-| Settings | Admin only | Datetime override (set/clear simulated time), Full Reset |
+| Settings | Admin only | Datetime override (set/clear simulated time), AI daily call limit, Full Reset |
 
 **Full Reset** (Admin > Settings): wipes all predictions, rankings, game scores and tournament winner. Requires typing `RESET ALL` to confirm.
 
 **Datetime Override** (Admin > Settings): persists in database across restarts and logout/login cycles. Banner shown in header to all logged-in users when active. Also shown below logo on mobile.
+
+**AI Assistant** (Account > AI Assistant tab): Each user gets a personal API token. Connect the token to Claude.ai (Claude Pro, Settings → Integrations → Add MCP server) or Google AI Studio (free, build an agent with MCP server URL). MCP server URL: `https://zgoogies.online/api/mcp`. System prompt template — see plan file. Rate limit: 50 calls/user/day by default (admin can change in Settings tab). Total infra cost: $0 (runs on existing server, Gemini free tier).
 
 **Theme**: FIFA World Cup 2026 — navy `#1B1464`, red `#C8102E`, gold `#D4AC0D`, Montserrat font
 **Nav order**: Predictions · Rankings · Rules · News · Players · My Account · Admin

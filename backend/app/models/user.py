@@ -29,6 +29,9 @@ class User(UserMixin, db.Model):
     tournament_winner_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=True)
     tournament_winner_locked = db.Column(db.Boolean, default=False, nullable=False)
 
+    # Personal API token for MCP / AI assistant access
+    api_token = db.Column(db.String(64), unique=True, nullable=True, index=True)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

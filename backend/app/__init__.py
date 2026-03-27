@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_cors import CORS
-from sqlalchemy import event
+from sqlalchemy import event, text
 import sqlite3
 from config import config
 
@@ -37,7 +37,7 @@ def create_app(config_name='default'):
         return jsonify({'error': 'Authentication required'}), 401
 
     # Register blueprints
-    from app.routes import auth, predictions, rankings, players, admin, games, news, teams
+    from app.routes import auth, predictions, rankings, players, admin, games, news, teams, mcp
     app.register_blueprint(auth.bp)
     app.register_blueprint(predictions.bp)
     app.register_blueprint(rankings.bp)
@@ -46,6 +46,7 @@ def create_app(config_name='default'):
     app.register_blueprint(games.bp)
     app.register_blueprint(news.bp)
     app.register_blueprint(teams.bp)
+    app.register_blueprint(mcp.bp)
 
     # Ensure all tables exist (including newly added models)
     with app.app_context():
@@ -54,6 +55,13 @@ def create_app(config_name='default'):
             if isinstance(dbapi_conn, sqlite3.Connection):
                 dbapi_conn.execute("PRAGMA journal_mode=WAL")
         db.create_all()
+        # Add api_token column to existing users table if it doesn't exist yet
+        with db.engine.connect() as conn:
+            try:
+                conn.execute(text('ALTER TABLE users ADD COLUMN api_token VARCHAR(64)'))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
 
     # User loader
     from app.models.user import User
