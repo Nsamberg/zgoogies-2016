@@ -5,10 +5,10 @@ interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isInitializing: boolean
-  systemDateOverride: string | null
+  datetimeOffsetMs: number | null
   setUser: (user: User | null) => void
   setInitialized: () => void
-  setSystemDateOverride: (override: string | null) => void
+  setDatetimeOffset: (offsetMs: number | null) => void
   logout: () => void
 }
 
@@ -16,9 +16,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isInitializing: true,
-  systemDateOverride: null,
+  datetimeOffsetMs: null,
   setUser: (user) => set({ user, isAuthenticated: !!user }),
   setInitialized: () => set({ isInitializing: false }),
-  setSystemDateOverride: (override) => set({ systemDateOverride: override }),
-  logout: () => set({ user: null, isAuthenticated: false, systemDateOverride: null }),
+  setDatetimeOffset: (offsetMs) => set({ datetimeOffsetMs: offsetMs }),
+  logout: () => set({ user: null, isAuthenticated: false, datetimeOffsetMs: null }),
 }))

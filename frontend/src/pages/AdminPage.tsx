@@ -692,8 +692,12 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
 function SettingsTab() {
-  const { systemDateOverride, setSystemDateOverride } = useAuthStore()
-  const [inputValue, setInputValue] = useState(systemDateOverride ? systemDateOverride.slice(0, 16) : '')
+  const { datetimeOffsetMs, setDatetimeOffset } = useAuthStore()
+  const [inputValue, setInputValue] = useState(
+    datetimeOffsetMs != null
+      ? new Date(Date.now() + datetimeOffsetMs).toISOString().slice(0, 16)
+      : ''
+  )
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
@@ -720,8 +724,8 @@ function SettingsTab() {
     setBusy(true); setMsg(null)
     try {
       const res = await adminAPI.setDatetimeOverride(inputValue + ':00')
-      setSystemDateOverride(res.data.override)
-      setMsg({ text: `Override active — simulated time: ${inputValue} UTC`, type: 'ok' })
+      setDatetimeOffset(res.data.offset_seconds * 1000)
+      setMsg({ text: `Override active — simulated time advances with real time from ${inputValue} UTC`, type: 'ok' })
     } catch (e: any) {
       setMsg({ text: e.response?.data?.error ?? 'Error setting override', type: 'err' })
     } finally { setBusy(false) }
@@ -731,7 +735,7 @@ function SettingsTab() {
     setBusy(true); setMsg(null)
     try {
       await adminAPI.clearDatetimeOverride()
-      setSystemDateOverride(null)
+      setDatetimeOffset(null)
       setInputValue('')
       setMsg({ text: 'Override cleared — app is now using real system time', type: 'ok' })
     } catch (e: any) {
@@ -751,12 +755,12 @@ function SettingsTab() {
       {msg && <div className={`admin-message ${msg.type === 'err' ? 'admin-message-error' : ''}`}>{msg.text}</div>}
 
       <div className="admin-form-card">
-        <div className={`override-status-banner ${systemDateOverride ? 'active' : 'inactive'}`}>
-          {systemDateOverride ? (
+        <div className={`override-status-banner ${datetimeOffsetMs != null ? 'active' : 'inactive'}`}>
+          {datetimeOffsetMs != null ? (
             <>
               <span className="override-dot active" />
-              <span>OVERRIDE ACTIVE — Simulated time: <strong>
-                {new Date(systemDateOverride + 'Z').toLocaleString('en-GB', {
+              <span>OVERRIDE ACTIVE — Currently simulating: <strong>
+                {new Date(Date.now() + datetimeOffsetMs).toLocaleString('en-GB', {
                   day: '2-digit', month: 'short', year: 'numeric',
                   hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
                 })} UTC
@@ -781,9 +785,9 @@ function SettingsTab() {
               onChange={e => setInputValue(e.target.value)}
             />
             <button className="admin-btn btn-primary" onClick={save} disabled={busy || !inputValue}>
-              {busy ? 'Saving...' : systemDateOverride ? 'Update' : 'Activate Override'}
+              {busy ? 'Saving...' : datetimeOffsetMs != null ? 'Update' : 'Activate Override'}
             </button>
-            {systemDateOverride && (
+            {datetimeOffsetMs != null && (
               <button className="admin-btn btn-danger" onClick={clear} disabled={busy}>
                 Clear Override
               </button>

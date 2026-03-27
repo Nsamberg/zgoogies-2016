@@ -674,6 +674,11 @@ button[type="submit"]:disabled {
   color: #bbb;
 }
 
+.score-input--default {
+  color: #bbb;
+  border-color: #e0e0e0;
+}
+
 .score-separator {
   font-size: 1.2rem;
   color: #aaa;

@@ -3,8 +3,8 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../services/api'
 
-function formatOverride(iso: string) {
-  const d = new Date(iso + 'Z') // treat as UTC
+function formatSimulated(offsetMs: number) {
+  const d = new Date(Date.now() + offsetMs)
   return d.toLocaleString('en-GB', {
     day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
@@ -12,7 +12,7 @@ function formatOverride(iso: string) {
 }
 
 export default function Layout() {
-  const { user, logout, systemDateOverride } = useAuthStore()
+  const { user, logout, datetimeOffsetMs } = useAuthStore()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -39,9 +39,9 @@ export default function Layout() {
         <div className="container">
           <div className="logo-wrapper">
             <h1 className="logo">⚽ ZGoogies</h1>
-            {systemDateOverride && (
+            {datetimeOffsetMs != null && (
               <div className="datetime-override-notice mobile-only">
-                ⏱ Simulated: {formatOverride(systemDateOverride)}
+                ⏱ Simulated: {formatSimulated(datetimeOffsetMs)}
               </div>
             )}
           </div>
@@ -92,9 +92,9 @@ export default function Layout() {
           <div className="user-info">
             <div>
               <span>Welcome, {user?.first_name}!</span>
-              {systemDateOverride && (
+              {datetimeOffsetMs != null && (
                 <div className="datetime-override-notice">
-                  ⏱ Simulated: {formatOverride(systemDateOverride)}
+                  ⏱ Simulated: {formatSimulated(datetimeOffsetMs)}
                 </div>
               )}
             </div>

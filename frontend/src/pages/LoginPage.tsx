@@ -16,7 +16,7 @@ export default function LoginPage() {
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const navigate = useNavigate()
   const setUser = useAuthStore((state) => state.setUser)
-  const setSystemDateOverride = useAuthStore((state) => state.setSystemDateOverride)
+  const setDatetimeOffset = useAuthStore((state) => state.setDatetimeOffset)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +34,7 @@ export default function LoginPage() {
       setUser(response.data.user)
       // Restore datetime override state (persists in DB across sessions)
       adminAPI.getDatetimeOverride()
-        .then(r => setSystemDateOverride(r.data.override ?? null))
+        .then(r => setDatetimeOffset(r.data.offset_seconds != null ? r.data.offset_seconds * 1000 : null))
         .catch(() => {})
       navigate('/')
     } catch (err: any) {

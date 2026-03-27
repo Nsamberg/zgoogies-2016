@@ -1,6 +1,7 @@
 """Tests for the datetime override utility."""
 import pytest
-from datetime import datetime
+from datetime import datetime, timedelta
+from unittest.mock import patch
 from app import db
 from app.models.app_setting import AppSetting
 from app.utils.datetime_utils import get_current_utc, DATETIME_OVERRIDE_KEY
@@ -23,15 +24,20 @@ class TestGetCurrentUtc:
             assert before <= result <= after
 
     def test_returns_override_when_set(self, app):
-        override_dt = datetime(2026, 6, 15, 10, 30, 0)
+        # Offset of 3600s (1 hour) applied to a frozen real clock
+        fake_now = datetime(2026, 3, 24, 16, 31, 0)
+        offset_seconds = 3600.0
+        expected = fake_now + timedelta(seconds=offset_seconds)
         with app.app_context():
-            AppSetting.set(DATETIME_OVERRIDE_KEY, override_dt.isoformat())
-            result = get_current_utc()
-            assert result == override_dt
+            AppSetting.set(DATETIME_OVERRIDE_KEY, str(offset_seconds))
+            with patch('app.utils.datetime_utils.datetime') as mock_dt:
+                mock_dt.utcnow.return_value = fake_now
+                result = get_current_utc()
+        assert result == expected
 
     def test_falls_back_to_system_time_on_invalid_override(self, app):
         with app.app_context():
-            AppSetting.set(DATETIME_OVERRIDE_KEY, 'not-a-valid-datetime')
+            AppSetting.set(DATETIME_OVERRIDE_KEY, 'not-a-number')
             before = datetime.utcnow()
             result = get_current_utc()
             after = datetime.utcnow()
@@ -39,7 +45,7 @@ class TestGetCurrentUtc:
 
     def test_clears_override(self, app):
         with app.app_context():
-            AppSetting.set(DATETIME_OVERRIDE_KEY, '2026-06-15T10:00:00')
+            AppSetting.set(DATETIME_OVERRIDE_KEY, '3600.0')
             AppSetting.set(DATETIME_OVERRIDE_KEY, None)
             # Should now return system time
             before = datetime.utcnow()

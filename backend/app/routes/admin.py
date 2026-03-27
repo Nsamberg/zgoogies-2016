@@ -359,30 +359,42 @@ def delete_news(news_id):
 @bp.route('/datetime-override', methods=['GET'])
 @login_required
 def get_datetime_override():
-    """Return the current datetime override (null if not set). Available to all logged-in users."""
-    override = AppSetting.get('datetime_override')
-    return jsonify({'override': override}), 200
+    """Return the current datetime override as a computed simulated ISO time (null if not set)."""
+    from datetime import datetime, timedelta
+    offset_str = AppSetting.get('datetime_override_offset')
+    if offset_str:
+        offset_secs = float(offset_str)
+        simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
+        return jsonify({'override': simulated.isoformat(), 'offset_seconds': offset_secs}), 200
+    return jsonify({'override': None, 'offset_seconds': None}), 200
 
 
 @bp.route('/datetime-override', methods=['POST'])
 @login_required
 @admin_required
 def set_datetime_override():
-    """Set a virtual datetime override. All time-sensitive logic will use this instead of the real clock."""
+    """Set a dynamic datetime override. The offset (simulated − real) is stored so simulated time
+    advances in lockstep with real time."""
     data = request.get_json()
     raw = data.get('datetime', '').strip()
     if not raw:
         return jsonify({'error': 'datetime field required (ISO 8601 UTC)'}), 400
 
-    from datetime import datetime
+    from datetime import datetime, timedelta
     try:
-        # Validate the format
         dt = datetime.fromisoformat(raw)
     except ValueError:
         return jsonify({'error': 'Invalid datetime format. Use ISO 8601 (e.g. 2026-06-11T16:00:00)'}), 400
 
-    AppSetting.set('datetime_override', dt.isoformat())
-    return jsonify({'message': f'Datetime override set to {dt.isoformat()}', 'override': dt.isoformat()}), 200
+    offset = dt - datetime.utcnow()
+    offset_secs = offset.total_seconds()
+    AppSetting.set('datetime_override_offset', str(offset_secs))
+    simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
+    return jsonify({
+        'message': f'Datetime override set — offset {offset_secs:.0f}s from real time',
+        'override': simulated.isoformat(),
+        'offset_seconds': offset_secs
+    }), 200
 
 
 @bp.route('/datetime-override', methods=['DELETE'])
@@ -390,7 +402,8 @@ def set_datetime_override():
 @admin_required
 def clear_datetime_override():
     """Clear the datetime override — app reverts to using the real system clock."""
-    AppSetting.delete('datetime_override')
+    AppSetting.delete('datetime_override_offset')
+    AppSetting.delete('datetime_override')  # clean up legacy key if present
     return jsonify({'message': 'Datetime override cleared — using real system time'}), 200
 
 

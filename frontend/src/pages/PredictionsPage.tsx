@@ -11,6 +11,8 @@ interface GameInput {
   teamB: string
   status: 'idle' | 'saving' | 'saved' | 'error'
   errorMsg?: string
+  existed: boolean  // true if a saved prediction was returned by the API
+  touched: boolean  // true once the user has edited the inputs
 }
 
 interface Player {
@@ -153,6 +155,8 @@ export default function PredictionsPage() {
             teamA: pred != null ? String(pred.team_a_score) : '0',
             teamB: pred != null ? String(pred.team_b_score) : '0',
             status: 'idle',
+            existed: pred != null,
+            touched: false,
           }
         })
         setInputs(initialInputs)
@@ -216,7 +220,7 @@ export default function PredictionsPage() {
     if (value !== '' && !/^\d+$/.test(value)) return
     setInputs((prev) => ({
       ...prev,
-      [gameId]: { ...prev[gameId], [side]: value, status: 'idle', errorMsg: undefined },
+      [gameId]: { ...prev[gameId], [side]: value, status: 'idle', errorMsg: undefined, touched: true },
     }))
   }
 
@@ -237,7 +241,7 @@ export default function PredictionsPage() {
         team_a_score: parseInt(input.teamA),
         team_b_score: parseInt(input.teamB),
       })
-      setInputs((prev) => ({ ...prev, [gameId]: { ...prev[gameId], status: 'saved' } }))
+      setInputs((prev) => ({ ...prev, [gameId]: { ...prev[gameId], status: 'saved', existed: true } }))
     } catch (err: any) {
       const msg = err.response?.data?.error || 'Failed to save. Please try again.'
       setInputs((prev) => ({ ...prev, [gameId]: { ...prev[gameId], status: 'error', errorMsg: msg } }))
@@ -312,8 +316,8 @@ export default function PredictionsPage() {
           )}
           <div className="games-list">
             {openGames.map((game) => {
-              const input = inputs[game.id] || { teamA: '', teamB: '', status: 'idle' }
-              const hasPrediction = input.teamA !== '' || input.teamB !== ''
+              const input = inputs[game.id] || { teamA: '0', teamB: '0', status: 'idle', existed: false, touched: false }
+              const isDefault = !input.existed && !input.touched
               return (
                 <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
                   <GameCardHeader game={game} />
@@ -338,7 +342,7 @@ export default function PredictionsPage() {
                           type="number" min="0" value={input.teamA} placeholder="0"
                           onChange={(e) => handleInput(game.id, 'teamA', e.target.value)}
                           disabled={!user?.has_paid || input.status === 'saving'}
-                          className="score-input"
+                          className={`score-input${isDefault ? ' score-input--default' : ''}`}
                         />
                       </div>
                       <span className="score-separator">—</span>
@@ -348,7 +352,7 @@ export default function PredictionsPage() {
                           type="number" min="0" value={input.teamB} placeholder="0"
                           onChange={(e) => handleInput(game.id, 'teamB', e.target.value)}
                           disabled={!user?.has_paid || input.status === 'saving'}
-                          className="score-input"
+                          className={`score-input${isDefault ? ' score-input--default' : ''}`}
                         />
                       </div>
                     </div>
@@ -360,7 +364,7 @@ export default function PredictionsPage() {
                       >
                         {input.status === 'saving' ? 'Saving...'
                           : input.status === 'saved' ? '✓ Saved'
-                          : hasPrediction ? 'Update' : 'Save'}
+                          : input.existed ? 'Update' : 'Save'}
                       </button>
                     )}
                   </div>

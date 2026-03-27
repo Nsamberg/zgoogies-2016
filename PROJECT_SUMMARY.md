@@ -115,6 +115,8 @@
 ### Nice-to-Have (optional, post-launch)
 - [ ] Ranking history charts — Recharts installed, backend snapshots exist
 - [ ] Game prediction statistics/analytics
+- [ ] **Gemini AI — Match Insight (on-demand)**: "Ask AI" button on each open game card in the Predictions page. User clicks it to request a Gemini-generated analysis for that match (team form, head-to-head, key players, stage context). Not triggered automatically — fully user-initiated per game. Response cached in DB so repeat requests don't re-call the API.
+- [ ] **Gemini AI — Chatbot assistant**: Floating chat widget for authenticated users. Players can ask natural-language questions about rankings, remaining games, scoring rules, their own stats, etc. Gemini is given context about the current user's state and the competition.
 
 ---
 

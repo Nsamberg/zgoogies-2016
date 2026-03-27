@@ -15,15 +15,15 @@ import NewsPage from './pages/NewsPage'
 import RulesPage from './pages/RulesPage'
 
 function App() {
-  const { setUser, setInitialized, setSystemDateOverride } = useAuthStore()
+  const { setUser, setInitialized, setDatetimeOffset } = useAuthStore()
 
   useEffect(() => {
     authAPI.getCurrentUser()
       .then((res) => {
         setUser(res.data)
-        // Fetch datetime override for all logged-in users (shown in header when active)
+        // Fetch datetime offset for all logged-in users (shown in header when active)
         adminAPI.getDatetimeOverride()
-          .then(r => setSystemDateOverride(r.data.override ?? null))
+          .then(r => setDatetimeOffset(r.data.offset_seconds != null ? r.data.offset_seconds * 1000 : null))
           .catch(() => {})
       })
       .catch(() => setUser(null))
