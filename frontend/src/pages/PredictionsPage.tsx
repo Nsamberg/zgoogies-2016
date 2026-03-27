@@ -341,6 +341,7 @@ export default function PredictionsPage() {
                         <input
                           type="number" min="0" value={input.teamA} placeholder="0"
                           onChange={(e) => handleInput(game.id, 'teamA', e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           disabled={!user?.has_paid || input.status === 'saving'}
                           className={`score-input${isDefault ? ' score-input--default' : ''}`}
                         />
@@ -351,6 +352,7 @@ export default function PredictionsPage() {
                         <input
                           type="number" min="0" value={input.teamB} placeholder="0"
                           onChange={(e) => handleInput(game.id, 'teamB', e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           disabled={!user?.has_paid || input.status === 'saving'}
                           className={`score-input${isDefault ? ' score-input--default' : ''}`}
                         />
