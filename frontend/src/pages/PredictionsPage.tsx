@@ -150,8 +150,8 @@ export default function PredictionsPage() {
         games.forEach((g) => {
           const pred = predsMap[g.id]
           initialInputs[g.id] = {
-            teamA: pred != null ? String(pred.team_a_score) : '',
-            teamB: pred != null ? String(pred.team_b_score) : '',
+            teamA: pred != null ? String(pred.team_a_score) : '0',
+            teamB: pred != null ? String(pred.team_b_score) : '0',
             status: 'idle',
           }
         })
