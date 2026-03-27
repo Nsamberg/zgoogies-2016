@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { gamesAPI, predictionsAPI, playersAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Game, Prediction } from '../types'
+import { usePullToRefresh } from '../hooks/usePullToRefresh'
 
 type Tab = 'open' | 'past' | 'others'
 
@@ -93,6 +94,7 @@ export default function PredictionsPage() {
   const [pastLoading, setPastLoading] = useState(false)
   const [pastError, setPastError] = useState('')
   const [pastLoaded, setPastLoaded] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Game predictions page-view (selected closed game → show all predictions)
   const [selectedClosedGame, setSelectedClosedGame] = useState<Game | null>(null)
@@ -130,8 +132,10 @@ export default function PredictionsPage() {
   const [playerPredsLoading, setPlayerPredsLoading] = useState(false)
   const [playerPredsError, setPlayerPredsError] = useState('')
 
-  // Load open games on mount
+  // Load open games on mount or refresh
   useEffect(() => {
+    setOpenLoading(true)
+    setOpenError('')
     const load = async () => {
       try {
         const [gamesRes, predsRes] = await Promise.all([
@@ -159,7 +163,14 @@ export default function PredictionsPage() {
       }
     }
     load()
+  }, [refreshKey])
+
+  const onRefresh = useCallback(async () => {
+    setPastLoaded(false)
+    setRefreshKey((k) => k + 1)
   }, [])
+
+  const { isPulling, pullDistance, isRefreshing, threshold } = usePullToRefresh(onRefresh)
 
   // Load past games lazily
   const loadPast = useCallback(async () => {
@@ -260,6 +271,11 @@ export default function PredictionsPage() {
 
   return (
     <div className="predictions-page">
+      {(isPulling || isRefreshing) && (
+        <div className="pull-indicator">
+          {isRefreshing ? 'Refreshing...' : pullDistance >= threshold ? 'Release to refresh' : 'Pull down to refresh'}
+        </div>
+      )}
       <div className="page-tabs">
         <button
           className={`tab-btn${tab === 'open' ? ' active' : ''}`}

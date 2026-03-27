@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { newsAPI } from '../services/api'
 import { News } from '../types'
+import { usePullToRefresh } from '../hooks/usePullToRefresh'
 
 function formatDate(isoDate: string): string {
   return new Date(isoDate).toLocaleDateString('en-GB', {
@@ -14,16 +15,30 @@ export default function NewsPage() {
   const [news, setNews] = useState<News[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
+    setLoading(true)
+    setError('')
     newsAPI.getAll()
       .then((res) => setNews(res.data))
       .catch(() => setError('Failed to load news. Please refresh.'))
       .finally(() => setLoading(false))
+  }, [refreshKey])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshKey((k) => k + 1)
   }, [])
+
+  const { isPulling, pullDistance, isRefreshing, threshold } = usePullToRefresh(onRefresh)
 
   return (
     <div className="news-page">
+      {(isPulling || isRefreshing) && (
+        <div className="pull-indicator">
+          {isRefreshing ? 'Refreshing...' : pullDistance >= threshold ? 'Release to refresh' : 'Pull down to refresh'}
+        </div>
+      )}
       <h2 className="page-title">News &amp; Announcements</h2>
 
       {loading && <p className="loading-text">Loading news...</p>}
