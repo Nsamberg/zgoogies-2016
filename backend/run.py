@@ -2,7 +2,7 @@ import os
 from app import create_app, db
 from app.models import (
     User, Team, Location, Game, Prediction, PredictionHistory,
-    Ranking, RankingHistory, CompetitionRound, News, AccessLog
+    Ranking, RankingHistory, CompetitionRound, News, NewsReaction, NewsComment, AccessLog
 )
 
 # Create Flask app
@@ -24,6 +24,8 @@ def make_shell_context():
         'RankingHistory': RankingHistory,
         'CompetitionRound': CompetitionRound,
         'News': News,
+        'NewsReaction': NewsReaction,
+        'NewsComment': NewsComment,
         'AccessLog': AccessLog
     }
 

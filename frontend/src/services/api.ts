@@ -86,6 +86,12 @@ export const newsAPI = {
   update: (newsId: number, data: Partial<{ title: string; content: string; image_url?: string }>) =>
     api.put(`/news/${newsId}`, data),
   delete: (newsId: number) => api.delete(`/news/${newsId}`),
+  react: (newsId: number, reactionType: 'like' | 'dislike') =>
+    api.post(`/news/${newsId}/react`, { reaction_type: reactionType }),
+  getComments: (newsId: number) => api.get(`/news/${newsId}/comments`),
+  addComment: (newsId: number, content: string) =>
+    api.post(`/news/${newsId}/comments`, { content }),
+  deleteComment: (commentId: number) => api.delete(`/news/comments/${commentId}`),
 }
 
 // Admin API

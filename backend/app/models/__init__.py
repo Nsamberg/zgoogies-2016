@@ -8,6 +8,8 @@ from app.models.ranking import Ranking
 from app.models.ranking_history import RankingHistory
 from app.models.competition_round import CompetitionRound
 from app.models.news import News
+from app.models.news_reaction import NewsReaction
+from app.models.news_comment import NewsComment
 from app.models.access_log import AccessLog
 from app.models.app_setting import AppSetting
 
@@ -22,6 +24,8 @@ __all__ = [
     'RankingHistory',
     'CompetitionRound',
     'News',
+    'NewsReaction',
+    'NewsComment',
     'AccessLog',
     'AppSetting'
 ]

@@ -85,6 +85,23 @@ export interface News {
   }
   created_at: string
   updated_at?: string
+  likes_count: number
+  dislikes_count: number
+  comments_count: number
+  user_reaction?: 'like' | 'dislike' | null
+}
+
+export interface NewsComment {
+  id: number
+  content: string
+  user: {
+    id: number
+    username: string
+    first_name: string
+    surname: string
+  }
+  created_at: string
+  updated_at: string
 }
 
 // Competition Round types
