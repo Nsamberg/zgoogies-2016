@@ -23,6 +23,7 @@ bp = Blueprint('mcp', __name__, url_prefix='/api/mcp')
 
 DEFAULT_DAILY_LIMIT = 50
 MCP_VERSION = '2025-03-26'
+SUPPORTED_VERSIONS = {'2025-03-26', '2024-11-05', '2025-06-18'}
 
 
 # ---------------------------------------------------------------------------
@@ -399,8 +400,10 @@ def _handle_one(req):
     params = req.get('params', {})
 
     if method == 'initialize':
+        client_version = params.get('protocolVersion', MCP_VERSION)
+        negotiated = client_version if client_version in SUPPORTED_VERSIONS else MCP_VERSION
         return _ok(req_id, {
-            'protocolVersion': MCP_VERSION,
+            'protocolVersion': negotiated,
             'capabilities': {'tools': {}},
             'serverInfo': {'name': 'ZGoogies', 'version': '1.0.0'}
         })
@@ -443,6 +446,12 @@ def mcp_options():
     return '', 204
 
 
+@bp.route('', methods=['GET'])
+def mcp_get():
+    # SSE not supported; return 405 per MCP Streamable HTTP spec
+    return '', 405
+
+
 @bp.route('', methods=['POST'])
 def mcp_endpoint():
     data = request.get_json(silent=True)
@@ -464,6 +473,7 @@ def mcp_endpoint():
 @bp.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Accept, Mcp-Protocol-Version'
+    response.headers['MCP-Protocol-Version'] = MCP_VERSION
     return response
