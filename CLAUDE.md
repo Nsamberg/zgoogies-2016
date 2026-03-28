@@ -35,7 +35,22 @@ ZGoogies is a football tournament prediction game (World Cup, Euro, etc.) where 
 - Rankings computed at round and overall level; history tracked per user
 
 ### MCP integration
-`backend/app/routes/mcp.py` exposes an MCP (Model Context Protocol) server for AI assistant integration.
+`backend/app/routes/mcp.py` exposes an MCP (Model Context Protocol) server for AI assistant integration. Per-user API tokens are generated in Account → AI Assistant. Daily rate limits are stored via `AppSetting` (default 50 calls/day).
+
+### Key backend patterns
+- **Auth decorators**: `@admin_required` and `@cachier_required` (in `backend/app/routes/admin.py`) wrap `@login_required` and check roles — always use these, don't inline role checks
+- **AppSetting**: Key-value store model with `AppSetting.get(key, default)` / `AppSetting.set(key, value)` — used for datetime override offset, AI rate limits, and other runtime config
+- **Competition rounds vs stages**: `CompetitionRound` is admin-defined for scoring/prizes (e.g. "Round 1"); `Game.stage` is the actual football phase (e.g. "Group A", "Final"). The last `CompetitionRound` awards double points (`CompetitionRound.is_last_round()`).
+- **Datetime override**: Stored as a seconds offset in `AppSetting('datetime_override_offset')`; `get_current_utc()` adds this offset to real time so simulated time advances normally. All deadline and scoring logic calls `get_current_utc()`.
+
+### Testing
+- `conftest.py` uses **session-scoped** `app`/`client` fixtures (shared across all tests, in-memory SQLite) and **function-scoped** `admin_client`/`player_client` auth fixtures (reset per test)
+- Seed data: 3 users (admin, cashier, player), 5 teams, 3 games, 3 competition rounds
+- Future games use `datetime(2026, 7, 15)`, past games use `datetime(2020, 6, 10)` to test deadline logic
+- CAPTCHA is bypassed when `DEBUG=True`
+
+### Config environments
+Selected via `FLASK_ENV` env var (default: `development`). `TestingConfig` uses in-memory DB and disables CSRF. `ProductionConfig` enables secure cookies.
 
 ## Commands
 
