@@ -31,7 +31,7 @@ ZGoogies is a football tournament prediction game (World Cup, Euro, etc.) where 
 - PWA support via vite-plugin-pwa
 
 ### Scoring system
-- Exact score: 7 pts | Correct result + goal difference: 5 pts | Correct result only: 3 pts | Wrong: 0 pts
+- Correct result: 4 pts | + correct goal difference: +2 pts | + exact score bonus: +1 pt | Wrong result: 0 pts | Max: 7 pts
 - Rankings computed at round and overall level; history tracked per user
 
 ### MCP integration

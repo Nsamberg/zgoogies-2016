@@ -143,7 +143,7 @@ Frontend will run on `http://localhost:5173`
 - Automatic point calculation
 
 ### Scoring System
-- 7-point scoring system (1-7 per game)
+- 7-point scoring system (0-7 per game): 4pts correct result + 2pts correct goal difference + 1pt exact score bonus
 - Double points for special games
 - Tournament winner bonus (15 points)
 
