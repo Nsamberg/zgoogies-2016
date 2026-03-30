@@ -306,7 +306,7 @@ export default function RankingsPage() {
                     title="View ranking history"
                   >
                     <td className="col-rank">
-                      {r.rank <= 3
+                      {r.rank <= 5
                         ? <span className={`medal medal--${r.rank}`}>{r.rank}</span>
                         : r.rank}
                     </td>

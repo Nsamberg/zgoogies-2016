@@ -48,7 +48,7 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-container">
-        <h1>⚽ ZGoogies Login</h1>
+        <h1>ZG⚽⚽gies Login</h1>
         {error && <div className="error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

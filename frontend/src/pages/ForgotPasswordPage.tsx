@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className="login-page">
         <div className="login-container">
-          <h1>⚽ ZGoogies</h1>
+          <h1>ZG⚽⚽gies</h1>
           <div className="forgot-success">
             <p className="forgot-success-icon">✅</p>
             <p>A new temporary password has been sent to</p>

@@ -1284,6 +1284,8 @@ button[type="submit"]:disabled {
 .medal--1 { background: #D4AC0D; }
 .medal--2 { background: #9E9E9E; }
 .medal--3 { background: #8B6C42; }
+.medal--4 { background: #4A6FA5; }
+.medal--5 { background: #607D8B; }
 
 .trend {
   font-size: 0.75rem;
