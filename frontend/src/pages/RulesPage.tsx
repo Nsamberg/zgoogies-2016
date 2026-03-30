@@ -10,7 +10,7 @@ export default function RulesPage() {
 
       <div className="rules-section">
         <h3>Scoring</h3>
-        <p>For each match you predict, points are awarded as follows:</p>
+        <p>Points are awarded based on football knowledge — knowing who wins and by how much matters more than guessing the exact scoreline.</p>
         <table className="rules-table">
           <thead>
             <tr>
@@ -20,28 +20,68 @@ export default function RulesPage() {
           </thead>
           <tbody>
             <tr>
-              <td>Submitting a prediction (participation)</td>
-              <td>1</td>
+              <td>Correct result (win / draw / loss)</td>
+              <td>4</td>
             </tr>
             <tr>
-              <td>Correct match result (win / draw / loss)</td>
-              <td>3</td>
+              <td>Correct goal difference <em>(only when result is also correct)</em></td>
+              <td>+2</td>
             </tr>
             <tr>
-              <td>Correct score for Team A</td>
-              <td>1</td>
+              <td>Exact score bonus <em>(only when result + goal difference are both correct)</em></td>
+              <td>+1</td>
             </tr>
             <tr>
-              <td>Correct score for Team B</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>Exact final score (both teams correct)</td>
-              <td>1 bonus</td>
+              <td>Wrong result</td>
+              <td>0</td>
             </tr>
           </tbody>
         </table>
-        <p className="rules-note">Maximum per game: <strong>7 points</strong> (exact score = 1 + 3 + 1 + 1 + 1)</p>
+        <p className="rules-note">Maximum per game: <strong>7 points</strong> (14 pts in double-points games)</p>
+
+        <h4>Examples</h4>
+        <table className="rules-table">
+          <thead>
+            <tr>
+              <th>Your prediction</th>
+              <th>Actual</th>
+              <th>Points</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2–1</td>
+              <td>2–1</td>
+              <td><strong>7</strong></td>
+              <td>Exact score</td>
+            </tr>
+            <tr>
+              <td>1–0</td>
+              <td>2–1</td>
+              <td><strong>6</strong></td>
+              <td>Correct result + same goal difference (diff=1)</td>
+            </tr>
+            <tr>
+              <td>3–0</td>
+              <td>1–0</td>
+              <td><strong>4</strong></td>
+              <td>Correct result only (goal diff: 3 vs 1)</td>
+            </tr>
+            <tr>
+              <td>2–0</td>
+              <td>2–1</td>
+              <td><strong>4</strong></td>
+              <td>Correct result only (goal diff: 2 vs 1)</td>
+            </tr>
+            <tr>
+              <td>0–1</td>
+              <td>2–0</td>
+              <td><strong>0</strong></td>
+              <td>Wrong result</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div className="rules-section">
@@ -97,6 +137,17 @@ export default function RulesPage() {
       <div className="rules-section">
         <h3>Rankings</h3>
         <p>The overall ranking shows total points across all rounds. Per-round rankings are also available. Players with the same score share the same rank.</p>
+      </div>
+
+      <div className="rules-section" style={{ opacity: 0.6 }}>
+        <h3>Previous Scoring System <span style={{ fontSize: '0.85em', fontWeight: 'normal' }}>(updated March 2026)</span></h3>
+        <p>
+          Before March 2026, points were awarded as: 1 pt participation + 3 pts correct result
+          + 1 pt correct Team A score + 1 pt correct Team B score + 1 pt exact score bonus
+          (max 7 pts). The new system rewards football knowledge — who wins and by how much —
+          rather than lucky score guessing. Under the old system, 43% of available points came
+          from guessing exact scores; now only 14% does.
+        </p>
       </div>
     </div>
   )

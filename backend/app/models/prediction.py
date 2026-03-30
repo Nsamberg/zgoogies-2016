@@ -31,15 +31,20 @@ class Prediction(db.Model):
         Calculate points based on prediction and actual score.
 
         Points system:
-        - 1 point: participation (any prediction)
-        - 3 points: correct result (win/draw/loss)
-        - 1 point: correct Team A score
-        - 1 point: correct Team B score
-        - 1 point: exact score bonus
+        - 4 points: correct result (win/draw/loss)
+        - +2 points: correct goal difference (only when result is also correct)
+        - +1 point: exact score bonus (only when result + goal difference are both correct)
+        - 0 points: wrong result (no participation point)
 
         Maximum: 7 points (or 14 if double points game)
+
+        Examples:
+          Predict 2-1, actual 2-1 → result ✓, GD ✓, exact ✓ → 7 pts
+          Predict 1-0, actual 2-1 → result ✓, GD ✓ (diff=1)  → 6 pts
+          Predict 3-0, actual 1-0 → result ✓, GD ✗ (3 vs 1)  → 4 pts
+          Predict 0-1, actual 2-0 → result ✗                  → 0 pts
         """
-        points = 1  # Participation point
+        points = 0
 
         # Determine actual result
         if actual_team_a_score > actual_team_b_score:
@@ -57,21 +62,22 @@ class Prediction(db.Model):
         else:
             predicted_result = 'D'
 
-        # Correct result: 3 points
-        if actual_result == predicted_result:
-            points += 3
+        # Wrong result: 0 points
+        if actual_result != predicted_result:
+            return 0
 
-        # Correct Team A score: 1 point
-        if self.team_a_score == actual_team_a_score:
-            points += 1
+        # Correct result: 4 points
+        points = 4
 
-        # Correct Team B score: 1 point
-        if self.team_b_score == actual_team_b_score:
-            points += 1
+        # Correct goal difference: +2 points (only when result is correct)
+        actual_gd = abs(actual_team_a_score - actual_team_b_score)
+        predicted_gd = abs(self.team_a_score - self.team_b_score)
+        if actual_gd == predicted_gd:
+            points += 2
 
-        # Exact score bonus: 1 point
-        if self.team_a_score == actual_team_a_score and self.team_b_score == actual_team_b_score:
-            points += 1
+            # Exact score bonus: +1 point (only when result + GD are both correct)
+            if self.team_a_score == actual_team_a_score and self.team_b_score == actual_team_b_score:
+                points += 1
 
         # Double points if applicable
         if is_double_points:
