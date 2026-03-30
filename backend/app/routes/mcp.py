@@ -21,7 +21,7 @@ from datetime import timedelta, date
 
 bp = Blueprint('mcp', __name__, url_prefix='/api/mcp')
 
-DEFAULT_DAILY_LIMIT = 50
+DEFAULT_DAILY_LIMIT = 200
 MCP_VERSION = '2025-03-26'
 SUPPORTED_VERSIONS = {'2025-03-26', '2024-11-05', '2025-06-18'}
 
