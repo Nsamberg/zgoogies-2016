@@ -43,8 +43,8 @@ def start_backend():
     print("\nStarting Backend (Flask)...")
 
     # Check if already running
-    if is_port_in_use(5000):
-        print("[WARNING] Backend already running on port 5000")
+    if is_port_in_use(5001):
+        print("[WARNING] Backend already running on port 5001")
         return None
 
     backend_dir = os.path.join(os.path.dirname(__file__), 'backend')
@@ -86,7 +86,7 @@ def start_backend():
         # Wait a moment to check if it started
         time.sleep(2)
         if process.poll() is None:
-            print("[OK] Backend started on http://localhost:5000")
+            print("[OK] Backend started on http://localhost:5001")
             return process
         else:
             print("[ERROR] Backend failed to start")
@@ -205,7 +205,7 @@ def main():
         print("[SUCCESS] Services started successfully")
         print("\nAccess the application:")
         print("  Frontend: http://localhost:5173")
-        print("  Backend:  http://localhost:5000")
+        print("  Backend:  http://localhost:5001")
         print("\nLogin credentials:")
         print("  Username: admin")
         print("  Password: admin123")

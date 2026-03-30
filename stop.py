@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZGoogies Application Stopper
-Stops both frontend (port 5173) and backend (port 5000) servers
+Stops both frontend (port 5173) and backend (port 5001) servers
 """
 import subprocess
 import platform
@@ -100,9 +100,9 @@ def main():
 
     stopped_count = 0
 
-    # Stop Backend (port 5000)
-    print("\nChecking Backend (port 5000)...")
-    backend_pid = get_process_by_port(5000)
+    # Stop Backend (port 5001)
+    print("\nChecking Backend (port 5001)...")
+    backend_pid = get_process_by_port(5001)
     if backend_pid:
         if kill_process(backend_pid, "Backend"):
             stopped_count += 1
