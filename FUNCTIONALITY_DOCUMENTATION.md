@@ -94,19 +94,30 @@ ZGoogies is a football tournament prediction game for the FIFA World Cup 2026. P
 
 | Scenario | Points |
 |----------|--------|
-| Exact score match | 7 pts (1 + 3 + 2 + 1 bonus) |
-| Correct winner + correct score for one team | 5 pts |
-| Correct winner or draw, wrong scores | 4 pts |
-| Correct score for one team only | 2 pts |
-| Prediction submitted but incorrect | 1 pt |
+| Exact score match | 7 pts (4 + 2 + 1 bonus) |
+| Correct result + correct goal difference | 6 pts |
+| Correct result only | 4 pts |
+| Wrong result | 0 pts |
 | No prediction | 0 pts |
 
 Breakdown:
-- 1 pt — participation (any prediction submitted)
-- 3 pts — correct result (win/draw/loss)
-- 1 pt — correct Team A score
-- 1 pt — correct Team B score
-- 1 pt — exact score bonus
+- 4 pts — correct result (win/draw/loss) — rewards knowing which team is stronger
+- +2 pts — correct goal difference — rewards knowing if it'll be close or a blowout
+- +1 pt — exact score bonus — small luck bonus
+
+The system is designed to reward football knowledge over luck: 57% of points come from predicting the right result, 29% from knowing the margin, and only 14% from guessing the exact score.
+
+**Examples:**
+
+| Prediction | Actual | Points | Reason |
+|-----------|--------|--------|--------|
+| 2–1 | 2–1 | 7 | Exact score (result ✓, GD=1 ✓, exact ✓) |
+| 1–0 | 2–1 | 6 | Correct result + same GD (both diff=1) |
+| 3–0 | 1–0 | 4 | Correct result only (GD: 3 vs 1) |
+| 2–0 | 2–1 | 4 | Correct result only (GD: 2 vs 1) |
+| 0–1 | 2–0 | 0 | Wrong result |
+
+> **Previous scoring system (updated March 2026):** The old system awarded 1 pt participation + 3 pts correct result + 1 pt per correct individual team score + 1 pt exact bonus. This meant 43% of points came from guessing exact scores. The new system reduces that luck component to 14%.
 
 ### Double Points (Last Round)
 - All games in the last competition round award 2× points
