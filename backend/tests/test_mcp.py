@@ -83,6 +83,22 @@ class TestMcpProtocol:
         assert r.status_code == 200
         assert r.get_json()['result'] == {}
 
+    def test_get_without_sse_header_returns_405(self, client):
+        r = client.get('/api/mcp')
+        assert r.status_code == 405
+
+    def test_get_with_sse_header_returns_stream(self, client):
+        r = client.get('/api/mcp', headers={'Accept': 'text/event-stream'})
+        assert r.status_code == 200
+        assert 'text/event-stream' in r.content_type
+        # Read just the first chunk (the endpoint event)
+        data = b''
+        for chunk in r.response:
+            data += chunk
+            break
+        assert b'event: endpoint' in data
+        assert b'/api/mcp/messages?sessionId=' in data
+
 
 class TestMcpTools:
     def _call(self, client, tool_name, extra_args=None):

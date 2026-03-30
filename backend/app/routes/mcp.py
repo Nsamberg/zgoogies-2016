@@ -7,7 +7,7 @@ with ZGoogies data on behalf of authenticated users.
 Each tool accepts a personal API token (obtained from Account → AI Assistant
 in the ZGoogies app) and enforces a configurable daily rate limit per user.
 """
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, Response, stream_with_context
 from app import db
 from app.models.user import User
 from app.models.ai_usage import AiUsage
@@ -18,6 +18,15 @@ from app.models.prediction_history import PredictionHistory
 from app.models.ranking import Ranking
 from app.utils.datetime_utils import get_current_utc
 from datetime import timedelta, date
+import threading
+import queue
+import uuid
+import json
+
+# In-memory session store for SSE transport (HTTP+SSE, used by Claude.ai).
+# Works correctly only when gunicorn runs with a single process (gthread worker).
+_sessions: dict = {}
+_sessions_lock = threading.Lock()
 
 bp = Blueprint('mcp', __name__, url_prefix='/api/mcp')
 
@@ -447,9 +456,75 @@ def mcp_options():
 
 
 @bp.route('', methods=['GET'])
-def mcp_get():
-    # SSE not supported; return 405 per MCP Streamable HTTP spec
-    return '', 405
+def mcp_sse():
+    """HTTP+SSE transport endpoint — required by Claude.ai custom connectors.
+
+    Claude.ai opens this as a long-lived SSE stream. We immediately send
+    an 'endpoint' event pointing to /api/mcp/messages, then stream tool
+    responses back as 'message' events.
+    """
+    if 'text/event-stream' not in request.headers.get('Accept', ''):
+        return '', 405
+
+    session_id = uuid.uuid4().hex
+    response_queue: queue.Queue = queue.Queue()
+    with _sessions_lock:
+        _sessions[session_id] = response_queue
+
+    base = request.url_root.rstrip('/')
+    messages_url = f'{base}/api/mcp/messages?sessionId={session_id}'
+
+    def generate():
+        try:
+            yield f'event: endpoint\ndata: {messages_url}\n\n'
+            while True:
+                try:
+                    item = response_queue.get(timeout=25)
+                    if item is None:  # sentinel: close the stream
+                        break
+                    yield f'event: message\ndata: {json.dumps(item)}\n\n'
+                except queue.Empty:
+                    yield ': keepalive\n\n'  # prevent proxy/browser timeout
+        finally:
+            with _sessions_lock:
+                _sessions.pop(session_id, None)
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',   # disable nginx buffering for SSE
+            'Connection': 'keep-alive',
+        }
+    )
+
+
+@bp.route('/messages', methods=['POST'])
+def mcp_messages():
+    """Receive MCP messages from Claude.ai (SSE transport).
+
+    Claude.ai POSTs here after establishing the SSE stream via GET.
+    We process the request and push the response onto the session queue,
+    which the SSE generator streams back to the client.
+    """
+    session_id = request.args.get('sessionId', '')
+    with _sessions_lock:
+        response_queue = _sessions.get(session_id)
+    if not response_queue:
+        return jsonify({'error': 'Invalid or expired session'}), 400
+
+    data = request.get_json(silent=True)
+    if data is None:
+        response_queue.put(_err(None, -32700, 'Parse error'))
+        return '', 202
+
+    for req in (data if isinstance(data, list) else [data]):
+        resp = _handle_one(req)
+        if resp is not None:
+            response_queue.put(resp)
+
+    return '', 202
 
 
 @bp.route('', methods=['POST'])
