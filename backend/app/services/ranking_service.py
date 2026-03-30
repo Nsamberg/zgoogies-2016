@@ -47,14 +47,14 @@ def update_round_ranking(competition_round_id, game):
     # Sort by points descending
     user_points.sort(key=lambda x: x[1], reverse=True)
 
-    # Assign ranks (handle ties)
-    current_rank = 1
+    # Assign ranks with correct tie handling (competition ranking: 1,1,1,4,5,5)
+    prev_rank = 1
+    prev_points = None
     for i, (user_id, points) in enumerate(user_points):
-        # If tied with previous, keep same rank
-        if i > 0 and user_points[i - 1][1] == points:
-            rank = user_points[i - 1][0]  # Get previous rank
-        else:
-            rank = current_rank
+        if points != prev_points:
+            prev_rank = i + 1  # position in sorted list (1-indexed)
+        prev_points = points
+        rank = prev_rank
 
         # Update or create ranking
         ranking = Ranking.query.filter_by(
@@ -87,8 +87,6 @@ def update_round_ranking(competition_round_id, game):
         )
         db.session.add(history)
 
-        current_rank += 1
-
     db.session.commit()
 
 
@@ -105,14 +103,14 @@ def update_overall_ranking(game):
     # Sort by points descending
     user_points.sort(key=lambda x: x[1], reverse=True)
 
-    # Assign ranks (handle ties)
-    current_rank = 1
+    # Assign ranks with correct tie handling (competition ranking: 1,1,1,4,5,5)
+    prev_rank = 1
+    prev_points = None
     for i, (user_id, points) in enumerate(user_points):
-        # If tied with previous, keep same rank
-        if i > 0 and user_points[i - 1][1] == points:
-            rank = user_points[i - 1][0]  # Get previous rank
-        else:
-            rank = current_rank
+        if points != prev_points:
+            prev_rank = i + 1  # position in sorted list (1-indexed)
+        prev_points = points
+        rank = prev_rank
 
         # Update or create ranking
         ranking = Ranking.query.filter_by(
@@ -145,8 +143,6 @@ def update_overall_ranking(game):
         )
         db.session.add(history)
 
-        current_rank += 1
-
     db.session.commit()
 
 
@@ -160,12 +156,13 @@ def recalculate_rankings_for_round(competition_round_id):
 
     user_points.sort(key=lambda x: x[1], reverse=True)
 
-    current_rank = 1
+    prev_rank = 1
+    prev_points = None
     for i, (user_id, points) in enumerate(user_points):
-        if i > 0 and user_points[i - 1][1] == points:
-            rank = current_rank - 1
-        else:
-            rank = current_rank
+        if points != prev_points:
+            prev_rank = i + 1
+        prev_points = points
+        rank = prev_rank
 
         ranking = Ranking.query.filter_by(
             user_id=user_id,
@@ -185,8 +182,6 @@ def recalculate_rankings_for_round(competition_round_id):
             )
             db.session.add(ranking)
 
-        current_rank += 1
-
     db.session.commit()
 
 
@@ -200,12 +195,13 @@ def recalculate_overall_rankings():
 
     user_points.sort(key=lambda x: x[1], reverse=True)
 
-    current_rank = 1
+    prev_rank = 1
+    prev_points = None
     for i, (user_id, points) in enumerate(user_points):
-        if i > 0 and user_points[i - 1][1] == points:
-            rank = current_rank - 1
-        else:
-            rank = current_rank
+        if points != prev_points:
+            prev_rank = i + 1
+        prev_points = points
+        rank = prev_rank
 
         ranking = Ranking.query.filter_by(
             user_id=user_id,
@@ -224,8 +220,6 @@ def recalculate_overall_rankings():
                 total_points=points
             )
             db.session.add(ranking)
-
-        current_rank += 1
 
     db.session.commit()
 
