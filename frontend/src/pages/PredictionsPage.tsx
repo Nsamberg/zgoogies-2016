@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { gamesAPI, predictionsAPI, playersAPI } from '../services/api'
+import { gamesAPI, predictionsAPI, playersAPI, adminAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Game, Prediction } from '../types'
 import { usePullToRefresh } from '../hooks/usePullToRefresh'
@@ -97,6 +97,41 @@ export default function PredictionsPage() {
   const [pastError, setPastError] = useState('')
   const [pastLoaded, setPastLoaded] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+
+  // Admin score entry for unscored closed games
+  const [adminScoreInputs, setAdminScoreInputs] = useState<Record<number, { a: string; b: string; status: 'idle' | 'saving' | 'saved' | 'error'; msg?: string }>>({})
+
+  const handleAdminScoreInput = (gameId: number, side: 'a' | 'b', value: string) => {
+    if (value !== '' && !/^\d+$/.test(value)) return
+    setAdminScoreInputs(prev => ({
+      ...prev,
+      [gameId]: { ...(prev[gameId] ?? { a: '', b: '', status: 'idle' }), [side]: value, status: 'idle', msg: undefined },
+    }))
+  }
+
+  const handleAdminScoreSubmit = async (gameId: number) => {
+    const s = adminScoreInputs[gameId]
+    if (!s || s.a === '' || s.b === '') {
+      setAdminScoreInputs(prev => ({ ...prev, [gameId]: { ...(prev[gameId] ?? { a: '', b: '' }), status: 'error', msg: 'Enter scores for both teams' } }))
+      return
+    }
+    setAdminScoreInputs(prev => ({ ...prev, [gameId]: { ...prev[gameId], status: 'saving' } }))
+    try {
+      await adminAPI.enterScore(gameId, { team_a_score: Number(s.a), team_b_score: Number(s.b) })
+      setAdminScoreInputs(prev => ({ ...prev, [gameId]: { ...prev[gameId], status: 'saved' } }))
+      setPastLoaded(false)
+      setPastLoading(true)
+      const [gamesRes, predsRes] = await Promise.all([gamesAPI.getClosed(), predictionsAPI.getPredictions()])
+      const predsMap: Record<number, Prediction> = {}
+      predsRes.data.forEach((p: Prediction) => { predsMap[p.game_id] = p })
+      setPastGames(gamesRes.data)
+      setPastPredictions(predsMap)
+      setPastLoaded(true)
+      setPastLoading(false)
+    } catch (err: any) {
+      setAdminScoreInputs(prev => ({ ...prev, [gameId]: { ...prev[gameId], status: 'error', msg: err.response?.data?.error ?? 'Failed to save score' } }))
+    }
+  }
 
   // Game predictions page-view (selected closed game → show all predictions)
   const [selectedClosedGame, setSelectedClosedGame] = useState<Game | null>(null)
@@ -596,6 +631,44 @@ export default function PredictionsPage() {
                           </div>
                         )}
                       </div>
+                      {user?.is_admin && !game.is_scored && (() => {
+                        const s = adminScoreInputs[game.id] ?? { a: '', b: '', status: 'idle' }
+                        return (
+                          <div className="admin-score-entry">
+                            <div className="admin-score-inputs">
+                              <div className="score-input-group">
+                                <label>{game.team_a.name}</label>
+                                <input
+                                  type="number" min="0" value={s.a} placeholder="0"
+                                  onChange={e => handleAdminScoreInput(game.id, 'a', e.target.value)}
+                                  onFocus={e => e.target.select()}
+                                  disabled={s.status === 'saving'}
+                                  className="score-input"
+                                />
+                              </div>
+                              <span className="score-separator">—</span>
+                              <div className="score-input-group">
+                                <label>{game.team_b.name}</label>
+                                <input
+                                  type="number" min="0" value={s.b} placeholder="0"
+                                  onChange={e => handleAdminScoreInput(game.id, 'b', e.target.value)}
+                                  onFocus={e => e.target.select()}
+                                  disabled={s.status === 'saving'}
+                                  className="score-input"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              className={`save-btn save-btn--${s.status === 'saved' ? 'saved' : 'idle'}`}
+                              onClick={() => handleAdminScoreSubmit(game.id)}
+                              disabled={s.status === 'saving'}
+                            >
+                              {s.status === 'saving' ? 'Saving…' : s.status === 'saved' ? '✓ Scored' : 'Enter Score'}
+                            </button>
+                            {s.status === 'error' && <p className="prediction-error">{s.msg}</p>}
+                          </div>
+                        )
+                      })()}
                       <button
                         className="game-predictions-toggle"
                         onClick={() => openGamePredictions(game)}

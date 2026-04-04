@@ -43,6 +43,10 @@ body {
   flex-wrap: wrap;
 }
 
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+}
 .logo {
   font-size: 2rem;
   font-weight: bold;
@@ -760,6 +764,21 @@ button[type="submit"]:disabled {
 
 .points-value {
   color: #1B1464;
+}
+
+/* Admin score entry on closed games in predictions page */
+.admin-score-entry {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.admin-score-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Closed game — view all predictions toggle */

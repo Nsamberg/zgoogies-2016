@@ -24,8 +24,8 @@ ZGoogies is a football tournament prediction game (World Cup, Euro, etc.) where 
 - Datetime override system lets admins simulate time for testing; stored in DB and respected throughout scoring/deadline logic
 
 ### Frontend (React + TypeScript)
-- Zustand stores in `src/stores/` manage auth state and datetime offset globally
-- `src/services/` contains typed Axios wrappers for all API endpoints
+- Single Zustand store `src/stores/authStore.ts` manages auth state and datetime offset globally
+- `src/services/api.ts` contains typed Axios wrappers for all API endpoints
 - Routes in `src/App.tsx`: `ProtectedRoute` wraps all authenticated pages; `AdminRoute` gates `/admin`
 - Path alias `@/` → `src/`
 - PWA support via vite-plugin-pwa
@@ -90,9 +90,9 @@ All of the following must pass:
 
 2. **Backend unit tests** (no server needed):
    ```bash
-   cd /Users/niko/Github/zgoogies-2016/backend && venv/bin/python -m pytest tests/test_auth.py tests/test_games.py tests/test_predictions.py tests/test_rankings.py tests/test_players.py tests/test_admin.py tests/test_datetime_utils.py -v
+   cd /Users/niko/Github/zgoogies-2016/backend && venv/bin/python -m pytest tests/ -v
    ```
-   Expected: 89 tests pass, 0 failed.
+   Expected: 143 tests pass, 0 failed.
 
 3. **API smoke test** (backend must be running on :5000):
    ```bash

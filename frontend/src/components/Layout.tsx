@@ -38,7 +38,7 @@ export default function Layout() {
       <header className="header">
         <div className="container">
           <div className="logo-wrapper">
-            <h1 className="logo">ZG⚽⚽gies</h1>
+            <Link to="/predictions" className="logo-link"><h1 className="logo">ZG⚽⚽gies</h1></Link>
             {datetimeOffsetMs != null && (
               <div className="datetime-override-notice mobile-only">
                 ⏱ Simulated: {formatSimulated(datetimeOffsetMs)}
