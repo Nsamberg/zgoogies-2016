@@ -501,6 +501,7 @@ def _game_dict(g):
             'round_number': g.competition_round.round_number
         },
         'is_scored': g.is_scored,
+        'is_prediction_closed': g.is_prediction_closed(),
         'team_a_score': g.team_a_score,
         'team_b_score': g.team_b_score,
         'is_double_points': g.is_double_points(),

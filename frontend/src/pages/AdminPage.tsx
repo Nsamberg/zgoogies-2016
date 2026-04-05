@@ -29,6 +29,7 @@ interface AdminGame {
   group: string | null
   competition_round: { id: number; name: string; round_number: number }
   is_scored: boolean
+  is_prediction_closed: boolean
   team_a_score: number | null
   team_b_score: number | null
   is_double_points: boolean
@@ -290,7 +291,7 @@ function ScoreEntryTab() {
                     {busy === game.id ? '...' : 'Rollback'}
                   </button>
                 </div>
-              ) : (
+              ) : game.is_prediction_closed ? (
                 <div className="admin-score-inputs">
                   <input
                     type="number"
@@ -317,6 +318,8 @@ function ScoreEntryTab() {
                     {busy === game.id ? '...' : 'Save'}
                   </button>
                 </div>
+              ) : (
+                <span className="admin-score-open">Predictions still open</span>
               )}
 
               <span className="admin-team-name team-b">{game.team_b.name}</span>
