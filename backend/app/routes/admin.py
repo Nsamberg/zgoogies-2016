@@ -164,6 +164,9 @@ def enter_score(game_id):
     if game.is_scored:
         return jsonify({'error': 'Game already scored. Use rollback first.'}), 400
 
+    if not game.is_prediction_closed():
+        return jsonify({'error': 'Cannot enter score: predictions are still open for this game.'}), 400
+
     game.team_a_score = data['team_a_score']
     game.team_b_score = data['team_b_score']
     game.is_scored = True

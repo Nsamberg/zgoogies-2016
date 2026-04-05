@@ -151,6 +151,19 @@ class TestScoreEntry:
                                json={'team_a_score': 1, 'team_b_score': 0})
         assert r.status_code == 403
 
+    def test_cannot_score_open_game(self, app, admin_client):
+        """Score entry must be rejected when predictions are still open."""
+        with app.app_context():
+            from datetime import datetime
+            g = Game.query.filter(Game.game_date > datetime(2025, 1, 1)).first()
+            assert g is not None, "No future game found in seed data"
+            gid = g.id
+
+        r = admin_client.post(f'/api/admin/score/{gid}',
+                              json={'team_a_score': 1, 'team_b_score': 0})
+        assert r.status_code == 400
+        assert 'open' in r.get_json()['error'].lower()
+
 
 class TestDatetimeOverride:
     def test_get_override_not_set(self, admin_client):
