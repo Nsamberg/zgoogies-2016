@@ -25,6 +25,8 @@ IMPORTANT: Please pay the registration fee (5 GBP) to one of the following cachi
 
 Payment must be made at the latest the day before the first game is played.
 
+Please read the rules before submitting your predictions: https://zgoogies.online/rules
+
 You can change your password after logging in through your account settings.
 
 Best regards,
@@ -49,6 +51,9 @@ The ZGoogies Team
         <li>Patrick Hebant or Nikolaus Samberger (London)</li>
     </ul>
     <p>Payment must be made at the latest the day before the first game is played.</p>
+
+    <h3>Rules</h3>
+    <p>Please read the rules before submitting your predictions: <a href="https://zgoogies.online/rules">https://zgoogies.online/rules</a></p>
 
     <p>You can change your password after logging in through your account settings.</p>
 
