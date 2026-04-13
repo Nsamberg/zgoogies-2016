@@ -2,8 +2,11 @@ from flask import Blueprint, request, jsonify, session, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models.user import User
+from app.models.game import Game
 from app.models.access_log import AccessLog
 from app.services.email_service import send_registration_email, send_password_reset_email
+from app.utils.datetime_utils import get_current_utc
+from datetime import timedelta
 import secrets
 import string
 import threading
@@ -47,6 +50,13 @@ def register():
     # Verify CAPTCHA
     if not verify_recaptcha(data.get('captcha_token')):
         return jsonify({'error': 'CAPTCHA verification failed. Please try again.'}), 400
+
+    # Check registration deadline (2 hours before first game)
+    first_game = Game.query.order_by(Game.game_date.asc()).first()
+    if first_game:
+        registration_deadline = first_game.game_date - timedelta(hours=2)
+        if get_current_utc() >= registration_deadline:
+            return jsonify({'error': 'Registration is closed. The tournament has already started.'}), 400
 
     # Validate required fields
     required_fields = ['username', 'first_name', 'surname', 'email', 'timezone', 'tournament_winner_id']
