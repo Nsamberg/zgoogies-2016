@@ -20,8 +20,8 @@ Username: {username}
 Password: {password}
 
 IMPORTANT: Please pay the registration fee (5 GBP) to one of the following cachiers:
-- Bruno Spada (Nice)
-- Patrick Hebant or Nikolaus Samberger (London)
+- Bruno Spada, Michael Johannes or Florent Maupey (France - Nice)
+- Patrick Hebant, Jean-Philippe Gea or Nikolaus Samberger (UK - London)
 
 Payment must be made at the latest the day before the first game is played.
 
@@ -47,8 +47,8 @@ The ZGoogies Team
     <h3>Payment Information:</h3>
     <p><strong>IMPORTANT:</strong> Please pay the registration fee (5 GBP) to one of the following cachiers:</p>
     <ul>
-        <li>Bruno Spada (Nice)</li>
-        <li>Patrick Hebant or Nikolaus Samberger (London)</li>
+        <li>Bruno Spada, Michael Johannes or Florent Maupey (France - Nice)</li>
+        <li>Patrick Hebant, Jean-Philippe Gea or Nikolaus Samberger (UK - London)</li>
     </ul>
     <p>Payment must be made at the latest the day before the first game is played.</p>
 
