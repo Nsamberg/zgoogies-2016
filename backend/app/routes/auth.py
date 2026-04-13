@@ -102,6 +102,17 @@ def register():
     return jsonify({'message': 'Registration successful', 'user_id': user.id, 'password': password}), 201
 
 
+@bp.route('/registration-status', methods=['GET'])
+def registration_status():
+    """Return whether registration is currently open"""
+    first_game = Game.query.order_by(Game.game_date.asc()).first()
+    if not first_game:
+        return jsonify({'open': True, 'deadline': None})
+    deadline = first_game.game_date - timedelta(hours=2)
+    is_open = get_current_utc() < deadline
+    return jsonify({'open': is_open, 'deadline': deadline.isoformat()})
+
+
 @bp.route('/login', methods=['POST'])
 def login():
     """User login"""

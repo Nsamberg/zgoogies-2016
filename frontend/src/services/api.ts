@@ -25,6 +25,9 @@ export const authAPI = {
     captcha_token: string
   }) => api.post('/auth/register', data),
 
+  getRegistrationStatus: () =>
+    api.get<{ open: boolean; deadline: string | null }>('/auth/registration-status'),
+
   resetPassword: (identifier: string) =>
     api.post('/auth/reset-password', { identifier }),
 

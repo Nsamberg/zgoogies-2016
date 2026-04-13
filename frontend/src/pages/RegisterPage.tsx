@@ -93,20 +93,20 @@ export default function RegisterPage() {
   const [generatedPassword, setGeneratedPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(30)
+  const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null)
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Fetch teams for tournament winner selection
-    const fetchTeams = async () => {
-      try {
-        const response = await teamsAPI.getAll()
-        setTeams(response.data)
-      } catch (err) {
-        console.error('Failed to fetch teams:', err)
-      }
+    const fetchInitialData = async () => {
+      const [teamsRes, statusRes] = await Promise.allSettled([
+        teamsAPI.getAll(),
+        authAPI.getRegistrationStatus(),
+      ])
+      if (teamsRes.status === 'fulfilled') setTeams(teamsRes.value.data)
+      if (statusRes.status === 'fulfilled') setRegistrationOpen(statusRes.value.data.open)
     }
-    fetchTeams()
+    fetchInitialData()
   }, [])
 
   useEffect(() => {
@@ -191,6 +191,22 @@ export default function RegisterPage() {
       if (IS_PROD) recaptchaRef.current?.reset()
       setLoading(false)
     }
+  }
+
+  if (registrationOpen === false) {
+    return (
+      <div className="register-page">
+        <div className="register-container">
+          <h1>Registration Closed</h1>
+          <div className="error">
+            Registration is closed. The tournament has already started.
+          </div>
+          <div className="links">
+            <Link to="/login">Already have an account? Login</Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {
