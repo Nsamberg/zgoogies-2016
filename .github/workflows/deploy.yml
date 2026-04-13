@@ -56,7 +56,7 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
-            cd /path/to/zgoogies-2016
+            cd /home/deploy/zgoogies
             git pull origin production
             source backend/venv/bin/activate
             pip install -r backend/requirements.txt
