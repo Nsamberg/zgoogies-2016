@@ -127,10 +127,11 @@
 
 - **104 games** — FIFA World Cup 2026 full schedule
 - **3 competition rounds**: Round 1 (36 games), Round 2 (36 games), Round 3 (32 games — double points)
-- **112 teams** — all qualified + knockout placeholders
+- **48 confirmed nations** + knockout-round placeholders (winner/runner-up references)
 - **21 venues** — across USA, Canada, Mexico
 - **Dates**: June 11 – July 19, 2026
-- **Source**: `config/Tournament Games.json`
+- **Primary source**: [openfootball/world-cup.json](https://github.com/openfootball/world-cup.json) — final confirmed group assignments
+- **Local copies**: `config/Tournament Games.json` (DB import source), `config/FIFA World Cup 2026.xlsx` (reference spreadsheet)
 
 ---
 
