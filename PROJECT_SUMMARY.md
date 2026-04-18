@@ -103,7 +103,8 @@
 - **Logs**: `journalctl -u zgoogies -n 50`
 - **nginx config**: `/etc/nginx/sites-available/zgoogies`
 - **Cert**: `/etc/letsencrypt/live/zgoogies.online/`
-- **Deploy update**: `git pull origin production && cd frontend && npm run build && systemctl restart zgoogies`
+- **Deploy**: push to `production` branch — GitHub Actions (`.github/workflows/deploy.yml`) SSHes into Hetzner, runs `git pull`, `pip install`, `npm build`, and `systemctl restart zgoogies` automatically
+- **DB migrations**: run manually after deploy — `cd /home/deploy/zgoogies/backend && venv/bin/python <migration_script>.py`
 
 ### Known production gotchas
 - nginx needs `chmod 755 /home/deploy` to serve frontend files
