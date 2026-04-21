@@ -1855,11 +1855,12 @@ button[type="submit"]:disabled {
   color: #D4AC0D;
   border-top: 1px solid rgba(212, 172, 13, 0.3);
   padding: 0.35rem 1rem;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .wc-countdown-timer {
   font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
   letter-spacing: 0.05em;
 }
 

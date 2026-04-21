@@ -129,10 +129,11 @@ export default function Layout() {
         </div>
         {countdown !== null && (
           <div className="wc-countdown-banner">
-            ⚽ FIFA World Cup 2026 kicks off in&nbsp;
+            ⚽&nbsp;
             <span className="wc-countdown-timer">
               {countdown.days}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m {String(countdown.seconds).padStart(2, '0')}s
             </span>
+            &nbsp;to kick off
           </div>
         )}
       </header>
