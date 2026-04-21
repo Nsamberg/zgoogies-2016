@@ -1845,6 +1845,24 @@ button[type="submit"]:disabled {
   display: none;
 }
 
+/* ─── World Cup Countdown Banner ─────────────────────────────────────────── */
+
+.wc-countdown-banner {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #D4AC0D;
+  border-top: 1px solid rgba(212, 172, 13, 0.3);
+  padding: 0.35rem 1rem;
+}
+
+.wc-countdown-timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
 /* ─── Admin Page ─────────────────────────────────────────────────────────── */
 
 .admin-page {

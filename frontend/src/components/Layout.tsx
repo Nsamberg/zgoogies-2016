@@ -3,6 +3,8 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../services/api'
 
+const WC_START = new Date('2026-06-11T18:00:00Z')
+
 function formatSimulated(offsetMs: number) {
   const d = new Date(Date.now() + offsetMs)
   return d.toLocaleString('en-GB', {
@@ -11,10 +13,34 @@ function formatSimulated(offsetMs: number) {
   }) + ' UTC'
 }
 
+type Countdown = { days: number; hours: number; minutes: number; seconds: number }
+
+function calcCountdown(offsetMs: number): Countdown | null {
+  const diff = WC_START.getTime() - (Date.now() + offsetMs)
+  if (diff <= 0) return null
+  const totalSec = Math.floor(diff / 1000)
+  return {
+    days:    Math.floor(totalSec / 86400),
+    hours:   Math.floor((totalSec % 86400) / 3600),
+    minutes: Math.floor((totalSec % 3600) / 60),
+    seconds: totalSec % 60,
+  }
+}
+
 export default function Layout() {
   const { user, logout, datetimeOffsetMs } = useAuthStore()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [countdown, setCountdown] = useState<Countdown | null>(() =>
+    calcCountdown(datetimeOffsetMs ?? 0)
+  )
+
+  useEffect(() => {
+    const tick = () => setCountdown(calcCountdown(datetimeOffsetMs ?? 0))
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [datetimeOffsetMs])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -101,6 +127,14 @@ export default function Layout() {
             <button onClick={handleLogout}>Logout</button>
           </div>
         </div>
+        {countdown !== null && (
+          <div className="wc-countdown-banner">
+            ⚽ FIFA World Cup 2026 kicks off in&nbsp;
+            <span className="wc-countdown-timer">
+              {countdown.days}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m {String(countdown.seconds).padStart(2, '0')}s
+            </span>
+          </div>
+        )}
       </header>
 
       <main className="main-content">
