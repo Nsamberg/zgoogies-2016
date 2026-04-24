@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 const THRESHOLD = 80
 
-export function usePullToRefresh(onRefresh: () => Promise<void>) {
+export function usePullToRefresh() {
   const [isPulling, setIsPulling] = useState(false)
   const [pullDistance, setPullDistance] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -10,8 +10,6 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
   const startY = useRef(0)
   const pulling = useRef(false)
   const distanceRef = useRef(0)
-  const onRefreshRef = useRef(onRefresh)
-  useEffect(() => { onRefreshRef.current = onRefresh }, [onRefresh])
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (window.scrollY === 0) {
@@ -41,11 +39,12 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
     setIsPulling(false)
     if (d >= THRESHOLD) {
       setIsRefreshing(true)
-      try {
-        await onRefreshRef.current()
-      } finally {
-        setIsRefreshing(false)
+      // Clear all SW caches so the reload fetches fresh HTML and assets
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        await Promise.all(keys.map(k => caches.delete(k)))
       }
+      window.location.reload()
     }
   }, [])
 

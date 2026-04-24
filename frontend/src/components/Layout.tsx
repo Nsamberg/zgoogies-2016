@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../services/api'
+import { usePullToRefresh } from '../hooks/usePullToRefresh'
 
 const WC_START = new Date('2026-06-11T18:00:00Z')
 
@@ -34,6 +35,7 @@ export default function Layout() {
   const [countdown, setCountdown] = useState<Countdown | null>(() =>
     calcCountdown(datetimeOffsetMs ?? 0)
   )
+  const { isPulling, pullDistance, isRefreshing, threshold } = usePullToRefresh()
 
   useEffect(() => {
     const tick = () => setCountdown(calcCountdown(datetimeOffsetMs ?? 0))
@@ -61,6 +63,11 @@ export default function Layout() {
 
   return (
     <div className="app-layout">
+      {(isPulling || isRefreshing) && (
+        <div className="pull-indicator">
+          {isRefreshing ? 'Refreshing…' : pullDistance >= threshold ? 'Release to refresh' : 'Pull down to refresh'}
+        </div>
+      )}
       <header className="header">
         <div className="container">
           <div className="logo-wrapper">
