@@ -386,25 +386,8 @@ export default function AccountPage() {
 
           <div className="ai-setup-guide">
             <h4>How to connect</h4>
-            <div className="ai-setup-option">
-              <strong>Option A — Google AI Studio (free)</strong>
-              <ol>
-                <li>Go to <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer">aistudio.google.com</a> and sign in with a Google account</li>
-                <li>Click <em>Build</em> → <em>Create agent</em></li>
-                <li>Add MCP server URL: <code>https://zgoogies.online/api/mcp</code></li>
-                <li>Paste the system prompt (ask your admin for it)</li>
-                <li>Share the agent link with other players</li>
-              </ol>
-            </div>
-            <div className="ai-setup-option">
-              <strong>Option B — Claude.ai (Claude Pro required)</strong>
-              <ol>
-                <li>Go to <a href="https://claude.ai/" target="_blank" rel="noreferrer">claude.ai</a> → Settings → Integrations</li>
-                <li>Add MCP server: <code>https://zgoogies.online/api/mcp</code></li>
-                <li>Create a Project with the ZGoogies system prompt as instructions</li>
-                <li>The Project will use your token automatically when you chat</li>
-              </ol>
-            </div>
+            <p className="account-help-text">Add this MCP server URL to your AI assistant (Claude.ai or Google AI Studio):</p>
+            <code className="ai-mcp-url">https://zgoogies.online/api/mcp</code>
             <p className="account-help-text" style={{ marginTop: '0.75rem' }}>
               When the AI assistant asks for your token, paste it from above.
               Your token gives the AI access to your ZGoogies data only — it cannot change your password or account settings.
