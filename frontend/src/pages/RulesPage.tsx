@@ -1,4 +1,26 @@
+import { useState, useEffect } from 'react'
+import { playersAPI } from '../services/api'
+
+interface StaffMember {
+  first_name: string
+  surname: string
+  email: string
+  is_cachier: boolean
+  is_admin: boolean
+}
+
 export default function RulesPage() {
+  const [staff, setStaff] = useState<StaffMember[]>([])
+
+  useEffect(() => {
+    playersAPI.getStaff()
+      .then(res => setStaff(res.data))
+      .catch(() => {})
+  }, [])
+
+  const cashiers = staff.filter(s => s.is_cachier)
+  const admins = staff.filter(s => s.is_admin && !s.is_cachier)
+
   return (
     <div className="rules-page">
       <h2>Rules</h2>
@@ -91,8 +113,42 @@ export default function RulesPage() {
 
       <div className="rules-section">
         <h3>Registration Fee</h3>
-        <p>The entry fee is <strong>5 GBP</strong> per player, payable to one of the administrators before the first game. Your account must be marked as paid to submit predictions.</p>
+        <p>The entry fee is <strong>5 GBP</strong> per player, payable to one of the cashiers below before the first game. Your account must be marked as paid to submit predictions.</p>
       </div>
+
+      {staff.length > 0 && (
+        <div className="rules-section">
+          <h3>Who to Pay</h3>
+          {cashiers.length > 0 && (
+            <>
+              <p className="rules-staff-label">Cashiers</p>
+              <ul className="rules-staff-list">
+                {cashiers.map(s => (
+                  <li key={s.email}>
+                    <a href={`mailto:${s.email}`} className="rules-staff-link">
+                      {s.first_name} {s.surname}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {admins.length > 0 && (
+            <>
+              <p className="rules-staff-label">Admins</p>
+              <ul className="rules-staff-list">
+                {admins.map(s => (
+                  <li key={s.email}>
+                    <a href={`mailto:${s.email}`} className="rules-staff-link">
+                      {s.first_name} {s.surname}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="rules-section">
         <h3>Rankings</h3>

@@ -9,6 +9,23 @@ from app.models.prediction import Prediction
 bp = Blueprint('players', __name__, url_prefix='/api/players')
 
 
+@bp.route('/staff', methods=['GET'])
+@login_required
+def get_staff():
+    """Get cashiers and admins with contact email for the Rules page"""
+    staff = User.query.filter(
+        (User.is_cachier == True) | (User.is_admin == True)
+    ).order_by(func.lower(User.first_name)).all()
+
+    return jsonify([{
+        'first_name': u.first_name,
+        'surname': u.surname,
+        'email': u.email,
+        'is_cachier': u.is_cachier,
+        'is_admin': u.is_admin,
+    } for u in staff]), 200
+
+
 @bp.route('/', methods=['GET'])
 @login_required
 def get_players():

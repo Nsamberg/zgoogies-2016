@@ -75,6 +75,7 @@ export const rankingsAPI = {
 // Players API
 export const playersAPI = {
   getAll: () => api.get('/players/'),
+  getStaff: () => api.get('/players/staff'),
   getPlayer: (userId: number) => api.get(`/players/${userId}`),
   getPlayerPredictions: (userId: number) => api.get(`/players/${userId}/predictions`),
   getWinnerPredictions: () => api.get('/players/winner-predictions'),

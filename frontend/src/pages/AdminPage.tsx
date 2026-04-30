@@ -63,9 +63,11 @@ function formatDate(iso: string) {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function PaymentsTab() {
+  const { user: currentUser } = useAuthStore()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState<'all' | 'unpaid' | 'paid_to_me'>('all')
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState('')
 
@@ -106,13 +108,20 @@ function PaymentsTab() {
     }
   }
 
-  const filtered = users.filter(u =>
-    u.username.toLowerCase().includes(search.toLowerCase()) ||
-    u.first_name.toLowerCase().includes(search.toLowerCase()) ||
-    u.surname.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = users.filter(u => {
+    const matchesSearch =
+      u.username.toLowerCase().includes(search.toLowerCase()) ||
+      u.first_name.toLowerCase().includes(search.toLowerCase()) ||
+      u.surname.toLowerCase().includes(search.toLowerCase())
+    if (!matchesSearch) return false
+    if (filter === 'unpaid') return !u.has_paid
+    if (filter === 'paid_to_me') return u.payment_received_by === currentUser?.username
+    return true
+  })
 
   const paid = users.filter(u => u.has_paid).length
+  const unpaidCount = users.filter(u => !u.has_paid).length
+  const paidToMeCount = users.filter(u => u.payment_received_by === currentUser?.username).length
 
   if (loading) return <div className="admin-loading">Loading users...</div>
 
@@ -129,6 +138,17 @@ function PaymentsTab() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+      </div>
+      <div className="admin-filters payment-filters">
+        <button className={`role-filter-btn${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
+          All <span className="role-filter-count">{users.length}</span>
+        </button>
+        <button className={`role-filter-btn${filter === 'unpaid' ? ' active' : ''}`} onClick={() => setFilter('unpaid')}>
+          Unpaid <span className="role-filter-count">{unpaidCount}</span>
+        </button>
+        <button className={`role-filter-btn${filter === 'paid_to_me' ? ' active' : ''}`} onClick={() => setFilter('paid_to_me')}>
+          Paid to me <span className="role-filter-count">{paidToMeCount}</span>
+        </button>
       </div>
 
       {msg && <div className="admin-message">{msg}</div>}
