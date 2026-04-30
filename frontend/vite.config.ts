@@ -21,7 +21,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       workbox: {
-        // NetworkFirst for HTML so pull-to-refresh always fetches fresh markup
+        skipWaiting: true,    // activate new SW immediately on install, no waiting
+        clientsClaim: true,   // new SW takes control of all open tabs right away
+        cleanupOutdatedCaches: true,
+        // NetworkFirst for HTML so every reload fetches fresh markup from server
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
