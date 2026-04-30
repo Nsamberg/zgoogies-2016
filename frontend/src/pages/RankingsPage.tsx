@@ -6,7 +6,6 @@ import {
 import { rankingsAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
-import { usePullToRefresh } from '../hooks/usePullToRefresh'
 
 type TabId = 'overall' | number
 
@@ -179,7 +178,6 @@ export default function RankingsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
-  const [refreshKey, setRefreshKey] = useState(0)
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
@@ -206,13 +204,7 @@ export default function RankingsPage() {
       }
     }
     init()
-  }, [refreshKey])
-
-  const onRefresh = useCallback(async () => {
-    setRefreshKey((k) => k + 1)
   }, [])
-
-  const { isPulling, pullDistance, isRefreshing, threshold } = usePullToRefresh(onRefresh)
 
   const handleTabChange = async (tab: TabId) => {
     setActiveTab(tab)
@@ -250,11 +242,6 @@ export default function RankingsPage() {
 
   return (
     <div className="rankings-page">
-      {(isPulling || isRefreshing) && (
-        <div className="pull-indicator">
-          {isRefreshing ? 'Refreshing...' : pullDistance >= threshold ? 'Release to refresh' : 'Pull down to refresh'}
-        </div>
-      )}
       <h2 className="page-title">Rankings</h2>
 
       <div className="page-tabs">

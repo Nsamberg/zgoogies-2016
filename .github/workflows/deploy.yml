@@ -24,20 +24,3 @@ jobs:
             pip install -r backend/requirements.txt
             cd frontend && npm ci && npm run build && cd ..
             sudo systemctl restart zgoogies
-
-            # Ensure nginx never caches the service worker file so browsers
-            # always detect new deployments immediately
-            sudo tee /etc/nginx/snippets/pwa-nocache.conf > /dev/null << 'EOF'
-            location ~* (sw\.js|registerSW\.js|workbox-.*\.js)$ {
-                add_header Cache-Control "no-store, no-cache, must-revalidate";
-                add_header Pragma "no-cache";
-                expires -1;
-            }
-            EOF
-
-            # Include the snippet in the site config if not already present
-            if ! grep -q "pwa-nocache" /etc/nginx/sites-available/zgoogies; then
-                sudo sed -i '/^}/i\    include /etc/nginx/snippets/pwa-nocache.conf;' /etc/nginx/sites-available/zgoogies
-            fi
-
-            sudo nginx -t && sudo nginx -s reload

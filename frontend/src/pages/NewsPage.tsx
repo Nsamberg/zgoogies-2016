@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { newsAPI } from '../services/api'
 import { News, NewsComment } from '../types'
-import { usePullToRefresh } from '../hooks/usePullToRefresh'
 import { useAuthStore } from '../stores/authStore'
 
 function formatDate(isoDate: string): string {
@@ -27,7 +26,6 @@ export default function NewsPage() {
   const [news, setNews] = useState<News[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [refreshKey, setRefreshKey] = useState(0)
   const [expandedNewsId, setExpandedNewsId] = useState<number | null>(null)
   const [comments, setComments] = useState<Record<number, NewsComment[]>>({})
   const [newComment, setNewComment] = useState<Record<number, string>>({})
@@ -42,13 +40,7 @@ export default function NewsPage() {
       .then((res) => setNews(res.data))
       .catch(() => setError('Failed to load news. Please refresh.'))
       .finally(() => setLoading(false))
-  }, [refreshKey])
-
-  const onRefresh = useCallback(async () => {
-    setRefreshKey((k) => k + 1)
   }, [])
-
-  const { isPulling, pullDistance, isRefreshing, threshold } = usePullToRefresh(onRefresh)
 
   const handleReaction = async (newsId: number, reactionType: 'like' | 'dislike') => {
     if (!user) return
@@ -179,11 +171,6 @@ export default function NewsPage() {
 
   return (
     <div className="news-page">
-      {(isPulling || isRefreshing) && (
-        <div className="pull-indicator">
-          {isRefreshing ? 'Refreshing...' : pullDistance >= threshold ? 'Release to refresh' : 'Pull down to refresh'}
-        </div>
-      )}
       <h2 className="page-title">News &amp; Announcements</h2>
 
       {loading && <p className="loading-text">Loading news...</p>}
