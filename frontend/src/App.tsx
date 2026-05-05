@@ -38,6 +38,11 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/reset-password" element={<ForgotPasswordPage />} />
 
+        {/* Public routes with layout */}
+        <Route element={<Layout />}>
+          <Route path="/rules" element={<RulesPage />} />
+        </Route>
+
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
@@ -46,7 +51,6 @@ function App() {
             <Route path="/predictions" element={<PredictionsPage />} />
             <Route path="/rankings" element={<RankingsPage />} />
             <Route path="/players" element={<PlayersPage />} />
-            <Route path="/rules" element={<RulesPage />} />
             <Route path="/account" element={<AccountPage />} />
             {/* Admin-only routes */}
             <Route element={<AdminRoute />}>

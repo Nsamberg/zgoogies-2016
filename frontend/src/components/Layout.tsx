@@ -104,7 +104,7 @@ export default function Layout() {
             <div className="mobile-nav-overlay" onClick={() => setMenuOpen(false)}>
               <nav className="mobile-nav" onClick={e => e.stopPropagation()}>
                 <div className="mobile-nav-header">
-                  <span className="mobile-nav-username">Welcome, {user?.first_name}!</span>
+                  {user && <span className="mobile-nav-username">Welcome, {user.first_name}!</span>}
                   <button className="mobile-nav-close" onClick={() => setMenuOpen(false)}>✕</button>
                 </div>
                 <Link to="/predictions" onClick={() => setMenuOpen(false)}>Predictions</Link>
@@ -115,24 +115,28 @@ export default function Layout() {
                 <Link to="/account" onClick={() => setMenuOpen(false)}>My Account</Link>
                 {(user?.is_admin || user?.is_cachier) &&
                   <Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link>}
-                <button className="mobile-nav-logout" onClick={() => { setMenuOpen(false); handleLogout() }}>
-                  Logout
-                </button>
+                {user && (
+                  <button className="mobile-nav-logout" onClick={() => { setMenuOpen(false); handleLogout() }}>
+                    Logout
+                  </button>
+                )}
               </nav>
             </div>
           )}
 
-          <div className="user-info">
-            <div>
-              <span>Welcome, {user?.first_name}!</span>
-              {datetimeOffsetMs != null && (
-                <div className="datetime-override-notice">
-                  ⏱ Simulated: {formatSimulated(datetimeOffsetMs)}
-                </div>
-              )}
+          {user && (
+            <div className="user-info">
+              <div>
+                <span>Welcome, {user.first_name}!</span>
+                {datetimeOffsetMs != null && (
+                  <div className="datetime-override-notice">
+                    ⏱ Simulated: {formatSimulated(datetimeOffsetMs)}
+                  </div>
+                )}
+              </div>
+              <button onClick={handleLogout}>Logout</button>
             </div>
-            <button onClick={handleLogout}>Logout</button>
-          </div>
+          )}
         </div>
         {countdown !== null && (
           <div className="wc-countdown-banner">

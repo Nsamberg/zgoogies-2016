@@ -9,8 +9,7 @@ ZGoogies is a football tournament prediction game (World Cup, Euro, etc.) where 
 - **Frontend**: http://localhost:5173 (Vite dev server)
 - **Backend**: http://localhost:5000 (Flask)
 - **Admin credentials**: `admin` / `admin123`
-- **Root**: `/Users/niko/Github/zgoogies-2016`
-- **Backend venv**: `backend/venv/bin/python`
+- **Backend venv**: `backend/venv/bin/python` (Unix) or `backend/venv/Scripts/python` (Windows)
 
 ## Architecture
 
@@ -40,7 +39,7 @@ ZGoogies is a football tournament prediction game (World Cup, Euro, etc.) where 
 ### Key backend patterns
 - **Auth decorators**: `@admin_required` and `@cachier_required` (in `backend/app/routes/admin.py`) wrap `@login_required` and check roles — always use these, don't inline role checks
 - **AppSetting**: Key-value store model with `AppSetting.get(key, default)` / `AppSetting.set(key, value)` — used for datetime override offset, AI rate limits, and other runtime config
-- **Competition rounds vs stages**: `CompetitionRound` is admin-defined for scoring/prizes (e.g. "Round 1"); `Game.stage` is the actual football phase (e.g. "Group A", "Final"). The last `CompetitionRound` awards double points (`CompetitionRound.is_last_round()`).
+- **Competition rounds vs stages**: `CompetitionRound` is admin-defined for scoring/prizes (e.g. "Round 1"); `Game.stage` is the actual football phase (e.g. "Group A", "Final"). The last `CompetitionRound` awards double points (`CompetitionRound.is_last_round()`). `Game.is_double_points()` is a method, not a column.
 - **Datetime override**: Stored as a seconds offset in `AppSetting('datetime_override_offset')`; `get_current_utc()` adds this offset to real time so simulated time advances normally. All deadline and scoring logic calls `get_current_utc()`.
 
 ### Testing
@@ -54,10 +53,10 @@ Selected via `FLASK_ENV` env var (default: `development`). `TestingConfig` uses 
 
 ## Commands
 
-### Start / stop everything
+### Start / stop everything (from repo root)
 ```bash
-cd /Users/niko/Github/zgoogies-2016 && python start.py   # starts backend :5000 + frontend :5173
-cd /Users/niko/Github/zgoogies-2016 && python stop.py
+python start.py   # starts backend :5000 + frontend :5173
+python stop.py
 ```
 
 ### Frontend (from `frontend/`)
@@ -70,12 +69,20 @@ npm run build        # production build
 
 ### Backend (from `backend/`)
 ```bash
-venv/bin/python run.py                          # start server
-venv/bin/python -m pytest tests/ -v             # all tests
-venv/bin/python -m pytest tests/test_auth.py -v # single test file
-venv/bin/python -m pytest tests/ -k "test_name" # single test by name
-flask db migrate -m "message"                   # create migration
-flask db upgrade                                # apply migrations
+# Unix
+venv/bin/python run.py
+venv/bin/python -m pytest tests/ -v
+venv/bin/python -m pytest tests/test_auth.py -v
+venv/bin/python -m pytest tests/ -k "test_name"
+
+# Windows
+venv/Scripts/python run.py
+venv/Scripts/python -m pytest tests/ -v
+venv/Scripts/python -m pytest tests/test_auth.py -v
+venv/Scripts/python -m pytest tests/ -k "test_name"
+
+flask db migrate -m "message"   # create migration
+flask db upgrade                 # apply migrations
 ```
 
 ## Validation before committing
@@ -84,19 +91,22 @@ All of the following must pass:
 
 1. **Frontend type-check + tests** (no server needed):
    ```bash
-   cd /Users/niko/Github/zgoogies-2016/frontend && npx tsc --noEmit && npm test
+   cd frontend && npx tsc --noEmit && npm test
    ```
-   Expected: 0 TypeScript errors, 15 vitest tests pass.
+   Expected: 0 TypeScript errors, all vitest tests pass.
 
 2. **Backend unit tests** (no server needed):
    ```bash
-   cd /Users/niko/Github/zgoogies-2016/backend && venv/bin/python -m pytest tests/ -v
+   # Unix
+   cd backend && venv/bin/python -m pytest tests/ -v
+   # Windows
+   cd backend && venv/Scripts/python -m pytest tests/ -v
    ```
-   Expected: 143 tests pass, 0 failed.
+   Expected: all tests pass, 0 failed.
 
 3. **API smoke test** (backend must be running on :5000):
    ```bash
-   venv/bin/python -c "
+   python -c "
    import requests, sys
    BASE = 'http://localhost:5000/api'
    s = requests.Session()
@@ -109,7 +119,7 @@ All of the following must pass:
        ('/admin/datetime-override','datetime-override'), ('/teams/','teams'),
    ]:
        r = s.get(f'{BASE}{path}')
-       print(f'  [{ \"OK\" if r.status_code == 200 else \"FAIL\"}] {r.status_code} {label}')
+       print(f'  [{\"OK\" if r.status_code == 200 else \"FAIL\"}] {r.status_code} {label}')
        assert r.status_code == 200
    print('All checks passed.')
    "
