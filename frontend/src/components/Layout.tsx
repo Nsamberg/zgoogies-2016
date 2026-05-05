@@ -79,25 +79,33 @@ export default function Layout() {
             )}
           </div>
 
-          {/* Hamburger button — visible on mobile only via CSS */}
-          <button
-            className={`hamburger-btn${menuOpen ? ' open' : ''}`}
-            onClick={() => setMenuOpen(o => !o)}
-            aria-label="Toggle navigation"
-          >
-            <span /><span /><span />
-          </button>
+          {/* Hamburger button — visible on mobile only via CSS, only when logged in */}
+          {user && (
+            <button
+              className={`hamburger-btn${menuOpen ? ' open' : ''}`}
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Toggle navigation"
+            >
+              <span /><span /><span />
+            </button>
+          )}
 
-          {/* Desktop nav — hidden on mobile via CSS */}
-          <nav className="nav">
-            <Link to="/predictions">Predictions</Link>
-            <Link to="/rankings">Rankings</Link>
-            <Link to="/news">News</Link>
-            <Link to="/players">Players</Link>
-            <Link to="/rules">Rules</Link>
-            <Link to="/account">My Account</Link>
-            {(user?.is_admin || user?.is_cachier) && <Link to="/admin">Admin</Link>}
-          </nav>
+          {/* Desktop nav — full nav when logged in, just Log in link when not */}
+          {user ? (
+            <nav className="nav">
+              <Link to="/predictions">Predictions</Link>
+              <Link to="/rankings">Rankings</Link>
+              <Link to="/news">News</Link>
+              <Link to="/players">Players</Link>
+              <Link to="/rules">Rules</Link>
+              <Link to="/account">My Account</Link>
+              {(user.is_admin || user.is_cachier) && <Link to="/admin">Admin</Link>}
+            </nav>
+          ) : (
+            <nav className="nav">
+              <Link to="/login">Log in</Link>
+            </nav>
+          )}
 
           {/* Mobile nav overlay */}
           {menuOpen && (
