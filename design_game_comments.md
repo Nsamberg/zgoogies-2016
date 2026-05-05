@@ -12,16 +12,16 @@ Discussion naturally happens after a match closes — who predicted what, why th
 
 ## Goals
 
-- Let any authenticated player comment on a game once its prediction deadline has passed
-- Surface comment counts on closed-game cards so users know a discussion exists
+- Let any authenticated player comment on any game at any time
+- Allow users to edit and delete their own comments
+- Surface comment counts on game cards so users know a discussion exists
 - Reuse patterns already established in `NewsComment` to minimize new code
-- Keep moderation simple: users delete their own, admins delete any
+- Keep moderation simple: users edit/delete their own, admins delete any
 
 ## Non-Goals
 
 - Replies/threads (flat list only, simpler and sufficient)
 - Rich text or emoji reactions on comments (out of scope)
-- Comments before prediction deadline (would leak information)
 - Anonymous or guest comments
 
 ---
@@ -30,12 +30,15 @@ Discussion naturally happens after a match closes — who predicted what, why th
 
 | Action | Who | When |
 |--------|-----|------|
-| Read comments | Any authenticated user | After prediction deadline (game not yet scored is fine) |
-| Post comment | Any authenticated, paid user | After prediction deadline |
-- Admin/cachier can post after deadline, same as players
-- Admin can delete any comment; users can delete their own
+| Read comments | Any authenticated user | Any time |
+| Post comment | Any authenticated, paid user | Any time |
+| Edit comment | Comment owner | Any time after posting |
+| Delete comment | Comment owner or admin | Any time |
 
-**Rationale for "paid only" restriction:** Unpaid users can't submit predictions, so they have less stake in the result and a lower bar for bad-faith posts.
+- Admin/cachier can post at any time, same as players
+- Admin can delete any comment; users can only delete their own
+
+**Rationale for "paid only" restriction:** Unpaid users can't submit predictions, so they have less stake in games and a lower bar for bad-faith posts.
 
 ---
 
@@ -76,7 +79,7 @@ New blueprint at `/api/games/<game_id>/comments`, added to the existing `games` 
 
 ### `GET /api/games/<game_id>/comments`
 
-Returns all comments for a game. Requires authentication. Returns `403` if prediction deadline has not passed yet.
+Returns all comments for a game. Requires authentication.
 
 **Response 200:**
 ```json
@@ -92,17 +95,17 @@ Returns all comments for a game. Requires authentication. Returns `403` if predi
     },
     "created_at": "2026-07-10T21:15:00",
     "updated_at": "2026-07-10T21:15:00",
-    "is_own": true
+    "is_own": true,
+    "is_edited": false
   }
 ]
 ```
 
-`is_own` flag lets the frontend show a delete button without a separate ownership check.
+`is_own` flag lets the frontend show edit/delete buttons without a separate ownership check. `is_edited` is `true` when `updated_at` differs from `created_at`, used to show an "(edited)" label.
 
 **Error cases:**
 - `401` — not authenticated
 - `404` — game not found
-- `403` — prediction deadline not yet passed (`{"error": "Comments are not available until predictions close"}`)
 
 ---
 
@@ -119,13 +122,36 @@ Creates a comment. Requires authentication + `has_paid`.
 - `content` present and non-empty after strip
 - `content` ≤ 1000 characters
 - User `has_paid` (else `403`)
-- Game prediction deadline has passed (else `403`)
 
 **Response 201:**
 ```json
 {
   "message": "Comment added",
   "comment": { ... }   // same shape as list item
+}
+```
+
+---
+
+### `PUT /api/games/comments/<comment_id>`
+
+Edits a comment. Only the comment owner may edit; admins may not edit others' comments.
+
+**Request body:**
+```json
+{ "content": "Updated thought on that match" }
+```
+
+**Validations:**
+- `content` present and non-empty after strip
+- `content` ≤ 1000 characters
+- Requestor is the comment owner (else `403`)
+
+**Response 200:**
+```json
+{
+  "message": "Comment updated",
+  "comment": { ... }   // same shape as list item, is_edited will now be true
 }
 ```
 
@@ -140,9 +166,9 @@ Deletes a comment. User can delete their own; admin can delete any.
 
 ---
 
-### Changes to existing `GET /api/games/closed`
+### Changes to existing `GET /api/games/upcoming` and `GET /api/games/closed`
 
-Add `comments_count` to each game object in the response. This lets the frontend show a comment badge on closed-game cards without an extra request.
+Add `comments_count` to each game object in both responses. This lets the frontend show a comment badge on all game cards without an extra request.
 
 ```json
 {
@@ -158,32 +184,34 @@ Add `comments_count` to each game object in the response. This lets the frontend
 
 ## Frontend Changes
 
-### PredictionsPage — Closed Games Tab
+### PredictionsPage — Both Upcoming and Closed Tabs
 
-- Add a speech-bubble icon with comment count next to each closed game card
-- Clicking the game card (or a "Discuss" button) expands/opens the comment panel
+- Add a speech-bubble icon with comment count next to every game card
+- Clicking the icon (or a "Discuss" button) expands/opens the comment panel
 
 ### New component: `GameCommentSection`
 
-Displayed below the predictions table when a closed game is expanded. Behaviour mirrors `NewsPage` comments:
+Displayed below the game card when expanded. Behaviour mirrors `NewsPage` comments:
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │  💬 Discussion (5 comments)                         │
 ├─────────────────────────────────────────────────────┤
 │  [Avatar] John Smith  21:15                         │
-│  Knew Brazil would win, that defence is unreal  [x] │
+│  Knew Brazil would win, that defence is unreal      │
+│                                              [✏] [x] │
 │                                                     │
 │  [Avatar] Maria G.   21:22                          │
-│  Should have been 3–0 honestly                      │
+│  Should have been 3–0 honestly (edited)             │
 │─────────────────────────────────────────────────────│
 │  [Text area: Write a comment...]           [Post]   │
 └─────────────────────────────────────────────────────┘
 ```
 
-- `[x]` delete button shown only on own comments (or for admin, on all)
+- `[✏]` edit and `[x]` delete buttons shown only on own comments; admin sees `[x]` on all comments
+- Clicking `[✏]` replaces the comment text with an inline editable text area with a "Save" / "Cancel" pair
+- `(edited)` label shown when `is_edited` is true
 - Text area disabled with tooltip "Pay to participate" if user has not paid
-- Text area disabled with tooltip "Comments open after predictions close" before deadline (defensive — server also guards this)
 - Character counter shown at 800+ characters remaining
 
 ### PlayersPage — Player Profile
@@ -200,6 +228,7 @@ No new Zustand store needed. Use local component state + direct API calls via `a
 // New entries in src/services/api.ts
 getGameComments(gameId: number): Promise<GameComment[]>
 addGameComment(gameId: number, content: string): Promise<GameComment>
+updateGameComment(commentId: number, content: string): Promise<GameComment>
 deleteGameComment(commentId: number): Promise<void>
 ```
 
@@ -216,7 +245,6 @@ deleteGameComment(commentId: number): Promise<void>
 
 ## Out of Scope (Future)
 
-- Edit own comment (add `PUT /api/games/comments/<id>`)
 - Report/flag a comment
 - Emoji reactions on comments
 - @mention notifications
@@ -227,11 +255,11 @@ deleteGameComment(commentId: number): Promise<void>
 ## Implementation Order
 
 1. `GameComment` model + migration
-2. Backend routes (GET list, POST, DELETE)
-3. Update `GET /api/games/closed` to include `comments_count`
+2. Backend routes (GET list, POST, PUT, DELETE)
+3. Update `GET /api/games/upcoming` and `GET /api/games/closed` to include `comments_count`
 4. `api.ts` typed wrappers
-5. `GameCommentSection` component
-6. Wire into PredictionsPage closed-games tab
+5. `GameCommentSection` component (with inline edit state)
+6. Wire into PredictionsPage for both upcoming and closed tabs
 7. Tests: backend unit tests mirroring `test_news.py` comment tests
 
 ---
@@ -241,6 +269,6 @@ deleteGameComment(commentId: number): Promise<void>
 | Layer | Estimate |
 |-------|----------|
 | Backend model + migration | 1h |
-| Backend routes + tests | 2h |
-| Frontend component + wiring | 3h |
-| **Total** | **~6h** |
+| Backend routes + tests | 2.5h |
+| Frontend component + wiring | 3.5h |
+| **Total** | **~7h** |
