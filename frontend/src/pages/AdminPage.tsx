@@ -17,7 +17,10 @@ interface AdminUser {
   has_paid: boolean
   payment_date: string | null
   payment_received_by: string | null
+  created_at: string
 }
+
+type UserSortKey = 'newest' | 'alpha'
 
 interface AdminGame {
   id: number
@@ -68,6 +71,7 @@ function PaymentsTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'unpaid' | 'paid_to_me'>('all')
+  const [sort, setSort] = useState<UserSortKey>('newest')
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState('')
 
@@ -108,16 +112,21 @@ function PaymentsTab() {
     }
   }
 
-  const filtered = users.filter(u => {
-    const matchesSearch =
-      u.username.toLowerCase().includes(search.toLowerCase()) ||
-      u.first_name.toLowerCase().includes(search.toLowerCase()) ||
-      u.surname.toLowerCase().includes(search.toLowerCase())
-    if (!matchesSearch) return false
-    if (filter === 'unpaid') return !u.has_paid
-    if (filter === 'paid_to_me') return u.payment_received_by === currentUser?.username
-    return true
-  })
+  const filtered = users
+    .filter(u => {
+      const matchesSearch =
+        u.username.toLowerCase().includes(search.toLowerCase()) ||
+        u.first_name.toLowerCase().includes(search.toLowerCase()) ||
+        u.surname.toLowerCase().includes(search.toLowerCase())
+      if (!matchesSearch) return false
+      if (filter === 'unpaid') return !u.has_paid
+      if (filter === 'paid_to_me') return u.payment_received_by === currentUser?.username
+      return true
+    })
+    .sort((a, b) => sort === 'alpha'
+      ? a.username.localeCompare(b.username)
+      : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
 
   const paid = users.filter(u => u.has_paid).length
   const unpaidCount = users.filter(u => !u.has_paid).length
@@ -132,12 +141,18 @@ function PaymentsTab() {
           <h2>Payment Management</h2>
           <p className="admin-subtitle">{paid} / {users.length} players have paid</p>
         </div>
-        <input
-          className="admin-search"
-          placeholder="Search player..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+        <div className="admin-header-controls">
+          <input
+            className="admin-search"
+            placeholder="Search player..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <select className="admin-select" value={sort} onChange={e => setSort(e.target.value as UserSortKey)}>
+            <option value="newest">Newest first</option>
+            <option value="alpha">Alphabetical</option>
+          </select>
+        </div>
       </div>
       <div className="admin-filters payment-filters">
         <button className={`role-filter-btn${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
@@ -582,6 +597,7 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<UserSortKey>('newest')
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
@@ -630,11 +646,16 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
     }
   }
 
-  const filtered = users.filter(u =>
-    u.username.toLowerCase().includes(search.toLowerCase()) ||
-    u.first_name.toLowerCase().includes(search.toLowerCase()) ||
-    u.surname.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = users
+    .filter(u =>
+      u.username.toLowerCase().includes(search.toLowerCase()) ||
+      u.first_name.toLowerCase().includes(search.toLowerCase()) ||
+      u.surname.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => sort === 'alpha'
+      ? a.username.localeCompare(b.username)
+      : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
 
   if (loading) return <div className="admin-loading">Loading users...</div>
 
@@ -645,12 +666,18 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
           <h2>User Management</h2>
           <p className="admin-subtitle">{users.length} registered user{users.length !== 1 ? 's' : ''}</p>
         </div>
-        <input
-          className="admin-search"
-          placeholder="Search player..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+        <div className="admin-header-controls">
+          <input
+            className="admin-search"
+            placeholder="Search player..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <select className="admin-select" value={sort} onChange={e => setSort(e.target.value as UserSortKey)}>
+            <option value="newest">Newest first</option>
+            <option value="alpha">Alphabetical</option>
+          </select>
+        </div>
       </div>
 
       {msg && <div className={`admin-message ${msg.type === 'err' ? 'admin-message-error' : ''}`}>{msg.text}</div>}

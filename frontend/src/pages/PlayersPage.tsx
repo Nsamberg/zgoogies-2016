@@ -60,7 +60,8 @@ export default function PlayersPage() {
     const q = search.trim().toLowerCase()
     return players.filter((p) => {
       if (activeRoles.size > 0 && !activeRoles.has(getRole(p))) return false
-      if (q && !p.username.toLowerCase().includes(q)) return false
+      if (q && ![p.username, p.first_name, p.surname, `${p.first_name} ${p.surname}`]
+               .some(s => s.toLowerCase().includes(q))) return false
       return true
     })
   }, [players, activeRoles, search])
@@ -99,7 +100,7 @@ export default function PlayersPage() {
           <input
             type="text"
             className="player-search"
-            placeholder="Search by username…"
+            placeholder="Search by name or username…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setExpandedId(null) }}
           />
