@@ -52,7 +52,7 @@ def cachier_required(f):
 @cachier_required
 def get_users():
     """All users with payment status and role info"""
-    users = User.query.order_by(User.username).all()
+    users = User.query.order_by(User.created_at.desc()).all()
     return jsonify([{
         'id': u.id,
         'username': u.username,
@@ -64,7 +64,8 @@ def get_users():
         'is_player': u.is_player,
         'has_paid': u.has_paid,
         'payment_date': u.payment_date.isoformat() if u.payment_date else None,
-        'payment_received_by': u.payment_received_by.username if u.payment_received_by else None
+        'payment_received_by': u.payment_received_by.username if u.payment_received_by else None,
+        'created_at': u.created_at.isoformat()
     } for u in users]), 200
 
 
