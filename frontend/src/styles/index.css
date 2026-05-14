@@ -1987,7 +1987,6 @@ button[type="submit"]:disabled {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
 .admin-search {
@@ -1996,6 +1995,12 @@ button[type="submit"]:disabled {
   border-radius: 6px;
   font-size: 0.85rem;
   width: 220px;
+}
+
+.admin-header-controls .admin-search {
+  flex: 1;
+  width: auto;
+  min-width: 100px;
 }
 
 .admin-filters {
