@@ -1983,12 +1983,6 @@ button[type="submit"]:disabled {
 }
 
 /* Search & Filters */
-.admin-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .admin-search {
   padding: 0.45rem 0.75rem;
   border: 1px solid #ddd;
@@ -1997,10 +1991,8 @@ button[type="submit"]:disabled {
   width: 220px;
 }
 
-.admin-header-controls .admin-search {
-  flex: 1;
-  width: auto;
-  min-width: 100px;
+.admin-sort-row {
+  margin-bottom: 1rem;
 }
 
 .admin-filters {
@@ -2602,7 +2594,6 @@ button[type="submit"]:disabled {
     align-items: flex-start;
     gap: 0.75rem;
   }
-  .admin-header-controls { width: 100%; }
   .admin-filters { flex-wrap: wrap; }
   .admin-game-teams { flex-direction: column; gap: 0.5rem; }
   .admin-score-inputs,

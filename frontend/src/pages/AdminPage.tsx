@@ -141,18 +141,12 @@ function PaymentsTab() {
           <h2>Payment Management</h2>
           <p className="admin-subtitle">{paid} / {users.length} players have paid</p>
         </div>
-        <div className="admin-header-controls">
-          <input
-            className="admin-search"
-            placeholder="Search player..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <select className="admin-select" value={sort} onChange={e => setSort(e.target.value as UserSortKey)}>
-            <option value="newest">Newest first</option>
-            <option value="alpha">Alphabetical</option>
-          </select>
-        </div>
+        <input
+          className="admin-search"
+          placeholder="Search player..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
       <div className="admin-filters payment-filters">
         <button className={`role-filter-btn${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
@@ -163,6 +157,14 @@ function PaymentsTab() {
         </button>
         <button className={`role-filter-btn${filter === 'paid_to_me' ? ' active' : ''}`} onClick={() => setFilter('paid_to_me')}>
           Paid to me <span className="role-filter-count">{paidToMeCount}</span>
+        </button>
+      </div>
+      <div className="admin-filters admin-sort-row">
+        <button className={`role-filter-btn${sort === 'newest' ? ' active' : ''}`} onClick={() => setSort('newest')}>
+          Newest first
+        </button>
+        <button className={`role-filter-btn${sort === 'alpha' ? ' active' : ''}`} onClick={() => setSort('alpha')}>
+          A–Z
         </button>
       </div>
 
@@ -666,18 +668,20 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
           <h2>User Management</h2>
           <p className="admin-subtitle">{users.length} registered user{users.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="admin-header-controls">
-          <input
-            className="admin-search"
-            placeholder="Search player..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <select className="admin-select" value={sort} onChange={e => setSort(e.target.value as UserSortKey)}>
-            <option value="newest">Newest first</option>
-            <option value="alpha">Alphabetical</option>
-          </select>
-        </div>
+        <input
+          className="admin-search"
+          placeholder="Search player..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+      <div className="admin-filters admin-sort-row">
+        <button className={`role-filter-btn${sort === 'newest' ? ' active' : ''}`} onClick={() => setSort('newest')}>
+          Newest first
+        </button>
+        <button className={`role-filter-btn${sort === 'alpha' ? ' active' : ''}`} onClick={() => setSort('alpha')}>
+          A–Z
+        </button>
       </div>
 
       {msg && <div className={`admin-message ${msg.type === 'err' ? 'admin-message-error' : ''}`}>{msg.text}</div>}
