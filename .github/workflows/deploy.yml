@@ -18,8 +18,10 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
+            set -e
             cd /home/deploy/zgoogies
-            git pull origin production
+            git fetch origin production
+            git reset --hard origin/production
             source backend/venv/bin/activate
             pip install -r backend/requirements.txt
             cd frontend && npm ci && npm run build && cd ..
