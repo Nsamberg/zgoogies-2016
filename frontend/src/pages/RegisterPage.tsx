@@ -64,6 +64,15 @@ const TIMEZONES = [
   { value: 'Europe/Moscow', label: 'Moscow (Europe/Moscow)' },
 ]
 
+function detectTimezone(): string {
+  const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  if (TIMEZONES.some(tz => tz.value === browserTz)) return browserTz
+  const region = browserTz.split('/')[0]
+  const regionMatch = TIMEZONES.find(tz => tz.value.startsWith(region + '/'))
+  if (regionMatch) return regionMatch.value
+  return 'Europe/London'
+}
+
 // Placeholder team names follow patterns like "W77", "1A", "3ABCD", "UEFA 1", "UEFA A", etc.
 const isPlaceholderTeam = (name: string): boolean => {
   return (
@@ -84,7 +93,7 @@ export default function RegisterPage() {
     first_name: '',
     surname: '',
     email: '',
-    timezone: 'Europe/London',
+    timezone: detectTimezone(),
     tournament_winner_id: '',
   })
   const [teams, setTeams] = useState<Team[]>([])
