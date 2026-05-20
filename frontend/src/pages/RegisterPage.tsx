@@ -64,12 +64,21 @@ const TIMEZONES = [
   { value: 'Europe/Moscow', label: 'Moscow (Europe/Moscow)' },
 ]
 
+function getOffsetMinutes(tz: string): number {
+  const now = new Date()
+  const local = new Date(now.toLocaleString('en-US', { timeZone: tz }))
+  const utc = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }))
+  return Math.round((local.getTime() - utc.getTime()) / 60000)
+}
+
 function detectTimezone(): string {
   const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
   if (TIMEZONES.some(tz => tz.value === browserTz)) return browserTz
-  const region = browserTz.split('/')[0]
-  const regionMatch = TIMEZONES.find(tz => tz.value.startsWith(region + '/'))
-  if (regionMatch) return regionMatch.value
+  try {
+    const browserOffset = getOffsetMinutes(browserTz)
+    const offsetMatch = TIMEZONES.find(tz => getOffsetMinutes(tz.value) === browserOffset)
+    if (offsetMatch) return offsetMatch.value
+  } catch {}
   return 'Europe/London'
 }
 
