@@ -117,7 +117,8 @@ function PaymentsTab() {
       const matchesSearch =
         u.username.toLowerCase().includes(search.toLowerCase()) ||
         u.first_name.toLowerCase().includes(search.toLowerCase()) ||
-        u.surname.toLowerCase().includes(search.toLowerCase())
+        u.surname.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase())
       if (!matchesSearch) return false
       if (filter === 'unpaid') return !u.has_paid
       if (filter === 'paid_to_me') return u.payment_received_by === currentUser?.username
@@ -177,6 +178,7 @@ function PaymentsTab() {
               <div className="payment-card-identity">
                 <strong className="payment-card-username">{u.username}</strong>
                 <span className="payment-card-name">{u.first_name} {u.surname}</span>
+                <span className="payment-card-email">{u.email}</span>
               </div>
               <div className="payment-card-badges">
                 <span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span>

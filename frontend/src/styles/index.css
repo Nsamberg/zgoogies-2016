@@ -2151,6 +2151,7 @@ button[type="submit"]:disabled {
 }
 .payment-card-username { font-size: 0.9rem; color: var(--navy); }
 .payment-card-name     { font-size: 0.78rem; color: #666; }
+.payment-card-email    { font-size: 0.72rem; color: #999; }
 
 .payment-card-badges {
   display: flex;
