@@ -707,7 +707,10 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
               return (
                 <tr key={u.id}>
                   <td><strong>{u.username}</strong>{isSelf && <span className="self-badge"> (you)</span>}</td>
-                  <td>{u.first_name} {u.surname}</td>
+                  <td>
+                    {u.first_name} {u.surname}
+                    <span className="admin-email-mobile">{u.email}</span>
+                  </td>
                   <td className="admin-email">{u.email}</td>
                   <td><span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span></td>
                   <td>

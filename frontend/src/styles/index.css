@@ -2063,6 +2063,7 @@ button[type="submit"]:disabled {
 .row-unpaid td { background: #fffdf5; }
 
 .admin-email { color: #555; font-size: 0.8rem; }
+.admin-email-mobile { display: none; }
 .admin-na { color: #bbb; }
 .self-badge { color: #888; font-weight: 400; font-size: 0.78rem; }
 
@@ -2602,6 +2603,12 @@ button[type="submit"]:disabled {
   .admin-winner-controls { flex-direction: column; }
   .admin-table th:nth-child(3),
   .admin-table td:nth-child(3) { display: none; }
+  .admin-email-mobile {
+    display: block;
+    font-size: 0.72rem;
+    color: #999;
+    margin-top: 0.15rem;
+  }
 
   /* Admin table sticky first column */
   .admin-table th:first-child,
