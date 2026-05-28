@@ -245,16 +245,16 @@ function CollectionsTab() {
           <thead>
             <tr>
               <th>Cashier</th>
-              <th>Players</th>
               <th>Amount</th>
+              <th>Players</th>
             </tr>
           </thead>
           <tbody>
             {rows.map(([collector, players]) => (
               <tr key={collector}>
                 <td><strong>{collector}</strong></td>
-                <td>{players.length}</td>
                 <td>£{players.length * FEE}</td>
+                <td>{players.length}</td>
               </tr>
             ))}
             {rows.length === 0 && (
@@ -265,8 +265,8 @@ function CollectionsTab() {
             <tfoot>
               <tr className="collections-total-row">
                 <td><strong>Total</strong></td>
-                <td><strong>{paid.length}</strong></td>
                 <td><strong>£{paid.length * FEE}</strong></td>
+                <td><strong>{paid.length}</strong></td>
               </tr>
             </tfoot>
           )}
