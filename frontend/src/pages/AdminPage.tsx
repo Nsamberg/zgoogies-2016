@@ -207,6 +207,92 @@ function PaymentsTab() {
   )
 }
 
+function CollectionsTab() {
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    adminAPI.getUsers().then(r => setUsers(r.data)).finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className="admin-loading">Loading...</div>
+
+  const paid = users.filter(u => u.has_paid)
+  const unpaid = users.filter(u => !u.has_paid)
+  const FEE = 5
+
+  const byCollector = paid.reduce<Record<string, AdminUser[]>>((acc, u) => {
+    const key = u.payment_received_by ?? 'Unknown'
+    ;(acc[key] ??= []).push(u)
+    return acc
+  }, {})
+
+  const rows = Object.entries(byCollector).sort((a, b) => b[1].length - a[1].length)
+
+  return (
+    <div className="admin-tab-content">
+      <div className="admin-section-header">
+        <div>
+          <h2>Collections Recap</h2>
+          <p className="admin-subtitle">
+            {paid.length} paid · {unpaid.length} unpaid · £{paid.length * FEE} total collected
+          </p>
+        </div>
+      </div>
+
+      <div className="admin-table-wrap" style={{ marginBottom: '1.5rem' }}>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Cashier</th>
+              <th>Players</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([collector, players]) => (
+              <tr key={collector}>
+                <td><strong>{collector}</strong></td>
+                <td>{players.length}</td>
+                <td>£{players.length * FEE}</td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={3} style={{ textAlign: 'center', color: '#999' }}>No payments recorded yet</td></tr>
+            )}
+          </tbody>
+          {rows.length > 0 && (
+            <tfoot>
+              <tr className="collections-total-row">
+                <td><strong>Total</strong></td>
+                <td><strong>{paid.length}</strong></td>
+                <td><strong>£{paid.length * FEE}</strong></td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+
+      {rows.map(([collector, players]) => (
+        <div key={collector} className="collections-detail">
+          <h3 className="collections-detail-title">{collector} — {players.length} player{players.length !== 1 ? 's' : ''} · £{players.length * FEE}</h3>
+          <div className="collections-player-list">
+            {players
+              .sort((a, b) => new Date(b.payment_date ?? 0).getTime() - new Date(a.payment_date ?? 0).getTime())
+              .map(u => (
+                <div key={u.id} className="collections-player-row">
+                  <span className="collections-player-name">{u.first_name} {u.surname}</span>
+                  <span className="collections-player-username">@{u.username}</span>
+                  {u.payment_date && <span className="collections-player-date">{formatDate(u.payment_date)}</span>}
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ScoreEntryTab() {
   const [games, setGames] = useState<AdminGame[]>([])
   const [loading, setLoading] = useState(true)
@@ -972,7 +1058,7 @@ function SettingsTab() {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-type TabId = 'payments' | 'scores' | 'tournament' | 'news' | 'users' | 'settings'
+type TabId = 'payments' | 'collections' | 'scores' | 'tournament' | 'news' | 'users' | 'settings'
 
 export default function AdminPage() {
   const { user } = useAuthStore()
@@ -980,8 +1066,9 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabId>('payments')
 
   const tabs: { id: TabId; label: string; adminOnly: boolean }[] = [
-    { id: 'payments',   label: 'Payments',    adminOnly: false },
-    { id: 'scores',     label: 'Score Entry', adminOnly: true  },
+    { id: 'payments',    label: 'Payments',    adminOnly: false },
+    { id: 'collections', label: 'Collections', adminOnly: false },
+    { id: 'scores',      label: 'Score Entry', adminOnly: true  },
     { id: 'tournament', label: 'Tournament',  adminOnly: true  },
     { id: 'news',       label: 'News',        adminOnly: false },
     { id: 'users',      label: 'Users',       adminOnly: true  },
@@ -1017,8 +1104,9 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {currentTab === 'payments'   && <PaymentsTab />}
-      {currentTab === 'scores'     && <ScoreEntryTab />}
+      {currentTab === 'payments'    && <PaymentsTab />}
+      {currentTab === 'collections' && <CollectionsTab />}
+      {currentTab === 'scores'      && <ScoreEntryTab />}
       {currentTab === 'tournament' && <TournamentTab />}
       {currentTab === 'news'       && <NewsTab />}
       {currentTab === 'users'      && <UsersTab currentUserId={user?.id ?? 0} />}
