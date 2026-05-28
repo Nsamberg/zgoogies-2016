@@ -22,6 +22,7 @@ Password: {password}
 IMPORTANT: Please pay the registration fee (5 GBP) to one of the following cachiers:
 - Bruno Spada, Michael Johannes or Florent Maupey (France - Nice)
 - Patrick Hebant, Jean-Philippe Gea or Nikolaus Samberger (UK - London)
+- Andre de Morais (Madrid)
 
 Payment must be made at the latest the day before the first game is played.
 
@@ -49,6 +50,7 @@ The ZGoogies Team
     <ul>
         <li>Bruno Spada, Michael Johannes or Florent Maupey (France - Nice)</li>
         <li>Patrick Hebant, Jean-Philippe Gea or Nikolaus Samberger (UK - London)</li>
+        <li>Andre de Morais (Madrid)</li>
     </ul>
     <p>Payment must be made at the latest the day before the first game is played.</p>
 
