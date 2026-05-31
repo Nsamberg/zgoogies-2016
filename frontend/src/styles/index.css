@@ -1338,7 +1338,8 @@ button[type="submit"]:disabled {
   padding: 1.5rem 1rem;
 }
 
-.player-search {
+.player-search,
+.team-filter-search {
   width: 100%;
   padding: 0.55rem 0.85rem;
   border: 1px solid #ddd;
@@ -1347,9 +1348,11 @@ button[type="submit"]:disabled {
   margin-bottom: 0.75rem;
   outline: none;
   transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
-.player-search:focus {
+.player-search:focus,
+.team-filter-search:focus {
   border-color: #1B1464;
 }
 
@@ -2597,6 +2600,7 @@ button[type="submit"]:disabled {
   .admin-textarea,
   .admin-search,
   .player-search,
+  .team-filter-search,
   .gp-search { font-size: 16px; }
 
   /* Tabs */

@@ -82,6 +82,7 @@ export default function PredictionsPage() {
   const timezone = user?.timezone || 'UTC'
 
   const [tab, setTab] = useState<Tab>('open')
+  const [teamSearch, setTeamSearch] = useState('')
 
   // Open games (formerly upcoming)
   const [openGames, setOpenGames] = useState<Game[]>([])
@@ -203,8 +204,15 @@ export default function PredictionsPage() {
 
   const handleTabChange = (t: Tab) => {
     setTab(t)
+    setTeamSearch('')
     if (t === 'past') loadPast()
     if (t === 'others') loadPlayers()
+  }
+
+  const matchesTeam = (g: { team_a: { name: string }; team_b: { name: string } }) => {
+    if (!teamSearch) return true
+    const q = teamSearch.toLowerCase()
+    return g.team_a.name.toLowerCase().includes(q) || g.team_b.name.toLowerCase().includes(q)
   }
 
   const handleInput = (gameId: number, side: 'teamA' | 'teamB', value: string) => {
@@ -297,11 +305,19 @@ export default function PredictionsPage() {
           )}
           {openLoading && <p className="loading-text">Loading games...</p>}
           {openError && <p className="error">{openError}</p>}
+          {!openLoading && !openError && openGames.length > 0 && (
+            <input
+              className="team-filter-search"
+              placeholder="Filter by team name…"
+              value={teamSearch}
+              onChange={e => setTeamSearch(e.target.value)}
+            />
+          )}
           {!openLoading && !openError && openGames.length === 0 && (
             <p className="empty-state">No upcoming games open for predictions.</p>
           )}
           <div className="games-list">
-            {openGames.map((game) => {
+            {openGames.filter(matchesTeam).map((game) => {
               const input = inputs[game.id] || { teamA: '0', teamB: '0', status: 'idle', existed: false, touched: false }
               const isDefault = !input.existed && !input.touched
               return (
@@ -537,11 +553,19 @@ export default function PredictionsPage() {
             <>
               {pastLoading && <p className="loading-text">Loading past games...</p>}
               {pastError && <p className="error">{pastError}</p>}
+              {!pastLoading && !pastError && pastGames.length > 0 && (
+                <input
+                  className="team-filter-search"
+                  placeholder="Filter by team name…"
+                  value={teamSearch}
+                  onChange={e => setTeamSearch(e.target.value)}
+                />
+              )}
               {!pastLoading && !pastError && pastGames.length === 0 && (
                 <p className="empty-state">No past games yet.</p>
               )}
               <div className="games-list">
-                {pastGames.map((game) => {
+                {pastGames.filter(matchesTeam).map((game) => {
                   const pred = pastPredictions[game.id]
                   return (
                     <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
