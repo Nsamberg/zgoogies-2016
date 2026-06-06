@@ -721,7 +721,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-06-28T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-28T19:00:00.000Z",
     "teamA": "2A",
     "teamB": "2B",
     "matchNumber": 73,
@@ -731,7 +731,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-06-29T16:00:00.000Z",
+    "dateTimeUTC": "2026-06-29T17:00:00.000Z",
     "teamA": "1C",
     "teamB": "2F",
     "matchNumber": 76,
@@ -741,7 +741,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-06-29T19:30:00.000Z",
+    "dateTimeUTC": "2026-06-29T20:30:00.000Z",
     "teamA": "1E",
     "teamB": "3ABCDF",
     "matchNumber": 74,
@@ -751,7 +751,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-06-30T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-30T01:00:00.000Z",
     "teamA": "1F",
     "teamB": "2C",
     "matchNumber": 75,
@@ -771,7 +771,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-06-30T20:00:00.000Z",
+    "dateTimeUTC": "2026-06-30T21:00:00.000Z",
     "teamA": "1I",
     "teamB": "3CDFGH",
     "matchNumber": 77,
@@ -781,7 +781,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-01T00:00:00.000Z",
+    "dateTimeUTC": "2026-07-01T01:00:00.000Z",
     "teamA": "1A",
     "teamB": "3CEFHI",
     "matchNumber": 79,
@@ -791,7 +791,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-01T15:00:00.000Z",
+    "dateTimeUTC": "2026-07-01T16:00:00.000Z",
     "teamA": "1L",
     "teamB": "3EHIJK",
     "matchNumber": 80,
@@ -801,7 +801,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-01T19:00:00.000Z",
+    "dateTimeUTC": "2026-07-01T20:00:00.000Z",
     "teamA": "1G",
     "teamB": "3AEHIJ",
     "matchNumber": 82,
@@ -811,7 +811,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-01T23:00:00.000Z",
+    "dateTimeUTC": "2026-07-02T00:00:00.000Z",
     "teamA": "1D",
     "teamB": "3BEFIJ",
     "matchNumber": 81,
@@ -821,7 +821,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-02T18:00:00.000Z",
+    "dateTimeUTC": "2026-07-02T19:00:00.000Z",
     "teamA": "1H",
     "teamB": "2J",
     "matchNumber": 84,
@@ -831,7 +831,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-02T22:00:00.000Z",
+    "dateTimeUTC": "2026-07-02T23:00:00.000Z",
     "teamA": "2K",
     "teamB": "2L",
     "matchNumber": 83,
@@ -841,7 +841,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-03T02:00:00.000Z",
+    "dateTimeUTC": "2026-07-03T03:00:00.000Z",
     "teamA": "2B",
     "teamB": "3EFGIJ",
     "matchNumber": 85,
@@ -851,7 +851,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-03T17:00:00.000Z",
+    "dateTimeUTC": "2026-07-03T18:00:00.000Z",
     "teamA": "2D",
     "teamB": "2G",
     "matchNumber": 88,
@@ -861,7 +861,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-03T21:00:00.000Z",
+    "dateTimeUTC": "2026-07-03T22:00:00.000Z",
     "teamA": "1J",
     "teamB": "2H",
     "matchNumber": 86,
@@ -871,7 +871,7 @@
   },
   {
     "stage": "Round of 32",
-    "dateTimeUTC": "2026-07-04T00:30:00.000Z",
+    "dateTimeUTC": "2026-07-04T01:30:00.000Z",
     "teamA": "1K",
     "teamB": "3DEIJL",
     "matchNumber": 87,
@@ -881,7 +881,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-04T16:00:00.000Z",
+    "dateTimeUTC": "2026-07-04T17:00:00.000Z",
     "teamA": "W73",
     "teamB": "W75",
     "matchNumber": 90,
@@ -891,7 +891,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-04T20:00:00.000Z",
+    "dateTimeUTC": "2026-07-04T21:00:00.000Z",
     "teamA": "W74",
     "teamB": "W77",
     "matchNumber": 89,
@@ -901,7 +901,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-05T19:00:00.000Z",
+    "dateTimeUTC": "2026-07-05T20:00:00.000Z",
     "teamA": "W76",
     "teamB": "W78",
     "matchNumber": 91,
@@ -911,7 +911,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-05T23:00:00.000Z",
+    "dateTimeUTC": "2026-07-06T00:00:00.000Z",
     "teamA": "W79",
     "teamB": "W80",
     "matchNumber": 92,
@@ -921,7 +921,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-06T18:00:00.000Z",
+    "dateTimeUTC": "2026-07-06T19:00:00.000Z",
     "teamA": "W83",
     "teamB": "W84",
     "matchNumber": 93,
@@ -931,7 +931,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-06T23:00:00.000Z",
+    "dateTimeUTC": "2026-07-07T00:00:00.000Z",
     "teamA": "W81",
     "teamB": "W82",
     "matchNumber": 94,
@@ -941,7 +941,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-07T15:00:00.000Z",
+    "dateTimeUTC": "2026-07-07T16:00:00.000Z",
     "teamA": "W86",
     "teamB": "W88",
     "matchNumber": 95,
@@ -951,7 +951,7 @@
   },
   {
     "stage": "Round of 16",
-    "dateTimeUTC": "2026-07-07T19:00:00.000Z",
+    "dateTimeUTC": "2026-07-07T20:00:00.000Z",
     "teamA": "W85",
     "teamB": "W87",
     "matchNumber": 96,
@@ -961,7 +961,7 @@
   },
   {
     "stage": "Quarterfinals",
-    "dateTimeUTC": "2026-07-09T19:00:00.000Z",
+    "dateTimeUTC": "2026-07-09T20:00:00.000Z",
     "teamA": "W89",
     "teamB": "W90",
     "matchNumber": 97,
@@ -971,7 +971,7 @@
   },
   {
     "stage": "Quarterfinals",
-    "dateTimeUTC": "2026-07-10T18:00:00.000Z",
+    "dateTimeUTC": "2026-07-10T19:00:00.000Z",
     "teamA": "W93",
     "teamB": "W94",
     "matchNumber": 98,
@@ -981,7 +981,7 @@
   },
   {
     "stage": "Quarterfinals",
-    "dateTimeUTC": "2026-07-11T20:00:00.000Z",
+    "dateTimeUTC": "2026-07-11T21:00:00.000Z",
     "teamA": "W91",
     "teamB": "W92",
     "matchNumber": 99,
@@ -991,7 +991,7 @@
   },
   {
     "stage": "Quarterfinals",
-    "dateTimeUTC": "2026-07-12T00:00:00.000Z",
+    "dateTimeUTC": "2026-07-12T01:00:00.000Z",
     "teamA": "W95",
     "teamB": "W96",
     "matchNumber": 100,
@@ -1001,7 +1001,7 @@
   },
   {
     "stage": "Semifinals",
-    "dateTimeUTC": "2026-07-14T18:00:00.000Z",
+    "dateTimeUTC": "2026-07-14T19:00:00.000Z",
     "teamA": "W97",
     "teamB": "W98",
     "matchNumber": 101,
@@ -1011,7 +1011,7 @@
   },
   {
     "stage": "Semifinals",
-    "dateTimeUTC": "2026-07-15T18:00:00.000Z",
+    "dateTimeUTC": "2026-07-15T19:00:00.000Z",
     "teamA": "W99",
     "teamB": "W100",
     "matchNumber": 102,
@@ -1021,7 +1021,7 @@
   },
   {
     "stage": "Third Place",
-    "dateTimeUTC": "2026-07-18T20:00:00.000Z",
+    "dateTimeUTC": "2026-07-18T21:00:00.000Z",
     "teamA": "L101",
     "teamB": "L102",
     "matchNumber": 103,
@@ -1031,7 +1031,7 @@
   },
   {
     "stage": "Final",
-    "dateTimeUTC": "2026-07-19T18:00:00.000Z",
+    "dateTimeUTC": "2026-07-19T19:00:00.000Z",
     "teamA": "W191",
     "teamB": "W102",
     "matchNumber": 104,
