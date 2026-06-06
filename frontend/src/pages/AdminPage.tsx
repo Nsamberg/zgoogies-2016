@@ -814,7 +814,30 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
                   <td><strong>{u.username}</strong>{isSelf && <span className="self-badge"> (you)</span>}</td>
                   <td>
                     {u.first_name} {u.surname}
-                    <span className="admin-email-mobile">{u.email}</span>
+                    <div className="admin-email-mobile">
+                      {editingEmail?.id === u.id ? (
+                        <div className="email-edit-row">
+                          <input
+                            className="email-edit-input"
+                            type="email"
+                            value={editingEmail.value}
+                            onChange={e => setEditingEmail({ id: u.id, value: e.target.value })}
+                            onKeyDown={e => { if (e.key === 'Enter') saveEmail(u); if (e.key === 'Escape') setEditingEmail(null) }}
+                            autoFocus
+                            disabled={busy === u.id}
+                          />
+                          <button className="admin-btn-sm btn-success" onClick={() => saveEmail(u)} disabled={busy === u.id}>
+                            {busy === u.id ? '...' : '✓'}
+                          </button>
+                          <button className="admin-btn-sm" onClick={() => setEditingEmail(null)} disabled={busy === u.id}>✕</button>
+                        </div>
+                      ) : (
+                        <div className="email-display-row">
+                          <span>{u.email}</span>
+                          <button className="email-edit-btn" onClick={() => setEditingEmail({ id: u.id, value: u.email })} title="Edit email">✎</button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="admin-email">
                     {editingEmail?.id === u.id ? (
