@@ -513,7 +513,7 @@ def _game_dict(g):
         'id': g.id,
         'team_a': {'id': g.team_a.id, 'name': g.team_a.name},
         'team_b': {'id': g.team_b.id, 'name': g.team_b.name},
-        'game_date': g.game_date.isoformat(),
+        'game_date': g.game_date.isoformat() + 'Z',
         'location': g.location.name if g.location else '',
         'stage': g.stage,
         'group': g.group,
@@ -527,5 +527,5 @@ def _game_dict(g):
         'team_a_score': g.team_a_score,
         'team_b_score': g.team_b_score,
         'is_double_points': g.is_double_points(),
-        'scored_at': g.scored_at.isoformat() if g.scored_at else None
+        'scored_at': g.scored_at.isoformat() + 'Z' if g.scored_at else None
     }
