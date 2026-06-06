@@ -24,5 +24,6 @@ jobs:
             git reset --hard origin/production
             source backend/venv/bin/activate
             pip install -r backend/requirements.txt
+            cd backend && FLASK_ENV=production python sync_game_times.py && cd ..
             cd frontend && npm ci && npm run build && cd ..
             sudo systemctl restart zgoogies
