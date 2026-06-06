@@ -2667,6 +2667,7 @@ tr:hover .email-edit-btn { opacity: 1; }
     z-index: 1;
   }
   .admin-table thead th:first-child { background: #1B1464; }
+  .email-edit-btn { opacity: 1; }
 }
 
 @media (max-width: 480px) {
