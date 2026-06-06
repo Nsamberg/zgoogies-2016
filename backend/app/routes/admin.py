@@ -141,6 +141,24 @@ def update_user_role(user_id):
     return jsonify({'message': 'Role updated'}), 200
 
 
+@bp.route('/users/<int:user_id>/email', methods=['PUT'])
+@login_required
+@admin_required
+def update_user_email(user_id):
+    """Update a user's email address"""
+    user = User.query.get_or_404(user_id)
+    data = request.get_json()
+    email = (data.get('email') or '').strip().lower()
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+    existing = User.query.filter(User.email == email, User.id != user_id).first()
+    if existing:
+        return jsonify({'error': 'Email already in use by another account'}), 400
+    user.email = email
+    db.session.commit()
+    return jsonify({'message': 'Email updated'}), 200
+
+
 # ---------------------------------------------------------------------------
 # Score Entry
 # ---------------------------------------------------------------------------

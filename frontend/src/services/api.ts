@@ -107,6 +107,8 @@ export const adminAPI = {
   deleteUser: (userId: number) => api.delete(`/admin/users/${userId}`),
   updateUserRole: (userId: number, roles: { is_admin?: boolean; is_cachier?: boolean; is_player?: boolean }) =>
     api.put(`/admin/users/${userId}/role`, roles),
+  updateUserEmail: (userId: number, email: string) =>
+    api.put(`/admin/users/${userId}/email`, { email }),
 
   // Score entry
   getGames: () => api.get('/admin/games'),

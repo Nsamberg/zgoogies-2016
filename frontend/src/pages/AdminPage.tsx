@@ -690,6 +690,7 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
   const [sort, setSort] = useState<UserSortKey>('newest')
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
+  const [editingEmail, setEditingEmail] = useState<{ id: number; value: string } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -713,6 +714,24 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
       await load()
     } catch (e: any) {
       setMsg({ text: e.response?.data?.error ?? 'Error deleting user', type: 'err' })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const saveEmail = async (u: AdminUser) => {
+    if (!editingEmail) return
+    const email = editingEmail.value.trim()
+    if (!email || email === u.email) { setEditingEmail(null); return }
+    setBusy(u.id)
+    setMsg(null)
+    try {
+      await adminAPI.updateUserEmail(u.id, email)
+      setMsg({ text: `Email updated for ${u.username}`, type: 'ok' })
+      setEditingEmail(null)
+      await load()
+    } catch (e: any) {
+      setMsg({ text: e.response?.data?.error ?? 'Error updating email', type: 'err' })
     } finally {
       setBusy(null)
     }
@@ -797,7 +816,30 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
                     {u.first_name} {u.surname}
                     <span className="admin-email-mobile">{u.email}</span>
                   </td>
-                  <td className="admin-email">{u.email}</td>
+                  <td className="admin-email">
+                    {editingEmail?.id === u.id ? (
+                      <div className="email-edit-row">
+                        <input
+                          className="email-edit-input"
+                          type="email"
+                          value={editingEmail.value}
+                          onChange={e => setEditingEmail({ id: u.id, value: e.target.value })}
+                          onKeyDown={e => { if (e.key === 'Enter') saveEmail(u); if (e.key === 'Escape') setEditingEmail(null) }}
+                          autoFocus
+                          disabled={busy === u.id}
+                        />
+                        <button className="admin-btn-sm btn-success" onClick={() => saveEmail(u)} disabled={busy === u.id}>
+                          {busy === u.id ? '...' : '✓'}
+                        </button>
+                        <button className="admin-btn-sm" onClick={() => setEditingEmail(null)} disabled={busy === u.id}>✕</button>
+                      </div>
+                    ) : (
+                      <div className="email-display-row">
+                        <span>{u.email}</span>
+                        <button className="email-edit-btn" onClick={() => setEditingEmail({ id: u.id, value: u.email })} title="Edit email">✎</button>
+                      </div>
+                    )}
+                  </td>
                   <td><span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span></td>
                   <td>
                     {!isSelf ? (

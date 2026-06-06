@@ -209,6 +209,31 @@ TOOL_DEFINITIONS = [
             'required': ['token', 'username']
         }
     },
+    {
+        'name': 'update_player_email',
+        'description': (
+            '[Admin only] Update the email address of a registered player. '
+            'Provide the player\'s username and the new email address.'
+        ),
+        'inputSchema': {
+            'type': 'object',
+            'properties': {
+                'token': {
+                    'type': 'string',
+                    'description': 'Your admin ZGoogies API token'
+                },
+                'username': {
+                    'type': 'string',
+                    'description': 'The username of the player whose email should be updated'
+                },
+                'email': {
+                    'type': 'string',
+                    'description': 'The new email address'
+                }
+            },
+            'required': ['token', 'username', 'email']
+        }
+    },
 ]
 
 
@@ -529,15 +554,43 @@ def _tool_get_player_details(args):
     return '\n'.join(lines)
 
 
+def _tool_update_player_email(args):
+    user, err = _require_admin(args.get('token'))
+    if err:
+        return err
+    _check_rate_limit(user.id)
+
+    username = (args.get('username') or '').strip()
+    email = (args.get('email') or '').strip().lower()
+    if not username:
+        return 'Error: username is required.'
+    if not email:
+        return 'Error: email is required.'
+
+    target = User.query.filter_by(username=username).first()
+    if not target:
+        return f'Error: No player found with username "{username}".'
+
+    existing = User.query.filter(User.email == email, User.id != target.id).first()
+    if existing:
+        return f'Error: Email "{email}" is already in use by another account.'
+
+    old_email = target.email
+    target.email = email
+    db.session.commit()
+    return f'Email updated for {target.username}: {old_email} → {email}'
+
+
 TOOL_HANDLERS = {
-    'get_my_predictions':  _tool_get_my_predictions,
-    'get_upcoming_games':  _tool_get_upcoming_games,
-    'get_my_ranking':      _tool_get_my_ranking,
-    'get_all_rankings':    _tool_get_all_rankings,
-    'submit_prediction':   _tool_submit_prediction,
-    'get_game_list':       _tool_get_game_list,
-    'list_players':        _tool_list_players,
-    'get_player_details':  _tool_get_player_details,
+    'get_my_predictions':    _tool_get_my_predictions,
+    'get_upcoming_games':    _tool_get_upcoming_games,
+    'get_my_ranking':        _tool_get_my_ranking,
+    'get_all_rankings':      _tool_get_all_rankings,
+    'submit_prediction':     _tool_submit_prediction,
+    'get_game_list':         _tool_get_game_list,
+    'list_players':          _tool_list_players,
+    'get_player_details':    _tool_get_player_details,
+    'update_player_email':   _tool_update_player_email,
 }
 
 
