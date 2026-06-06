@@ -1,7 +1,7 @@
 [
   {
     "stage": "Group A",
-    "dateTimeUTC": "2026-06-11T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-11T19:00:00.000Z",
     "teamA": "Mexico",
     "teamB": "South Africa",
     "matchNumber": 1,
@@ -11,7 +11,7 @@
   },
   {
     "stage": "Group A",
-    "dateTimeUTC": "2026-06-12T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-12T02:00:00.000Z",
     "teamA": "South Korea",
     "teamB": "Czech Republic",
     "matchNumber": 2,
@@ -21,7 +21,7 @@
   },
   {
     "stage": "Group B",
-    "dateTimeUTC": "2026-06-12T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-12T19:00:00.000Z",
     "teamA": "Canada",
     "teamB": "Bosnia & Herzegovina",
     "matchNumber": 3,
@@ -31,7 +31,7 @@
   },
   {
     "stage": "Group D",
-    "dateTimeUTC": "2026-06-13T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-13T01:00:00.000Z",
     "teamA": "United States",
     "teamB": "Paraguay",
     "matchNumber": 4,
@@ -41,7 +41,7 @@
   },
   {
     "stage": "Group B",
-    "dateTimeUTC": "2026-06-13T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-13T19:00:00.000Z",
     "teamA": "Qatar",
     "teamB": "Switzerland",
     "matchNumber": 8,
@@ -51,7 +51,7 @@
   },
   {
     "stage": "Group C",
-    "dateTimeUTC": "2026-06-13T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-13T22:00:00.000Z",
     "teamA": "Brazil",
     "teamB": "Morocco",
     "matchNumber": 7,
@@ -61,7 +61,7 @@
   },
   {
     "stage": "Group C",
-    "dateTimeUTC": "2026-06-14T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-14T01:00:00.000Z",
     "teamA": "Haiti",
     "teamB": "Scotland",
     "matchNumber": 5,
@@ -71,7 +71,7 @@
   },
   {
     "stage": "Group D",
-    "dateTimeUTC": "2026-06-14T02:59:00.000Z",
+    "dateTimeUTC": "2026-06-14T04:00:00.000Z",
     "teamA": "Australia",
     "teamB": "Turkey",
     "matchNumber": 6,
@@ -81,7 +81,7 @@
   },
   {
     "stage": "Group E",
-    "dateTimeUTC": "2026-06-14T16:00:00.000Z",
+    "dateTimeUTC": "2026-06-14T17:00:00.000Z",
     "teamA": "Germany",
     "teamB": "Curacao",
     "matchNumber": 10,
@@ -91,7 +91,7 @@
   },
   {
     "stage": "Group F",
-    "dateTimeUTC": "2026-06-14T19:00:00.000Z",
+    "dateTimeUTC": "2026-06-14T20:00:00.000Z",
     "teamA": "Netherlands",
     "teamB": "Japan",
     "matchNumber": 11,
@@ -101,7 +101,7 @@
   },
   {
     "stage": "Group E",
-    "dateTimeUTC": "2026-06-14T22:00:00.000Z",
+    "dateTimeUTC": "2026-06-14T23:00:00.000Z",
     "teamA": "Ivory Coast",
     "teamB": "Ecuador",
     "matchNumber": 9,
@@ -111,7 +111,7 @@
   },
   {
     "stage": "Group F",
-    "dateTimeUTC": "2026-06-15T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-15T02:00:00.000Z",
     "teamA": "Sweden",
     "teamB": "Tunisia",
     "matchNumber": 12,
@@ -121,7 +121,7 @@
   },
   {
     "stage": "Group H",
-    "dateTimeUTC": "2026-06-15T15:00:00.000Z",
+    "dateTimeUTC": "2026-06-15T16:00:00.000Z",
     "teamA": "Spain",
     "teamB": "Cape Verde",
     "matchNumber": 14,
@@ -131,7 +131,7 @@
   },
   {
     "stage": "Group G",
-    "dateTimeUTC": "2026-06-15T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-15T19:00:00.000Z",
     "teamA": "Belgium",
     "teamB": "Egypt",
     "matchNumber": 16,
@@ -141,7 +141,7 @@
   },
   {
     "stage": "Group H",
-    "dateTimeUTC": "2026-06-15T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-15T22:00:00.000Z",
     "teamA": "Saudi Arabia",
     "teamB": "Uruguay",
     "matchNumber": 13,
@@ -151,7 +151,7 @@
   },
   {
     "stage": "Group G",
-    "dateTimeUTC": "2026-06-16T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-16T01:00:00.000Z",
     "teamA": "Iran",
     "teamB": "New Zealand",
     "matchNumber": 15,
@@ -161,7 +161,7 @@
   },
   {
     "stage": "Group I",
-    "dateTimeUTC": "2026-06-16T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-16T19:00:00.000Z",
     "teamA": "France",
     "teamB": "Senegal",
     "matchNumber": 17,
@@ -171,7 +171,7 @@
   },
   {
     "stage": "Group I",
-    "dateTimeUTC": "2026-06-16T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-16T22:00:00.000Z",
     "teamA": "Iraq",
     "teamB": "Norway",
     "matchNumber": 18,
@@ -181,7 +181,7 @@
   },
   {
     "stage": "Group J",
-    "dateTimeUTC": "2026-06-17T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-17T01:00:00.000Z",
     "teamA": "Argentina",
     "teamB": "Algeria",
     "matchNumber": 19,
@@ -191,7 +191,7 @@
   },
   {
     "stage": "Group J",
-    "dateTimeUTC": "2026-06-17T02:59:00.000Z",
+    "dateTimeUTC": "2026-06-17T04:00:00.000Z",
     "teamA": "Austria",
     "teamB": "Jordan",
     "matchNumber": 20,
@@ -201,7 +201,7 @@
   },
   {
     "stage": "Group K",
-    "dateTimeUTC": "2026-06-17T16:00:00.000Z",
+    "dateTimeUTC": "2026-06-17T17:00:00.000Z",
     "teamA": "Portugal",
     "teamB": "DR Congo",
     "matchNumber": 23,
@@ -211,7 +211,7 @@
   },
   {
     "stage": "Group L",
-    "dateTimeUTC": "2026-06-17T19:00:00.000Z",
+    "dateTimeUTC": "2026-06-17T20:00:00.000Z",
     "teamA": "England",
     "teamB": "Croatia",
     "matchNumber": 21,
@@ -221,7 +221,7 @@
   },
   {
     "stage": "Group L",
-    "dateTimeUTC": "2026-06-17T22:00:00.000Z",
+    "dateTimeUTC": "2026-06-17T23:00:00.000Z",
     "teamA": "Ghana",
     "teamB": "Panama",
     "matchNumber": 22,
@@ -231,7 +231,7 @@
   },
   {
     "stage": "Group K",
-    "dateTimeUTC": "2026-06-18T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-18T02:00:00.000Z",
     "teamA": "Uzbekistan",
     "teamB": "Colombia",
     "matchNumber": 24,
@@ -241,7 +241,7 @@
   },
   {
     "stage": "Group A",
-    "dateTimeUTC": "2026-06-18T15:00:00.000Z",
+    "dateTimeUTC": "2026-06-18T16:00:00.000Z",
     "teamA": "Czech Republic",
     "teamB": "South Africa",
     "matchNumber": 25,
@@ -251,7 +251,7 @@
   },
   {
     "stage": "Group B",
-    "dateTimeUTC": "2026-06-18T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-18T19:00:00.000Z",
     "teamA": "Switzerland",
     "teamB": "Bosnia & Herzegovina",
     "matchNumber": 26,
@@ -261,7 +261,7 @@
   },
   {
     "stage": "Group B",
-    "dateTimeUTC": "2026-06-18T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-18T22:00:00.000Z",
     "teamA": "Canada",
     "teamB": "Qatar",
     "matchNumber": 27,
@@ -271,7 +271,7 @@
   },
   {
     "stage": "Group A",
-    "dateTimeUTC": "2026-06-19T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-19T01:00:00.000Z",
     "teamA": "Mexico",
     "teamB": "South Korea",
     "matchNumber": 28,
@@ -281,7 +281,7 @@
   },
   {
     "stage": "Group D",
-    "dateTimeUTC": "2026-06-19T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-19T19:00:00.000Z",
     "teamA": "United States",
     "teamB": "Australia",
     "matchNumber": 32,
@@ -291,7 +291,7 @@
   },
   {
     "stage": "Group C",
-    "dateTimeUTC": "2026-06-19T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-19T22:00:00.000Z",
     "teamA": "Scotland",
     "teamB": "Morocco",
     "matchNumber": 30,
@@ -301,7 +301,7 @@
   },
   {
     "stage": "Group C",
-    "dateTimeUTC": "2026-06-20T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-20T00:30:00.000Z",
     "teamA": "Brazil",
     "teamB": "Haiti",
     "matchNumber": 29,
@@ -311,7 +311,7 @@
   },
   {
     "stage": "Group D",
-    "dateTimeUTC": "2026-06-20T02:59:00.000Z",
+    "dateTimeUTC": "2026-06-20T03:00:00.000Z",
     "teamA": "Turkey",
     "teamB": "Paraguay",
     "matchNumber": 31,
@@ -321,7 +321,7 @@
   },
   {
     "stage": "Group F",
-    "dateTimeUTC": "2026-06-20T16:00:00.000Z",
+    "dateTimeUTC": "2026-06-20T17:00:00.000Z",
     "teamA": "Netherlands",
     "teamB": "Sweden",
     "matchNumber": 35,
@@ -331,7 +331,7 @@
   },
   {
     "stage": "Group E",
-    "dateTimeUTC": "2026-06-20T19:00:00.000Z",
+    "dateTimeUTC": "2026-06-20T20:00:00.000Z",
     "teamA": "Germany",
     "teamB": "Ivory Coast",
     "matchNumber": 33,
@@ -341,7 +341,7 @@
   },
   {
     "stage": "Group E",
-    "dateTimeUTC": "2026-06-20T23:00:00.000Z",
+    "dateTimeUTC": "2026-06-21T00:00:00.000Z",
     "teamA": "Ecuador",
     "teamB": "Curacao",
     "matchNumber": 34,
@@ -351,7 +351,7 @@
   },
   {
     "stage": "Group F",
-    "dateTimeUTC": "2026-06-21T02:59:00.000Z",
+    "dateTimeUTC": "2026-06-21T04:00:00.000Z",
     "teamA": "Tunisia",
     "teamB": "Japan",
     "matchNumber": 36,
@@ -361,7 +361,7 @@
   },
   {
     "stage": "Group H",
-    "dateTimeUTC": "2026-06-21T15:00:00.000Z",
+    "dateTimeUTC": "2026-06-21T16:00:00.000Z",
     "teamA": "Spain",
     "teamB": "Saudi Arabia",
     "matchNumber": 38,
@@ -371,7 +371,7 @@
   },
   {
     "stage": "Group G",
-    "dateTimeUTC": "2026-06-21T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-21T19:00:00.000Z",
     "teamA": "Belgium",
     "teamB": "Iran",
     "matchNumber": 39,
@@ -381,7 +381,7 @@
   },
   {
     "stage": "Group H",
-    "dateTimeUTC": "2026-06-21T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-21T22:00:00.000Z",
     "teamA": "Uruguay",
     "teamB": "Cape Verde",
     "matchNumber": 37,
@@ -391,7 +391,7 @@
   },
   {
     "stage": "Group G",
-    "dateTimeUTC": "2026-06-22T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-22T01:00:00.000Z",
     "teamA": "New Zealand",
     "teamB": "Egypt",
     "matchNumber": 40,
@@ -401,7 +401,7 @@
   },
   {
     "stage": "Group J",
-    "dateTimeUTC": "2026-06-22T16:00:00.000Z",
+    "dateTimeUTC": "2026-06-22T17:00:00.000Z",
     "teamA": "Argentina",
     "teamB": "Austria",
     "matchNumber": 43,
@@ -411,7 +411,7 @@
   },
   {
     "stage": "Group I",
-    "dateTimeUTC": "2026-06-22T20:00:00.000Z",
+    "dateTimeUTC": "2026-06-22T21:00:00.000Z",
     "teamA": "France",
     "teamB": "Iraq",
     "matchNumber": 42,
@@ -421,7 +421,7 @@
   },
   {
     "stage": "Group I",
-    "dateTimeUTC": "2026-06-22T23:00:00.000Z",
+    "dateTimeUTC": "2026-06-23T00:00:00.000Z",
     "teamA": "Norway",
     "teamB": "Senegal",
     "matchNumber": 41,
@@ -431,7 +431,7 @@
   },
   {
     "stage": "Group J",
-    "dateTimeUTC": "2026-06-23T02:00:00.000Z",
+    "dateTimeUTC": "2026-06-23T03:00:00.000Z",
     "teamA": "Jordan",
     "teamB": "Algeria",
     "matchNumber": 44,
@@ -441,7 +441,7 @@
   },
   {
     "stage": "Group K",
-    "dateTimeUTC": "2026-06-23T16:00:00.000Z",
+    "dateTimeUTC": "2026-06-23T17:00:00.000Z",
     "teamA": "Portugal",
     "teamB": "Uzbekistan",
     "matchNumber": 47,
@@ -451,7 +451,7 @@
   },
   {
     "stage": "Group L",
-    "dateTimeUTC": "2026-06-23T19:00:00.000Z",
+    "dateTimeUTC": "2026-06-23T20:00:00.000Z",
     "teamA": "England",
     "teamB": "Ghana",
     "matchNumber": 45,
@@ -461,7 +461,7 @@
   },
   {
     "stage": "Group L",
-    "dateTimeUTC": "2026-06-23T22:00:00.000Z",
+    "dateTimeUTC": "2026-06-23T23:00:00.000Z",
     "teamA": "Panama",
     "teamB": "Croatia",
     "matchNumber": 46,
@@ -471,7 +471,7 @@
   },
   {
     "stage": "Group K",
-    "dateTimeUTC": "2026-06-24T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-24T02:00:00.000Z",
     "teamA": "Colombia",
     "teamB": "DR Congo",
     "matchNumber": 48,
@@ -481,7 +481,7 @@
   },
   {
     "stage": "Group B",
-    "dateTimeUTC": "2026-06-24T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-24T19:00:00.000Z",
     "teamA": "Switzerland",
     "teamB": "Canada",
     "matchNumber": 51,
@@ -491,7 +491,7 @@
   },
   {
     "stage": "Group B",
-    "dateTimeUTC": "2026-06-24T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-24T19:00:00.000Z",
     "teamA": "Bosnia & Herzegovina",
     "teamB": "Qatar",
     "matchNumber": 52,
@@ -501,7 +501,7 @@
   },
   {
     "stage": "Group C",
-    "dateTimeUTC": "2026-06-24T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-24T22:00:00.000Z",
     "teamA": "Scotland",
     "teamB": "Brazil",
     "matchNumber": 49,
@@ -511,7 +511,7 @@
   },
   {
     "stage": "Group C",
-    "dateTimeUTC": "2026-06-24T21:00:00.000Z",
+    "dateTimeUTC": "2026-06-24T22:00:00.000Z",
     "teamA": "Morocco",
     "teamB": "Haiti",
     "matchNumber": 50,
@@ -521,7 +521,7 @@
   },
   {
     "stage": "Group A",
-    "dateTimeUTC": "2026-06-25T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-25T01:00:00.000Z",
     "teamA": "Czech Republic",
     "teamB": "Mexico",
     "matchNumber": 53,
@@ -531,7 +531,7 @@
   },
   {
     "stage": "Group A",
-    "dateTimeUTC": "2026-06-25T00:00:00.000Z",
+    "dateTimeUTC": "2026-06-25T01:00:00.000Z",
     "teamA": "South Africa",
     "teamB": "South Korea",
     "matchNumber": 54,
@@ -541,7 +541,7 @@
   },
   {
     "stage": "Group E",
-    "dateTimeUTC": "2026-06-25T19:00:00.000Z",
+    "dateTimeUTC": "2026-06-25T20:00:00.000Z",
     "teamA": "Curacao",
     "teamB": "Ivory Coast",
     "matchNumber": 55,
@@ -551,7 +551,7 @@
   },
   {
     "stage": "Group E",
-    "dateTimeUTC": "2026-06-25T19:00:00.000Z",
+    "dateTimeUTC": "2026-06-25T20:00:00.000Z",
     "teamA": "Ecuador",
     "teamB": "Germany",
     "matchNumber": 56,
@@ -561,7 +561,7 @@
   },
   {
     "stage": "Group F",
-    "dateTimeUTC": "2026-06-25T22:00:00.000Z",
+    "dateTimeUTC": "2026-06-25T23:00:00.000Z",
     "teamA": "Japan",
     "teamB": "Sweden",
     "matchNumber": 57,
@@ -571,7 +571,7 @@
   },
   {
     "stage": "Group F",
-    "dateTimeUTC": "2026-06-25T22:00:00.000Z",
+    "dateTimeUTC": "2026-06-25T23:00:00.000Z",
     "teamA": "Tunisia",
     "teamB": "Netherlands",
     "matchNumber": 58,
@@ -581,7 +581,7 @@
   },
   {
     "stage": "Group D",
-    "dateTimeUTC": "2026-06-26T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-26T02:00:00.000Z",
     "teamA": "Turkey",
     "teamB": "United States",
     "matchNumber": 59,
@@ -591,7 +591,7 @@
   },
   {
     "stage": "Group D",
-    "dateTimeUTC": "2026-06-26T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-26T02:00:00.000Z",
     "teamA": "Paraguay",
     "teamB": "Australia",
     "matchNumber": 60,
@@ -601,7 +601,7 @@
   },
   {
     "stage": "Group I",
-    "dateTimeUTC": "2026-06-26T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-26T19:00:00.000Z",
     "teamA": "Norway",
     "teamB": "France",
     "matchNumber": 61,
@@ -611,7 +611,7 @@
   },
   {
     "stage": "Group I",
-    "dateTimeUTC": "2026-06-26T18:00:00.000Z",
+    "dateTimeUTC": "2026-06-26T19:00:00.000Z",
     "teamA": "Senegal",
     "teamB": "Iraq",
     "matchNumber": 62,
@@ -621,7 +621,7 @@
   },
   {
     "stage": "Group H",
-    "dateTimeUTC": "2026-06-26T23:00:00.000Z",
+    "dateTimeUTC": "2026-06-27T00:00:00.000Z",
     "teamA": "Cape Verde",
     "teamB": "Saudi Arabia",
     "matchNumber": 65,
@@ -631,7 +631,7 @@
   },
   {
     "stage": "Group H",
-    "dateTimeUTC": "2026-06-26T23:00:00.000Z",
+    "dateTimeUTC": "2026-06-27T00:00:00.000Z",
     "teamA": "Uruguay",
     "teamB": "Spain",
     "matchNumber": 66,
@@ -641,7 +641,7 @@
   },
   {
     "stage": "Group G",
-    "dateTimeUTC": "2026-06-27T02:00:00.000Z",
+    "dateTimeUTC": "2026-06-27T03:00:00.000Z",
     "teamA": "Egypt",
     "teamB": "Iran",
     "matchNumber": 63,
@@ -651,7 +651,7 @@
   },
   {
     "stage": "Group G",
-    "dateTimeUTC": "2026-06-27T02:00:00.000Z",
+    "dateTimeUTC": "2026-06-27T03:00:00.000Z",
     "teamA": "New Zealand",
     "teamB": "Belgium",
     "matchNumber": 64,
@@ -661,7 +661,7 @@
   },
   {
     "stage": "Group L",
-    "dateTimeUTC": "2026-06-27T20:00:00.000Z",
+    "dateTimeUTC": "2026-06-27T21:00:00.000Z",
     "teamA": "Panama",
     "teamB": "England",
     "matchNumber": 67,
@@ -671,7 +671,7 @@
   },
   {
     "stage": "Group L",
-    "dateTimeUTC": "2026-06-27T20:00:00.000Z",
+    "dateTimeUTC": "2026-06-27T21:00:00.000Z",
     "teamA": "Croatia",
     "teamB": "Ghana",
     "matchNumber": 68,
@@ -681,7 +681,7 @@
   },
   {
     "stage": "Group K",
-    "dateTimeUTC": "2026-06-27T22:30:00.000Z",
+    "dateTimeUTC": "2026-06-27T23:30:00.000Z",
     "teamA": "Colombia",
     "teamB": "Portugal",
     "matchNumber": 71,
@@ -691,7 +691,7 @@
   },
   {
     "stage": "Group K",
-    "dateTimeUTC": "2026-06-27T22:30:00.000Z",
+    "dateTimeUTC": "2026-06-27T23:30:00.000Z",
     "teamA": "DR Congo",
     "teamB": "Uzbekistan",
     "matchNumber": 72,
@@ -701,7 +701,7 @@
   },
   {
     "stage": "Group J",
-    "dateTimeUTC": "2026-06-28T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-28T02:00:00.000Z",
     "teamA": "Algeria",
     "teamB": "Austria",
     "matchNumber": 69,
@@ -711,7 +711,7 @@
   },
   {
     "stage": "Group J",
-    "dateTimeUTC": "2026-06-28T01:00:00.000Z",
+    "dateTimeUTC": "2026-06-28T02:00:00.000Z",
     "teamA": "Jordan",
     "teamB": "Argentina",
     "matchNumber": 70,
