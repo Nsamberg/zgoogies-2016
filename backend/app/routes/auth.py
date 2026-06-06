@@ -110,7 +110,7 @@ def registration_status():
         return jsonify({'open': True, 'deadline': None})
     deadline = first_game.game_date - timedelta(hours=2)
     is_open = get_current_utc() < deadline
-    return jsonify({'open': is_open, 'deadline': deadline.isoformat()})
+    return jsonify({'open': is_open, 'deadline': deadline.isoformat() + 'Z'})
 
 
 @bp.route('/login', methods=['POST'])

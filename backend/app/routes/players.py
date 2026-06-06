@@ -77,7 +77,7 @@ def get_player_predictions(user_id):
             'game_id': game.id,
             'team_a': {'id': game.team_a.id, 'name': game.team_a.name, 'score': game.team_a_score},
             'team_b': {'id': game.team_b.id, 'name': game.team_b.name, 'score': game.team_b_score},
-            'game_date': game.game_date.isoformat(),
+            'game_date': game.game_date.isoformat() + 'Z',
             'location': game.location.city,
             'stage': game.stage,
             'group': game.group,

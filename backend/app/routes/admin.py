@@ -63,9 +63,9 @@ def get_users():
         'is_cachier': u.is_cachier,
         'is_player': u.is_player,
         'has_paid': u.has_paid,
-        'payment_date': u.payment_date.isoformat() if u.payment_date else None,
+        'payment_date': u.payment_date.isoformat() + 'Z' if u.payment_date else None,
         'payment_received_by': u.payment_received_by.username if u.payment_received_by else None,
-        'created_at': u.created_at.isoformat()
+        'created_at': u.created_at.isoformat() + 'Z'
     } for u in users]), 200
 
 
@@ -328,7 +328,7 @@ def get_news_admin():
         'content': n.content,
         'image_url': n.image_url,
         'author': n.author.username,
-        'created_at': n.created_at.isoformat()
+        'created_at': n.created_at.isoformat() + 'Z'
     } for n in news_items]), 200
 
 
@@ -387,7 +387,7 @@ def get_datetime_override():
     if offset_str:
         offset_secs = float(offset_str)
         simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
-        return jsonify({'override': simulated.isoformat(), 'offset_seconds': offset_secs}), 200
+        return jsonify({'override': simulated.isoformat() + 'Z', 'offset_seconds': offset_secs}), 200
     return jsonify({'override': None, 'offset_seconds': None}), 200
 
 
@@ -414,7 +414,7 @@ def set_datetime_override():
     simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
     return jsonify({
         'message': f'Datetime override set — offset {offset_secs:.0f}s from real time',
-        'override': simulated.isoformat(),
+        'override': simulated.isoformat() + 'Z',
         'offset_seconds': offset_secs
     }), 200
 
