@@ -70,10 +70,8 @@ def create_app(config_name='default'):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Initialize database admin interface (development mode only)
-    if app.config.get('DEBUG'):
-        from app.db_admin import init_admin
-        init_admin(app)
-        print("[OK] Database browser available at: http://localhost:5000/db-admin")
+    # Initialize database admin interface (admin-only, all environments)
+    from app.db_admin import init_admin
+    init_admin(app)
 
     return app
