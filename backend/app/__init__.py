@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy import event, text
 import sqlite3
 from config import config
@@ -19,6 +20,7 @@ def create_app(config_name='default'):
     """Application factory pattern"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     # Initialize extensions with app
     db.init_app(app)
