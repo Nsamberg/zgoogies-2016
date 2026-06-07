@@ -27,7 +27,7 @@ export default defineConfig({
         // NetworkFirst for HTML so every reload fetches fresh markup from server
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.mode === 'navigate',
+            urlPattern: ({ request, url }) => request.mode === 'navigate' && !url.pathname.startsWith('/db-admin'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'html-cache',
