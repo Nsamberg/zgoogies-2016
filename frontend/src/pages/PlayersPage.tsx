@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { playersAPI } from '../services/api'
+import { playersAPI, rivalsAPI } from '../services/api'
+import { useAuthStore } from '../stores/authStore'
 
 interface Player {
   id: number
@@ -28,19 +29,35 @@ const ROLE_LABELS: Record<Role, string> = {
 }
 
 export default function PlayersPage() {
+  const { user } = useAuthStore()
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [activeRoles, setActiveRoles] = useState<Set<Role>>(new Set())
   const [search, setSearch] = useState('')
+  const [rivals, setRivals] = useState<number[]>([])
 
   useEffect(() => {
     playersAPI.getAll()
       .then((res) => setPlayers(res.data))
       .catch(() => setError('Failed to load players. Please refresh.'))
       .finally(() => setLoading(false))
+
+    rivalsAPI.get()
+      .then((res) => setRivals(res.data))
+      .catch(() => {})
   }, [])
+
+  const handleToggleRival = async (playerId: number, isRival: boolean) => {
+    if (isRival) {
+      setRivals(prev => prev.filter(id => id !== playerId))
+      try { await rivalsAPI.remove(playerId) } catch { setRivals(prev => [...prev, playerId]) }
+    } else {
+      setRivals(prev => [...prev, playerId])
+      try { await rivalsAPI.add(playerId) } catch { setRivals(prev => prev.filter(id => id !== playerId)) }
+    }
+  }
 
   const toggleExpand = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id))
@@ -133,6 +150,8 @@ export default function PlayersPage() {
             {filtered.map((player) => {
               const role = getRole(player)
               const isExpanded = expandedId === player.id
+              const isMe = player.id === user?.id
+              const isRival = rivals.includes(player.id)
               return (
                 <div key={player.id} className={`player-card${isExpanded ? ' expanded' : ''}`}>
                   <button
@@ -148,6 +167,16 @@ export default function PlayersPage() {
                       <span className={`role-badge role-badge--${role}`}>
                         {ROLE_LABELS[role]}
                       </span>
+                      {!isMe && (
+                        <button
+                          className={`rival-star${isRival ? ' rival-star--active' : ''}`}
+                          title={isRival ? 'Remove rival' : 'Add rival'}
+                          onClick={e => { e.stopPropagation(); handleToggleRival(player.id, isRival) }}
+                          aria-label={isRival ? 'Remove rival' : 'Add rival'}
+                        >
+                          {isRival ? '★' : '☆'}
+                        </button>
+                      )}
                       <span className="expand-icon">{isExpanded ? '▲' : '▼'}</span>
                     </div>
                   </button>

@@ -2671,6 +2671,8 @@ tr:hover .email-edit-btn { opacity: 1; }
   .player-row,
   button[type="submit"] { min-height: 44px; }
 
+  .rival-star { min-height: 44px; min-width: 44px; }
+
   /* iOS input zoom prevention (font-size >= 16px prevents auto-zoom) */
   .form-group input,
   .form-group select,
