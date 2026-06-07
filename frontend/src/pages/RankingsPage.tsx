@@ -286,19 +286,23 @@ export default function RankingsPage() {
     setSelectedPlayer(null)
     const init = async () => {
       try {
-        const [roundsRes, overallRes, rivalsRes] = await Promise.all([
+        const [roundsRes, overallRes] = await Promise.all([
           rankingsAPI.getRounds(),
           rankingsAPI.getOverall(),
-          rivalsAPI.get(),
         ])
         setRounds(roundsRes.data)
         const overall: Ranking[] = overallRes.data
         setRankings(overall)
         setOverallRankings(overall)
         setCache({ overall: overall })
-        setRivals(rivalsRes.data)
       } catch {
         setError('Failed to load rankings. Please refresh.')
+      }
+      try {
+        const rivalsRes = await rivalsAPI.get()
+        setRivals(rivalsRes.data)
+      } catch {
+        // rivals fetch failing should not block the rankings page
       } finally {
         setLoading(false)
       }
