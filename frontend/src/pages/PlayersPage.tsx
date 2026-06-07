@@ -37,6 +37,7 @@ export default function PlayersPage() {
   const [activeRoles, setActiveRoles] = useState<Set<Role>>(new Set())
   const [search, setSearch] = useState('')
   const [rivals, setRivals] = useState<number[]>([])
+  const [rivalsOnly, setRivalsOnly] = useState(false)
 
   useEffect(() => {
     playersAPI.getAll()
@@ -65,6 +66,7 @@ export default function PlayersPage() {
 
   const toggleRole = (role: Role) => {
     setExpandedId(null)
+    setRivalsOnly(false)
     setActiveRoles((prev) => {
       const next = new Set(prev)
       if (next.has(role)) next.delete(role)
@@ -76,12 +78,13 @@ export default function PlayersPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return players.filter((p) => {
-      if (activeRoles.size > 0 && !activeRoles.has(getRole(p))) return false
+      if (rivalsOnly && !rivals.includes(p.id)) return false
+      if (!rivalsOnly && activeRoles.size > 0 && !activeRoles.has(getRole(p))) return false
       if (q && ![p.username, p.first_name, p.surname, `${p.first_name} ${p.surname}`]
                .some(s => s.toLowerCase().includes(q))) return false
       return true
     })
-  }, [players, activeRoles, search])
+  }, [players, activeRoles, search, rivalsOnly, rivals])
 
   const adminCount = players.filter((p) => p.is_admin).length
   const cachierCount = players.filter((p) => p.is_cachier && !p.is_admin).length
@@ -93,7 +96,7 @@ export default function PlayersPage() {
     { key: 'admin', label: 'Admins', count: adminCount },
   ]
 
-  const isAll = activeRoles.size === 0
+  const isAll = activeRoles.size === 0 && !rivalsOnly
 
   return (
     <div className="players-page">
@@ -125,7 +128,7 @@ export default function PlayersPage() {
           <div className="role-filters">
             <button
               className={`role-filter-btn${isAll ? ' active' : ''}`}
-              onClick={() => { setActiveRoles(new Set()); setExpandedId(null) }}
+              onClick={() => { setActiveRoles(new Set()); setRivalsOnly(false); setExpandedId(null) }}
             >
               All
               <span className="role-filter-count">{players.length}</span>
@@ -140,6 +143,15 @@ export default function PlayersPage() {
                 <span className="role-filter-count">{f.count}</span>
               </button>
             ))}
+            {rivals.length > 0 && (
+              <button
+                className={`role-filter-btn role-filter-btn--rivals${rivalsOnly ? ' active' : ''}`}
+                onClick={() => { setRivalsOnly(v => !v); setActiveRoles(new Set()); setExpandedId(null) }}
+              >
+                ★ Rivals
+                <span className="role-filter-count">{rivals.length}</span>
+              </button>
+            )}
           </div>
 
           {filtered.length === 0 && (

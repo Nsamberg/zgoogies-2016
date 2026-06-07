@@ -1643,6 +1643,17 @@ button[type="submit"]:disabled {
   color: #fff;
 }
 
+.role-filter-btn--rivals {
+  border-color: #D4AC0D;
+  color: #9a7a00;
+}
+
+.role-filter-btn--rivals.active {
+  background: #D4AC0D;
+  border-color: #D4AC0D;
+  color: #fff;
+}
+
 .role-filter-count {
   background: rgba(0,0,0,0.12);
   border-radius: 10px;
