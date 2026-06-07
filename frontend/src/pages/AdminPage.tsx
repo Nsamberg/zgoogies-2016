@@ -1154,6 +1154,14 @@ export default function AdminPage() {
           <span className={`role-badge role-${isAdmin ? 'admin' : 'cashier'}`}>
             {isAdmin ? 'Admin' : 'Cashier'}
           </span>
+          {isAdmin && (
+            <>
+              {' '}·{' '}
+              <a href="/db-admin" target="_blank" rel="noopener noreferrer" className="db-admin-link">
+                DB Browser ↗
+              </a>
+            </>
+          )}
         </p>
       </div>
 

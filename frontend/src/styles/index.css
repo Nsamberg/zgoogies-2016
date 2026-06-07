@@ -2023,6 +2023,16 @@ button[type="submit"]:disabled {
   font-weight: 700;
 }
 
+.db-admin-link {
+  color: #1B1464;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.db-admin-link:hover {
+  text-decoration: underline;
+}
+
 .admin-role-note {
   color: #666;
   font-size: 0.85rem;
