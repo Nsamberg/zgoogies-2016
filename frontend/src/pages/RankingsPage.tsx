@@ -3,18 +3,18 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts'
-import { rankingsAPI } from '../services/api'
+import { rankingsAPI, rivalsAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
-type TabId = 'overall' | number
+type TabId = 'overall' | 'rivals' | number
 
 interface HistoryPoint {
   rank: number
   total_points: number
   game_id: number
   created_at: string
-  label: string   // "Game N"
+  label: string
 }
 
 function TrendIcon({ rank, previous }: { rank: number; previous?: number | null }) {
@@ -42,7 +42,7 @@ function PlayerHistoryView({
   const fetchHistory = useCallback(async (tab: TabId) => {
     setLoading(true)
     try {
-      const roundId = tab === 'overall' ? undefined : (tab as number)
+      const roundId = (tab === 'overall' || tab === 'rivals') ? undefined : (tab as number)
       const res = await rankingsAPI.getHistory(player.user.id, roundId)
       const pts: HistoryPoint[] = res.data.map((h: any, i: number) => ({
         ...h,
@@ -167,6 +167,101 @@ function PlayerHistoryView({
   )
 }
 
+// ── Rivals tab view ───────────────────────────────────────────────────────────
+
+function RivalsView({
+  overallRankings,
+  rivals,
+  currentUserId,
+  onToggleRival,
+  onSelectPlayer,
+}: {
+  overallRankings: Ranking[]
+  rivals: number[]
+  currentUserId: number
+  onToggleRival: (rivalId: number, isRival: boolean) => void
+  onSelectPlayer: (r: Ranking) => void
+}) {
+  const filtered = overallRankings.filter(
+    r => r.user.id === currentUserId || rivals.includes(r.user.id)
+  )
+
+  const myEntry = filtered.find(r => r.user.id === currentUserId)
+  const myPoints = myEntry?.total_points ?? 0
+
+  if (rivals.length === 0) {
+    return (
+      <p className="rivals-empty-state">
+        Click ★ next to any player to add them as a rival.
+      </p>
+    )
+  }
+
+  return (
+    <div className="rankings-table-wrap">
+      <p className="rankings-click-hint">Showing you vs your rivals · click a player for their history</p>
+      <table className="rankings-table">
+        <thead>
+          <tr>
+            <th className="col-rank">#</th>
+            <th className="col-player">Player</th>
+            <th className="col-points">Points</th>
+            <th className="col-delta">vs me</th>
+            <th className="col-rank">Overall</th>
+            <th className="col-rival-star" aria-label="Rivals"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((r, idx) => {
+            const isMe = r.user.id === currentUserId
+            const delta = r.total_points - myPoints
+            const isRival = rivals.includes(r.user.id)
+            return (
+              <tr
+                key={r.user.id}
+                className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
+                onClick={() => onSelectPlayer(r)}
+                title="View ranking history"
+              >
+                <td className="col-rank">{idx + 1}</td>
+                <td className="col-player">
+                  <span className="player-username">{r.user.username}</span>
+                  <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
+                </td>
+                <td className="col-points">{r.total_points}</td>
+                <td className="col-delta">
+                  {isMe ? (
+                    <span className="rivals-delta rivals-delta--neutral">—</span>
+                  ) : delta > 0 ? (
+                    <span className="rivals-delta rivals-delta--positive">+{delta}</span>
+                  ) : delta < 0 ? (
+                    <span className="rivals-delta rivals-delta--negative">{delta}</span>
+                  ) : (
+                    <span className="rivals-delta rivals-delta--neutral">0</span>
+                  )}
+                </td>
+                <td className="col-rank">#{r.rank}</td>
+                <td className="col-rival-star">
+                  {!isMe && (
+                    <button
+                      className={`rival-star${isRival ? ' rival-star--active' : ''}`}
+                      title={isRival ? 'Remove rival' : 'Add rival'}
+                      onClick={e => { e.stopPropagation(); onToggleRival(r.user.id, isRival) }}
+                      aria-label={isRival ? 'Remove rival' : 'Add rival'}
+                    >
+                      {isRival ? '★' : '☆'}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 // ── Main rankings page ────────────────────────────────────────────────────────
 
 export default function RankingsPage() {
@@ -175,9 +270,11 @@ export default function RankingsPage() {
   const [rounds, setRounds] = useState<CompetitionRound[]>([])
   const [activeTab, setActiveTab] = useState<TabId>('overall')
   const [rankings, setRankings] = useState<Ranking[]>([])
+  const [overallRankings, setOverallRankings] = useState<Ranking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
+  const [rivals, setRivals] = useState<number[]>([])
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
@@ -189,14 +286,17 @@ export default function RankingsPage() {
     setSelectedPlayer(null)
     const init = async () => {
       try {
-        const [roundsRes, overallRes] = await Promise.all([
+        const [roundsRes, overallRes, rivalsRes] = await Promise.all([
           rankingsAPI.getRounds(),
           rankingsAPI.getOverall(),
+          rivalsAPI.get(),
         ])
         setRounds(roundsRes.data)
         const overall: Ranking[] = overallRes.data
         setRankings(overall)
+        setOverallRankings(overall)
         setCache({ overall: overall })
+        setRivals(rivalsRes.data)
       } catch {
         setError('Failed to load rankings. Please refresh.')
       } finally {
@@ -209,6 +309,7 @@ export default function RankingsPage() {
   const handleTabChange = async (tab: TabId) => {
     setActiveTab(tab)
     setSelectedPlayer(null)
+    if (tab === 'rivals') return
     const key = tab === 'overall' ? 'overall' : String(tab)
     if (cache[key]) { setRankings(cache[key]); return }
     setLoading(true)
@@ -224,6 +325,17 @@ export default function RankingsPage() {
       setError('Failed to load rankings.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleToggleRival = async (rivalId: number, isRival: boolean) => {
+    // Optimistic update
+    if (isRival) {
+      setRivals(prev => prev.filter(id => id !== rivalId))
+      try { await rivalsAPI.remove(rivalId) } catch { setRivals(prev => [...prev, rivalId]) }
+    } else {
+      setRivals(prev => [...prev, rivalId])
+      try { await rivalsAPI.add(rivalId) } catch { setRivals(prev => prev.filter(id => id !== rivalId)) }
     }
   }
 
@@ -261,16 +373,35 @@ export default function RankingsPage() {
             )}
           </button>
         ))}
+        <button
+          className={`tab-btn tab-btn--rivals${activeTab === 'rivals' ? ' active' : ''}`}
+          onClick={() => handleTabChange('rivals')}
+        >
+          Rivals
+          {rivals.length > 0 && (
+            <span className="tab-rivals-count">{rivals.length}</span>
+          )}
+        </button>
       </div>
 
       {loading && <p className="loading-text">Loading rankings...</p>}
       {error && <p className="error">{error}</p>}
 
-      {!loading && !error && rankings.length === 0 && (
+      {!loading && !error && activeTab === 'rivals' && (
+        <RivalsView
+          overallRankings={overallRankings}
+          rivals={rivals}
+          currentUserId={user!.id}
+          onToggleRival={handleToggleRival}
+          onSelectPlayer={setSelectedPlayer}
+        />
+      )}
+
+      {!loading && !error && activeTab !== 'rivals' && rankings.length === 0 && (
         <p className="empty-state">No rankings yet — they update after each game is scored.</p>
       )}
 
-      {!loading && !error && rankings.length > 0 && (
+      {!loading && !error && activeTab !== 'rivals' && rankings.length > 0 && (
         <div className="rankings-table-wrap">
           <p className="rankings-click-hint">Click any player to view their ranking history</p>
           <table className="rankings-table">
@@ -280,11 +411,13 @@ export default function RankingsPage() {
                 <th className="col-player">Player</th>
                 <th className="col-points">Points</th>
                 <th className="col-trend">Trend</th>
+                <th className="col-rival-star" aria-label="Rivals"></th>
               </tr>
             </thead>
             <tbody>
               {rankings.map((r) => {
                 const isMe = r.user.id === user?.id
+                const isRival = rivals.includes(r.user.id)
                 return (
                   <tr
                     key={r.user.id}
@@ -304,6 +437,18 @@ export default function RankingsPage() {
                     <td className="col-points">{r.total_points}</td>
                     <td className="col-trend">
                       <TrendIcon rank={r.rank} previous={r.previous_rank} />
+                    </td>
+                    <td className="col-rival-star">
+                      {!isMe && (
+                        <button
+                          className={`rival-star${isRival ? ' rival-star--active' : ''}`}
+                          title={isRival ? 'Remove rival' : 'Add rival'}
+                          onClick={e => { e.stopPropagation(); handleToggleRival(r.user.id, isRival) }}
+                          aria-label={isRival ? 'Remove rival' : 'Add rival'}
+                        >
+                          {isRival ? '★' : '☆'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 )

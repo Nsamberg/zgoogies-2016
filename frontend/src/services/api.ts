@@ -143,6 +143,13 @@ export const adminAPI = {
   setAiLimit: (limit: number) => api.post('/admin/ai-limit', { limit }),
 }
 
+// Rivals API
+export const rivalsAPI = {
+  get: () => api.get<number[]>('/rivals/'),
+  add: (rivalId: number) => api.post(`/rivals/${rivalId}`),
+  remove: (rivalId: number) => api.delete(`/rivals/${rivalId}`),
+}
+
 // Teams API
 export const teamsAPI = {
   getAll: () => api.get('/teams/'),

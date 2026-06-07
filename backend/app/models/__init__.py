@@ -12,6 +12,7 @@ from app.models.news_reaction import NewsReaction
 from app.models.news_comment import NewsComment
 from app.models.access_log import AccessLog
 from app.models.app_setting import AppSetting
+from app.models.user_rival import UserRival
 
 __all__ = [
     'User',
@@ -27,5 +28,6 @@ __all__ = [
     'NewsReaction',
     'NewsComment',
     'AccessLog',
-    'AppSetting'
+    'AppSetting',
+    'UserRival'
 ]

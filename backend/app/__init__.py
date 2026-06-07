@@ -37,7 +37,7 @@ def create_app(config_name='default'):
         return jsonify({'error': 'Authentication required'}), 401
 
     # Register blueprints
-    from app.routes import auth, predictions, rankings, players, admin, games, news, teams, mcp
+    from app.routes import auth, predictions, rankings, players, admin, games, news, teams, mcp, rivals
     app.register_blueprint(auth.bp)
     app.register_blueprint(predictions.bp)
     app.register_blueprint(rankings.bp)
@@ -47,6 +47,7 @@ def create_app(config_name='default'):
     app.register_blueprint(news.bp)
     app.register_blueprint(teams.bp)
     app.register_blueprint(mcp.bp)
+    app.register_blueprint(rivals.bp)
 
     # Ensure all tables exist (including newly added models)
     with app.app_context():
