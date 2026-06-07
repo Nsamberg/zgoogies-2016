@@ -169,25 +169,49 @@ function PlayerHistoryView({
 
 // ── Rivals tab view ───────────────────────────────────────────────────────────
 
+type RivalsScope = 'overall' | number
+
 function RivalsView({
-  overallRankings,
+  rounds,
   rivals,
   currentUserId,
   onToggleRival,
   onSelectPlayer,
+  rankingsCache,
+  onLoadRound,
 }: {
-  overallRankings: Ranking[]
+  rounds: CompetitionRound[]
   rivals: number[]
   currentUserId: number
   onToggleRival: (rivalId: number, isRival: boolean) => void
   onSelectPlayer: (r: Ranking) => void
+  rankingsCache: Record<string, Ranking[]>
+  onLoadRound: (scope: RivalsScope) => Promise<void>
 }) {
-  const filtered = overallRankings.filter(
+  const [scope, setScope] = useState<RivalsScope>('overall')
+  const [scopeLoading, setScopeLoading] = useState(false)
+
+  const handleScope = async (s: RivalsScope) => {
+    setScope(s)
+    const key = s === 'overall' ? 'overall' : String(s)
+    if (!rankingsCache[key]) {
+      setScopeLoading(true)
+      await onLoadRound(s)
+      setScopeLoading(false)
+    }
+  }
+
+  const key = scope === 'overall' ? 'overall' : String(scope)
+  const sourceRankings = rankingsCache[key] ?? []
+
+  const filtered = sourceRankings.filter(
     r => r.user.id === currentUserId || rivals.includes(r.user.id)
   )
 
   const myEntry = filtered.find(r => r.user.id === currentUserId)
   const myPoints = myEntry?.total_points ?? 0
+
+  const scopeLabel = scope === 'overall' ? 'Overall' : (rounds.find(r => r.id === scope)?.name ?? '')
 
   if (rivals.length === 0) {
     return (
@@ -198,66 +222,89 @@ function RivalsView({
   }
 
   return (
-    <div className="rankings-table-wrap">
-      <p className="rankings-click-hint">Showing you vs your rivals · click a player for their history</p>
-      <table className="rankings-table">
-        <thead>
-          <tr>
-            <th className="col-rank">#</th>
-            <th className="col-player">Player</th>
-            <th className="col-points">Points</th>
-            <th className="col-delta">vs me</th>
-            <th className="col-rank">Overall</th>
-            <th className="col-rival-star" aria-label="Rivals"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((r, idx) => {
-            const isMe = r.user.id === currentUserId
-            const delta = r.total_points - myPoints
-            const isRival = rivals.includes(r.user.id)
-            return (
-              <tr
-                key={r.user.id}
-                className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
-                onClick={() => onSelectPlayer(r)}
-                title="View ranking history"
-              >
-                <td className="col-rank">{idx + 1}</td>
-                <td className="col-player">
-                  <span className="player-username">{r.user.username}</span>
-                  <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
-                </td>
-                <td className="col-points">{r.total_points}</td>
-                <td className="col-delta">
-                  {isMe ? (
-                    <span className="rivals-delta rivals-delta--neutral">—</span>
-                  ) : delta > 0 ? (
-                    <span className="rivals-delta rivals-delta--positive">+{delta}</span>
-                  ) : delta < 0 ? (
-                    <span className="rivals-delta rivals-delta--negative">{delta}</span>
-                  ) : (
-                    <span className="rivals-delta rivals-delta--neutral">0</span>
-                  )}
-                </td>
-                <td className="col-rank">#{r.rank}</td>
-                <td className="col-rival-star">
-                  {!isMe && (
-                    <button
-                      className={`rival-star${isRival ? ' rival-star--active' : ''}`}
-                      title={isRival ? 'Remove rival' : 'Add rival'}
-                      onClick={e => { e.stopPropagation(); onToggleRival(r.user.id, isRival) }}
-                      aria-label={isRival ? 'Remove rival' : 'Add rival'}
-                    >
-                      {isRival ? '★' : '☆'}
-                    </button>
-                  )}
-                </td>
+    <div>
+      {/* Scope selector */}
+      <div className="rivals-scope-tabs">
+        <button
+          className={`rivals-scope-btn${scope === 'overall' ? ' active' : ''}`}
+          onClick={() => handleScope('overall')}
+        >Overall</button>
+        {rounds.map(r => (
+          <button
+            key={r.id}
+            className={`rivals-scope-btn${scope === r.id ? ' active' : ''}${r.is_current ? ' rivals-scope-btn--current' : ''}`}
+            onClick={() => handleScope(r.id)}
+          >{r.name}</button>
+        ))}
+      </div>
+
+      {scopeLoading && <p className="loading-text">Loading…</p>}
+
+      {!scopeLoading && (
+        <div className="rankings-table-wrap">
+          <p className="rankings-click-hint">
+            {scopeLabel} · you vs your rivals · click a player for their history
+          </p>
+          <table className="rankings-table">
+            <thead>
+              <tr>
+                <th className="col-rank">#</th>
+                <th className="col-player">Player</th>
+                <th className="col-points">Points</th>
+                <th className="col-delta">vs me</th>
+                <th className="col-rank">{scope === 'overall' ? 'Overall' : 'Round'} rank</th>
+                <th className="col-rival-star" aria-label="Rivals"></th>
               </tr>
-            )
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {filtered.map((r, idx) => {
+                const isMe = r.user.id === currentUserId
+                const delta = r.total_points - myPoints
+                const isRival = rivals.includes(r.user.id)
+                return (
+                  <tr
+                    key={r.user.id}
+                    className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
+                    onClick={() => onSelectPlayer(r)}
+                    title="View ranking history"
+                  >
+                    <td className="col-rank">{idx + 1}</td>
+                    <td className="col-player">
+                      <span className="player-username">{r.user.username}</span>
+                      <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
+                    </td>
+                    <td className="col-points">{r.total_points}</td>
+                    <td className="col-delta">
+                      {isMe ? (
+                        <span className="rivals-delta rivals-delta--neutral">—</span>
+                      ) : delta > 0 ? (
+                        <span className="rivals-delta rivals-delta--positive">+{delta}</span>
+                      ) : delta < 0 ? (
+                        <span className="rivals-delta rivals-delta--negative">{delta}</span>
+                      ) : (
+                        <span className="rivals-delta rivals-delta--neutral">0</span>
+                      )}
+                    </td>
+                    <td className="col-rank">#{r.rank}</td>
+                    <td className="col-rival-star">
+                      {!isMe && (
+                        <button
+                          className={`rival-star${isRival ? ' rival-star--active' : ''}`}
+                          title={isRival ? 'Remove rival' : 'Add rival'}
+                          onClick={e => { e.stopPropagation(); onToggleRival(r.user.id, isRival) }}
+                          aria-label={isRival ? 'Remove rival' : 'Add rival'}
+                        >
+                          {isRival ? '★' : '☆'}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
@@ -270,7 +317,6 @@ export default function RankingsPage() {
   const [rounds, setRounds] = useState<CompetitionRound[]>([])
   const [activeTab, setActiveTab] = useState<TabId>('overall')
   const [rankings, setRankings] = useState<Ranking[]>([])
-  const [overallRankings, setOverallRankings] = useState<Ranking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
@@ -293,7 +339,6 @@ export default function RankingsPage() {
         setRounds(roundsRes.data)
         const overall: Ranking[] = overallRes.data
         setRankings(overall)
-        setOverallRankings(overall)
         setCache({ overall: overall })
       } catch {
         setError('Failed to load rankings. Please refresh.')
@@ -393,11 +438,20 @@ export default function RankingsPage() {
 
       {!loading && !error && activeTab === 'rivals' && (
         <RivalsView
-          overallRankings={overallRankings}
+          rounds={rounds}
           rivals={rivals}
           currentUserId={user!.id}
           onToggleRival={handleToggleRival}
           onSelectPlayer={setSelectedPlayer}
+          rankingsCache={cache}
+          onLoadRound={async (scope) => {
+            const key = scope === 'overall' ? 'overall' : String(scope)
+            if (cache[key]) return
+            const res = scope === 'overall'
+              ? await rankingsAPI.getOverall()
+              : await rankingsAPI.getRound(scope as number)
+            setCache(prev => ({ ...prev, [key]: res.data }))
+          }}
         />
       )}
 

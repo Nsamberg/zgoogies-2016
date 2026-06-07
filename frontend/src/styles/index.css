@@ -1386,6 +1386,47 @@ button[type="submit"]:disabled {
 .rivals-delta--negative { color: #c62828; }
 .rivals-delta--neutral  { color: #bbb; }
 
+/* Rivals scope selector (inside rivals tab) */
+.rivals-scope-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.rivals-scope-btn {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.rivals-scope-btn:hover {
+  border-color: #1B1464;
+  color: #1B1464;
+}
+
+.rivals-scope-btn.active {
+  background: #1B1464;
+  color: #fff;
+  border-color: #1B1464;
+}
+
+.rivals-scope-btn--current {
+  border-color: #C8102E;
+  color: #C8102E;
+}
+
+.rivals-scope-btn--current.active {
+  background: #C8102E;
+  color: #fff;
+  border-color: #C8102E;
+}
+
 /* Rivals empty state */
 .rivals-empty-state {
   text-align: center;
