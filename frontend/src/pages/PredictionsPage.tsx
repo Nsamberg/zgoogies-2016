@@ -1,7 +1,33 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { gamesAPI, predictionsAPI, playersAPI } from '../services/api'
+import { gamesAPI, predictionsAPI, playersAPI, newsAPI, authAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Game, Prediction } from '../types'
+
+interface BannerItem {
+  type: 'news' | 'rankings'
+  message: string
+  linkTo: string
+  linkLabel: string
+}
+
+function NotificationBanners({ banners, onDismiss }: {
+  banners: BannerItem[]
+  onDismiss: (type: BannerItem['type']) => void
+}) {
+  if (banners.length === 0) return null
+  return (
+    <div className="notif-banners">
+      {banners.map(b => (
+        <div key={b.type} className={`notif-banner notif-banner--${b.type}`}>
+          <span className="notif-banner-icon">{b.type === 'news' ? '📰' : '🏆'}</span>
+          <span className="notif-banner-msg">{b.message}</span>
+          <a className="notif-banner-link" href={b.linkTo}>{b.linkLabel} →</a>
+          <button className="notif-banner-close" onClick={() => onDismiss(b.type)} aria-label="Dismiss">✕</button>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 type Tab = 'open' | 'past' | 'others'
 
@@ -80,6 +106,60 @@ function GameCardHeader({ game }: { game: Game | PlayerGamePrediction }) {
 export default function PredictionsPage() {
   const { user } = useAuthStore()
   const timezone = user?.timezone || 'UTC'
+
+  const [banners, setBanners] = useState<BannerItem[]>([])
+
+  // Record this visit server-side (cross-device); get previous visit time to detect new content
+  useEffect(() => {
+    authAPI.recordPredictionsVisit().then(res => {
+      const previousVisit = res.data.previous_visit
+      if (!previousVisit) return  // first ever visit — nothing to flag
+
+      const lastDate = new Date(previousVisit)
+      Promise.allSettled([
+        newsAPI.getAll(),
+        gamesAPI.getClosed(),
+      ]).then(([newsResult, closedResult]) => {
+        const newBanners: BannerItem[] = []
+
+        if (newsResult.status === 'fulfilled') {
+          const articles: { created_at: string; title: string }[] = newsResult.value.data
+          const newest = articles
+            .filter(a => new Date(a.created_at) > lastDate)
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+          if (newest) {
+            newBanners.push({
+              type: 'news',
+              message: `New post: "${newest.title}"`,
+              linkTo: '/news',
+              linkLabel: 'Read',
+            })
+          }
+        }
+
+        if (closedResult.status === 'fulfilled') {
+          const games: { scored_at: string | null }[] = closedResult.value.data
+          const newlyScored = games.some(
+            g => g.scored_at && new Date(g.scored_at) > lastDate
+          )
+          if (newlyScored) {
+            newBanners.push({
+              type: 'rankings',
+              message: 'New rankings are available!',
+              linkTo: '/rankings',
+              linkLabel: 'See Rankings',
+            })
+          }
+        }
+
+        setBanners(newBanners)
+      })
+    }).catch(() => {})  // silent — banners are non-critical
+  }, [])
+
+  const dismissBanner = useCallback((type: BannerItem['type']) => {
+    setBanners(prev => prev.filter(b => b.type !== type))
+  }, [])
 
   const [tab, setTab] = useState<Tab>('open')
   const [teamSearch, setTeamSearch] = useState('')
@@ -274,6 +354,7 @@ export default function PredictionsPage() {
 
   return (
     <div className="predictions-page">
+      <NotificationBanners banners={banners} onDismiss={dismissBanner} />
       <div className="page-tabs">
         <button
           className={`tab-btn${tab === 'open' ? ' active' : ''}`}
