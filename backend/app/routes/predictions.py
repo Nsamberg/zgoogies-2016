@@ -4,6 +4,7 @@ from app import db
 from app.models.prediction import Prediction
 from app.models.prediction_history import PredictionHistory
 from app.models.game import Game
+from app.models.access_log import AccessLog
 
 bp = Blueprint('predictions', __name__, url_prefix='/api/predictions')
 
@@ -85,6 +86,9 @@ def create_prediction():
         action=action
     )
     db.session.add(history)
+    log = AccessLog(user_id=current_user.id, action='prediction_submitted',
+                    page=f'game:{data["game_id"]}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
 
     return jsonify({'message': 'Prediction saved', 'id': prediction.id}), 201

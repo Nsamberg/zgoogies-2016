@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { adminAPI, teamsAPI } from '../services/api'
+import { adminAPI, teamsAPI, playersAPI, auditAPI, AuditLogEntry } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import type { Team } from '../types'
 
@@ -1121,9 +1121,147 @@ function SettingsTab() {
   )
 }
 
+// ─── Audit Trail Tab ──────────────────────────────────────────────────────────
+
+const AUDIT_ACTION_LABELS: Record<string, string> = {
+  login: 'Login', logout: 'Logout', profile_updated: 'Profile updated',
+  password_changed: 'Password changed', prediction_submitted: 'Prediction submitted',
+  rival_added: 'Rival added', rival_removed: 'Rival removed',
+  score_entered: 'Score entered', score_rolled_back: 'Score rolled back',
+  payment_recorded: 'Payment recorded', payment_removed: 'Payment removed',
+  role_changed: 'Role changed',
+}
+
+function AuditTab() {
+  const [players, setPlayers] = useState<{ id: number; username: string; first_name: string; surname: string }[]>([])
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [logs, setLogs] = useState<AuditLogEntry[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [actionFilter, setActionFilter] = useState('')
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    playersAPI.getAll().then(r => setPlayers(r.data)).catch(() => {})
+  }, [])
+
+  const fetchLogs = useCallback(async (userId: number, filter: string, offset: number, append: boolean) => {
+    setLoading(true)
+    try {
+      const res = await auditAPI.getUserLogs(userId, { action: filter || undefined, limit: 50, offset })
+      setTotal(res.data.total)
+      setLogs(prev => append ? [...prev, ...res.data.logs] : res.data.logs)
+    } catch {
+      setLogs([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const handleSelectUser = (userId: number) => {
+    setSelectedUserId(userId)
+    setActionFilter('')
+    setLogs([])
+    fetchLogs(userId, '', 0, false)
+  }
+
+  const handleFilterChange = (filter: string) => {
+    setActionFilter(filter)
+    if (selectedUserId) fetchLogs(selectedUserId, filter, 0, false)
+  }
+
+  const filteredPlayers = players.filter(p => {
+    const q = search.toLowerCase()
+    return !q || p.username.toLowerCase().includes(q) ||
+      `${p.first_name} ${p.surname}`.toLowerCase().includes(q)
+  })
+
+  const selectedUser = players.find(p => p.id === selectedUserId)
+
+  return (
+    <div className="admin-section">
+      <div className="admin-section-header"><div><h2>Audit Trail</h2></div></div>
+
+      <div className="audit-admin-layout">
+        <div className="audit-user-list">
+          <input
+            type="text"
+            className="player-search"
+            placeholder="Search player…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <div className="audit-user-items">
+            {filteredPlayers.map(p => (
+              <button
+                key={p.id}
+                className={`audit-user-item${selectedUserId === p.id ? ' active' : ''}`}
+                onClick={() => handleSelectUser(p.id)}
+              >
+                <span className="player-username">{p.username}</span>
+                <span className="player-fullname">{p.first_name} {p.surname}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="audit-log-panel">
+          {!selectedUser && (
+            <p className="empty-state">Select a player to view their activity log.</p>
+          )}
+          {selectedUser && (
+            <>
+              <div className="audit-filters">
+                <span className="audit-panel-user">{selectedUser.username}</span>
+                <select
+                  className="audit-filter-select"
+                  value={actionFilter}
+                  onChange={e => handleFilterChange(e.target.value)}
+                >
+                  <option value="">All actions</option>
+                  {Object.entries(AUDIT_ACTION_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+                <span className="audit-total">{total} event{total !== 1 ? 's' : ''}</span>
+              </div>
+              {loading && logs.length === 0 && <p className="loading-text">Loading…</p>}
+              {!loading && logs.length === 0 && <p className="empty-state">No activity recorded.</p>}
+              {logs.length > 0 && (
+                <div>
+                  <div className="audit-table-wrap">
+                    <table className="audit-table">
+                      <thead><tr><th>Date / Time</th><th>Action</th><th>Details</th><th>IP</th></tr></thead>
+                      <tbody>
+                        {logs.map(l => (
+                          <tr key={l.id}>
+                            <td className="audit-date">{new Date(l.created_at).toLocaleString()}</td>
+                            <td><span className={`audit-action audit-action--${l.action}`}>{AUDIT_ACTION_LABELS[l.action] ?? l.action}</span></td>
+                            <td className="audit-detail">{l.page ?? '—'}</td>
+                            <td className="audit-ip">{l.ip_address ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {logs.length < total && (
+                    <button className="audit-load-more" onClick={() => fetchLogs(selectedUserId!, actionFilter, logs.length, true)} disabled={loading}>
+                      {loading ? 'Loading...' : `Load more (${total - logs.length} remaining)`}
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-type TabId = 'payments' | 'collections' | 'scores' | 'tournament' | 'news' | 'users' | 'settings'
+type TabId = 'payments' | 'collections' | 'scores' | 'tournament' | 'news' | 'users' | 'settings' | 'audit'
 
 export default function AdminPage() {
   const { user } = useAuthStore()
@@ -1138,6 +1276,7 @@ export default function AdminPage() {
     { id: 'news',       label: 'News',        adminOnly: false },
     { id: 'users',      label: 'Users',       adminOnly: true  },
     { id: 'settings',   label: '⏱ Settings',  adminOnly: true  },
+    { id: 'audit',     label: 'Audit Trail', adminOnly: true  },
   ]
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin)
@@ -1184,6 +1323,7 @@ export default function AdminPage() {
       {currentTab === 'news'       && <NewsTab />}
       {currentTab === 'users'      && <UsersTab currentUserId={user?.id ?? 0} />}
       {currentTab === 'settings'   && <SettingsTab />}
+      {currentTab === 'audit'      && <AuditTab />}
     </div>
   )
 }

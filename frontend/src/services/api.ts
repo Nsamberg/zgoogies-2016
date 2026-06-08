@@ -143,6 +143,22 @@ export const adminAPI = {
   setAiLimit: (limit: number) => api.post('/admin/ai-limit', { limit }),
 }
 
+// Audit log API
+export const auditAPI = {
+  getMyLogs: (params?: { action?: string; limit?: number; offset?: number }) =>
+    api.get<{ logs: AuditLogEntry[]; total: number }>('/auth/audit-log', { params }),
+  getUserLogs: (userId: number, params?: { action?: string; limit?: number; offset?: number }) =>
+    api.get<{ logs: AuditLogEntry[]; total: number }>(`/admin/audit-log/${userId}`, { params }),
+}
+
+export interface AuditLogEntry {
+  id: number
+  action: string
+  page: string | null
+  ip_address: string | null
+  created_at: string
+}
+
 // Rivals API
 export const rivalsAPI = {
   get: () => api.get<number[]>('/rivals/'),
