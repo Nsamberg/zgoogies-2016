@@ -4,6 +4,7 @@ from app import db
 from app.models.user import User
 from app.models.game import Game
 from app.models.access_log import AccessLog
+from app.models.app_setting import AppSetting
 from app.services.email_service import send_registration_email, send_password_reset_email
 from app.utils.datetime_utils import get_current_utc
 from datetime import timedelta
@@ -309,3 +310,18 @@ def get_audit_log():
         } for l in logs],
         'total': total
     }), 200
+
+
+@bp.route('/predictions-visited', methods=['GET', 'POST'])
+@login_required
+def predictions_visited():
+    key = f'predictions_visit_{current_user.id}'
+    if request.method == 'GET':
+        val = AppSetting.get(key)
+        return jsonify({'last_visit': val}), 200
+    # POST: record current time and return previous value
+    from app.utils.datetime_utils import get_current_utc
+    now = get_current_utc().isoformat() + 'Z'
+    previous = AppSetting.get(key)
+    AppSetting.set(key, now)
+    return jsonify({'previous_visit': previous}), 200

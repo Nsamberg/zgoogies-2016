@@ -41,6 +41,7 @@ export const authAPI = {
 
   getApiToken: () => api.get('/auth/token'),
   regenerateApiToken: () => api.post('/auth/token/regenerate'),
+  recordPredictionsVisit: () => api.post<{ previous_visit: string | null }>('/auth/predictions-visited'),
 }
 
 // Games API
