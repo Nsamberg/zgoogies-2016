@@ -238,6 +238,8 @@ def update_profile():
             return jsonify({'error': 'Tournament winner prediction is locked'}), 403
         current_user.tournament_winner_id = data['tournament_winner_id']
 
+    log = AccessLog(user_id=current_user.id, action='profile_updated', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Profile updated'}), 200
 
@@ -258,6 +260,8 @@ def change_password():
         return jsonify({'error': 'New password must be at least 6 characters'}), 400
 
     current_user.set_password(data['new_password'])
+    log = AccessLog(user_id=current_user.id, action='password_changed', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Password changed successfully'}), 200
 
@@ -279,3 +283,29 @@ def regenerate_api_token():
     current_user.api_token = uuid.uuid4().hex
     db.session.commit()
     return jsonify({'token': current_user.api_token}), 200
+
+
+@bp.route('/audit-log', methods=['GET'])
+@login_required
+def get_audit_log():
+    """Get the current user's activity log."""
+    action_filter = request.args.get('action')
+    limit = min(int(request.args.get('limit', 50)), 200)
+    offset = int(request.args.get('offset', 0))
+
+    query = AccessLog.query.filter_by(user_id=current_user.id)
+    if action_filter:
+        query = query.filter_by(action=action_filter)
+    total = query.count()
+    logs = query.order_by(AccessLog.created_at.desc()).offset(offset).limit(limit).all()
+
+    return jsonify({
+        'logs': [{
+            'id': l.id,
+            'action': l.action,
+            'page': l.page,
+            'ip_address': l.ip_address,
+            'created_at': l.created_at.isoformat() + 'Z'
+        } for l in logs],
+        'total': total
+    }), 200

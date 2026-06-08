@@ -1,8 +1,9 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app import db
 from app.models.user_rival import UserRival
 from app.models.user import User
+from app.models.access_log import AccessLog
 
 bp = Blueprint('rivals', __name__, url_prefix='/api/rivals')
 
@@ -30,8 +31,12 @@ def add_rival(rival_id):
     if existing:
         return jsonify({'message': 'Already a rival'}), 200
 
+    rival_username = rival_user.username
     entry = UserRival(user_id=current_user.id, rival_id=rival_id)
     db.session.add(entry)
+    log = AccessLog(user_id=current_user.id, action='rival_added',
+                    page=f'user:{rival_username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Rival added'}), 201
 
@@ -45,6 +50,11 @@ def remove_rival(rival_id):
     if not entry:
         return jsonify({'message': 'Not a rival'}), 200
 
+    rival_user = User.query.get(rival_id)
+    rival_username = rival_user.username if rival_user else str(rival_id)
     db.session.delete(entry)
+    log = AccessLog(user_id=current_user.id, action='rival_removed',
+                    page=f'user:{rival_username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Rival removed'}), 200

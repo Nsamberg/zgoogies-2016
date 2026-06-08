@@ -12,6 +12,7 @@ from app.models.ranking import Ranking
 from app.models.ranking_history import RankingHistory
 from app.models.news import News
 from app.models.app_setting import AppSetting
+from app.models.access_log import AccessLog
 from app.services.ranking_service import (
     update_rankings_after_game,
     recalculate_rankings_for_round,
@@ -78,6 +79,9 @@ def record_payment(user_id):
     user.has_paid = True
     user.payment_received_by_id = current_user.id
     user.payment_date = db.func.now()
+    log = AccessLog(user_id=current_user.id, action='payment_recorded',
+                    page=f'user:{user.username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     app = current_app._get_current_object()
     threading.Thread(target=send_payment_confirmation_email, args=(app, user.email, user.first_name, user.surname), daemon=True).start()
@@ -93,6 +97,9 @@ def remove_payment(user_id):
     user.has_paid = False
     user.payment_received_by_id = None
     user.payment_date = None
+    log = AccessLog(user_id=current_user.id, action='payment_removed',
+                    page=f'user:{user.username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Payment removed'}), 200
 
@@ -136,6 +143,9 @@ def update_user_role(user_id):
     user.is_admin = data.get('is_admin', user.is_admin)
     user.is_cachier = data.get('is_cachier', user.is_cachier)
     user.is_player = data.get('is_player', user.is_player)
+    log = AccessLog(user_id=current_user.id, action='role_changed',
+                    page=f'user:{user.username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
 
     return jsonify({'message': 'Role updated'}), 200
@@ -200,6 +210,9 @@ def enter_score(game_id):
         )
         prediction.is_calculated = True
 
+    log = AccessLog(user_id=current_user.id, action='score_entered',
+                    page=f'game:{game_id}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     update_rankings_after_game(game)
 
@@ -230,6 +243,9 @@ def rollback_score(game_id):
         'is_calculated': False
     })
 
+    log = AccessLog(user_id=current_user.id, action='score_rolled_back',
+                    page=f'game:{game_id}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
 
     # Recalculate rankings excluding this game
@@ -501,6 +517,38 @@ def reset_all():
             'ranking_history':    deleted_rh,
             'games_reset':        len(games),
         }
+    }), 200
+
+
+# ---------------------------------------------------------------------------
+# Audit log
+# ---------------------------------------------------------------------------
+
+@bp.route('/audit-log/<int:user_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_user_audit_log(user_id):
+    """Get activity log for any user (admin only)."""
+    User.query.get_or_404(user_id)
+    action_filter = request.args.get('action')
+    limit = min(int(request.args.get('limit', 50)), 200)
+    offset = int(request.args.get('offset', 0))
+
+    query = AccessLog.query.filter_by(user_id=user_id)
+    if action_filter:
+        query = query.filter_by(action=action_filter)
+    total = query.count()
+    logs = query.order_by(AccessLog.created_at.desc()).offset(offset).limit(limit).all()
+
+    return jsonify({
+        'logs': [{
+            'id': l.id,
+            'action': l.action,
+            'page': l.page,
+            'ip_address': l.ip_address,
+            'created_at': l.created_at.isoformat() + 'Z'
+        } for l in logs],
+        'total': total
     }), 200
 
 
