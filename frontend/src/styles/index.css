@@ -1574,6 +1574,81 @@ button[type="submit"]:disabled {
   font-size: 0.78rem;
 }
 
+.ph-games-section {
+  margin-top: 1.5rem;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  padding: 1rem 1.25rem;
+}
+
+.ph-games-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 0.75rem;
+}
+
+.ph-games-pts {
+  color: var(--gold);
+}
+
+.ph-games-table-wrap { overflow-x: auto; }
+
+.ph-games-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ph-games-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #888;
+  font-size: 0.75rem;
+  padding: 0 0.5rem 0.5rem;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.ph-games-table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid #f4f4f4;
+  vertical-align: middle;
+}
+
+.ph-game-teams {
+  font-weight: 500;
+  color: #333;
+}
+
+.ph-double-badge {
+  display: inline-block;
+  margin-left: 0.3rem;
+  background: var(--gold);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0 0.25rem;
+  vertical-align: middle;
+}
+
+.ph-score {
+  white-space: nowrap;
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+
+.ph-pts {
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ph-pts--pos { color: var(--navy); }
+.ph-pts--zero { color: #bbb; }
+
 .summary-divider {
   color: #bbb;
 }

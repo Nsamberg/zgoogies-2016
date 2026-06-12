@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts'
-import { rankingsAPI, rivalsAPI } from '../services/api'
+import { rankingsAPI, rivalsAPI, playersAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
@@ -15,6 +15,18 @@ interface HistoryPoint {
   game_id: number
   created_at: string
   label: string
+}
+
+interface PlayerPrediction {
+  game_id: number
+  team_a: { id: number; name: string; score: number | null }
+  team_b: { id: number; name: string; score: number | null }
+  game_date: string
+  stage: string
+  competition_round: { id: number; name: string } | null
+  is_scored: boolean
+  is_double_points: boolean
+  prediction: { team_a_score: number; team_b_score: number; points: number | null }
 }
 
 function TrendIcon({ rank, previous }: { rank: number; previous?: number | null }) {
@@ -37,6 +49,7 @@ function PlayerHistoryView({
 }) {
   const [histTab, setHistTab] = useState<TabId>('overall')
   const [history, setHistory] = useState<HistoryPoint[]>([])
+  const [predictions, setPredictions] = useState<PlayerPrediction[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchHistory = useCallback(async (tab: TabId) => {
@@ -56,7 +69,12 @@ function PlayerHistoryView({
     }
   }, [player.user.id])
 
-  useEffect(() => { fetchHistory('overall') }, [fetchHistory])
+  useEffect(() => {
+    fetchHistory('overall')
+    playersAPI.getPlayerPredictions(player.user.id)
+      .then(res => setPredictions(res.data))
+      .catch(() => setPredictions([]))
+  }, [fetchHistory, player.user.id])
 
   const handleHistTab = (tab: TabId) => {
     setHistTab(tab)
@@ -163,6 +181,50 @@ function PlayerHistoryView({
 
         </div>
       )}
+
+      {/* Game-by-game predictions table */}
+      {(() => {
+        const roundId = (histTab === 'overall' || histTab === 'rivals') ? null : (histTab as number)
+        const filtered = predictions.filter(p =>
+          p.is_scored && (roundId === null || p.competition_round?.id === roundId)
+        )
+        if (filtered.length === 0) return null
+        const totalPts = filtered.reduce((sum, p) => sum + (p.prediction.points ?? 0), 0)
+        return (
+          <div className="ph-games-section">
+            <h3 className="ph-games-title">
+              Games · <span className="ph-games-pts">{totalPts} pts</span>
+            </h3>
+            <div className="ph-games-table-wrap">
+              <table className="ph-games-table">
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Result</th>
+                    <th>Predicted</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(p => (
+                    <tr key={p.game_id}>
+                      <td className="ph-game-teams">
+                        {p.team_a.name} v {p.team_b.name}
+                        {p.is_double_points && <span className="ph-double-badge">×2</span>}
+                      </td>
+                      <td className="ph-score">{p.team_a.score}–{p.team_b.score}</td>
+                      <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
+                      <td className={`ph-pts ph-pts--${(p.prediction.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
+                        {p.prediction.points ?? 0}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
