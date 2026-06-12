@@ -45,6 +45,7 @@ interface Player {
   username: string
   first_name: string
   surname: string
+  tournament_winner_id: number | null
 }
 
 interface PlayerGamePrediction {
@@ -761,16 +762,24 @@ export default function PredictionsPage() {
               {filteredPlayers.length === 0 && playerSearch && (
                 <p className="empty-state">No players found.</p>
               )}
-              {filteredPlayers.map((p) => (
-                <button
-                  key={p.id}
-                  className="other-player-btn"
-                  onClick={() => handleSelectPlayer(p)}
-                >
-                  <span className="player-username">{p.username}</span>
-                  <span className="player-fullname">{p.first_name} {p.surname}</span>
-                </button>
-              ))}
+              {filteredPlayers.map((p) => {
+                const winnerTeam = p.tournament_winner_id
+                  ? teams.find(t => t.id === p.tournament_winner_id)?.name
+                  : null
+                return (
+                  <button
+                    key={p.id}
+                    className="other-player-btn"
+                    onClick={() => handleSelectPlayer(p)}
+                  >
+                    <span className="player-username">{p.username}</span>
+                    <span className="player-fullname">{p.first_name} {p.surname}</span>
+                    {winnerTeam && (
+                      <span className="player-winner-pick">🏆 {winnerTeam}</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )}
 

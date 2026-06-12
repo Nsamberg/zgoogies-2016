@@ -2852,6 +2852,17 @@ tr:hover .email-edit-btn { opacity: 1; }
   font-style: italic;
 }
 
+.player-winner-pick {
+  font-size: 0.78rem;
+  color: #7a6000;
+  background: #fffbea;
+  border: 1px solid #e8d87a;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  margin-top: 0.1rem;
+  align-self: flex-start;
+}
+
 /* ─── Notification Banners ──────────────────────────────────────────────────── */
 
 .notif-banners {
