@@ -20,6 +20,15 @@ bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
 
 
+def _winner_pick_is_locked() -> bool:
+    """Winner pick locks 2 hours before the first game kicks off."""
+    first_game = Game.query.order_by(Game.game_date.asc()).first()
+    if not first_game:
+        return False
+    deadline = first_game.game_date - timedelta(hours=2)
+    return get_current_utc() >= deadline
+
+
 def verify_recaptcha(token: str) -> bool:
     """Verify a reCAPTCHA v2 token with Google's API.
     In development mode, verification is skipped so local testing
@@ -216,7 +225,7 @@ def get_current_user():
         'is_cachier': current_user.is_cachier,
         'has_paid': current_user.has_paid,
         'tournament_winner_id': current_user.tournament_winner_id,
-        'tournament_winner_locked': current_user.tournament_winner_locked
+        'tournament_winner_locked': _winner_pick_is_locked()
     }), 200
 
 
@@ -235,7 +244,7 @@ def update_profile():
     if 'timezone' in data:
         current_user.timezone = data['timezone']
     if 'tournament_winner_id' in data:
-        if current_user.tournament_winner_locked:
+        if _winner_pick_is_locked():
             return jsonify({'error': 'Tournament winner prediction is locked'}), 403
         current_user.tournament_winner_id = data['tournament_winner_id']
 
