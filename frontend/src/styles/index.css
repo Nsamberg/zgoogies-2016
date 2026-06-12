@@ -1487,6 +1487,54 @@ button[type="submit"]:disabled {
 }
 .ranking-row-clickable:hover { background: #f0f2fa; }
 
+.my-rank-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: #f0f2ff;
+  border: 1px solid #c5caee;
+  border-left: 4px solid #1B1464;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.my-rank-label {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.my-rank-position {
+  font-weight: 700;
+  color: #1B1464;
+  font-size: 1.05rem;
+}
+
+.my-rank-separator {
+  color: #aaa;
+}
+
+.my-rank-points {
+  font-weight: 600;
+  color: #333;
+}
+
+.my-rank-scroll-btn {
+  margin-left: auto;
+  background: #1B1464;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.my-rank-scroll-btn:hover { background: #2d22a0; }
+
 .rankings-click-hint {
   font-size: 0.75rem;
   color: #aaa;

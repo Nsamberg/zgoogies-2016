@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
@@ -325,6 +325,9 @@ export default function RankingsPage() {
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
 
+  // Ref for scrolling to current user's row
+  const myRowRef = useRef<HTMLTableRowElement | null>(null)
+
   useEffect(() => {
     setLoading(true)
     setError('')
@@ -388,6 +391,10 @@ export default function RankingsPage() {
     }
   }
 
+  const scrollToMe = () => {
+    myRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
   // Player history view
   if (selectedPlayer) {
     return (
@@ -400,6 +407,8 @@ export default function RankingsPage() {
       </div>
     )
   }
+
+  const myRow = rankings.find(r => r.user.id === user?.id)
 
   return (
     <div className="rankings-page">
@@ -461,6 +470,17 @@ export default function RankingsPage() {
 
       {!loading && !error && activeTab !== 'rivals' && rankings.length > 0 && (
         <div className="rankings-table-wrap">
+          {myRow && (
+            <div className="my-rank-card">
+              <span className="my-rank-label">Your position</span>
+              <span className="my-rank-position">#{myRow.rank}</span>
+              <span className="my-rank-separator">·</span>
+              <span className="my-rank-points">{myRow.total_points} pts</span>
+              <button className="my-rank-scroll-btn" onClick={scrollToMe}>
+                Scroll to my row ↓
+              </button>
+            </div>
+          )}
           <p className="rankings-click-hint">Click any player to view their ranking history</p>
           <table className="rankings-table">
             <thead>
@@ -479,6 +499,7 @@ export default function RankingsPage() {
                 return (
                   <tr
                     key={r.user.id}
+                    ref={isMe ? myRowRef : undefined}
                     className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
                     onClick={() => setSelectedPlayer(r)}
                     title="View ranking history"
