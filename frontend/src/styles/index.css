@@ -3278,3 +3278,205 @@ tr:hover .email-edit-btn { opacity: 1; }
     max-height: 200px;
   }
 }
+
+/* ─── Prizes Page ─────────────────────────────────────────────────────────── */
+
+.prizes-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+.prizes-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 12px;
+  padding: 1.25rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.prizes-summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.prizes-summary-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #f5c518;
+}
+
+.prizes-summary-label {
+  font-size: 0.78rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prizes-summary-divider {
+  width: 1px;
+  height: 48px;
+  background: rgba(255,255,255,0.25);
+}
+
+.prizes-section {
+  margin-bottom: 2rem;
+}
+
+.prizes-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 0.9rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--navy);
+}
+
+.prizes-section-sub {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #888;
+}
+
+/* Round prizes */
+.prizes-round-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.prizes-round-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: #f8f8f8;
+  border: 1px solid #e5e7eb;
+}
+
+.prizes-round-row--1 { background: #fffbeb; border-color: #f5c518; }
+.prizes-round-row--2 { background: #f5f7fa; border-color: #b0bec5; }
+.prizes-round-row--3 { background: #fff4f0; border-color: #e8a87c; }
+
+.prizes-pos {
+  font-size: 1.4rem;
+  width: 2rem;
+  text-align: center;
+  line-height: 1;
+}
+
+.prizes-pos-num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #666;
+}
+
+.prizes-ordinal {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.prizes-amount {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--navy);
+}
+
+/* Overall prizes */
+.prizes-overall-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.prizes-overall-grid > :nth-child(4),
+.prizes-overall-grid > :nth-child(5) {
+  grid-column: span 1;
+}
+
+.prizes-overall-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem 0.5rem;
+  border-radius: 10px;
+  background: #f8f8f8;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.prizes-overall-card--1 {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #f5c518;
+  box-shadow: 0 2px 8px rgba(245,197,24,0.2);
+}
+
+.prizes-overall-card--2 {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%);
+  border-color: #9eb3c7;
+}
+
+.prizes-overall-card--3 {
+  background: linear-gradient(135deg, #fff4f0 0%, #fde8dc 100%);
+  border-color: #e8a87c;
+}
+
+.prizes-overall-medal {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.prizes-overall-num {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  line-height: 2rem;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.prizes-overall-ordinal {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.prizes-overall-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+/* 4th and 5th place — narrower 2-col row */
+.prizes-overall-grid > :nth-child(n+4) {
+  grid-column: span 1;
+}
+
+/* On mobile, stack the bottom row centrally */
+@media (max-width: 480px) {
+  .prizes-overall-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .prizes-summary {
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+  }
+  .prizes-summary-value {
+    font-size: 1.6rem;
+  }
+}
