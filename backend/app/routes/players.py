@@ -41,7 +41,8 @@ def get_players():
         'timezone': p.timezone,
         'is_player': p.is_player,
         'is_cachier': p.is_cachier,
-        'is_admin': p.is_admin
+        'is_admin': p.is_admin,
+        'tournament_winner_id': p.tournament_winner_id
     } for p in players]), 200
 
 
