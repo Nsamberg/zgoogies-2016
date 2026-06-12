@@ -293,11 +293,23 @@ export default function RankingsPage() {
           rankingsAPI.getRounds(),
           rankingsAPI.getOverall(),
         ])
-        setRounds(roundsRes.data)
+        const fetchedRounds: CompetitionRound[] = roundsRes.data
+        setRounds(fetchedRounds)
         const overall: Ranking[] = overallRes.data
         setRankings(overall)
         setOverallRankings(overall)
-        setCache({ overall: overall })
+        const initialCache: Record<string, Ranking[]> = { overall }
+        setCache(initialCache)
+        // Preload all round rankings in background so rank badges show immediately
+        const roundResults = await Promise.allSettled(
+          fetchedRounds.map(r => rankingsAPI.getRound(r.id))
+        )
+        const fullCache: Record<string, Ranking[]> = { overall }
+        fetchedRounds.forEach((r, i) => {
+          const res = roundResults[i]
+          if (res.status === 'fulfilled') fullCache[String(r.id)] = res.value.data
+        })
+        setCache(fullCache)
       } catch {
         setError('Failed to load rankings. Please refresh.')
       }
