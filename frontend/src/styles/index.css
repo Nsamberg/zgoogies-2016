@@ -2818,8 +2818,10 @@ tr:hover .email-edit-btn { opacity: 1; }
   .team-filter-search,
   .gp-search { font-size: 16px; }
 
-  /* Tabs — horizontally scrollable, no wrap */
-  .tab-btn { padding: 0.6rem 0.85rem; font-size: 0.85rem; flex-shrink: 0; white-space: nowrap; }
+  /* Tabs — distribute evenly across full width, no scrolling */
+  .page-tabs { overflow-x: visible; }
+  .tab-btn { flex: 1; min-width: 0; padding: 0.5rem 0.2rem; font-size: 0.72rem; text-align: center; white-space: nowrap; }
+  .tab-my-rank { font-size: 0.62rem; padding: 0 0.25rem; margin-left: 0.15rem; }
 
   /* Game cards */
   .game-card { padding: 0.75rem 1rem; }
