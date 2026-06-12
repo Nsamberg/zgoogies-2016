@@ -53,6 +53,25 @@ export default function PrizesPage() {
         </div>
       </div>
 
+      {/* Overall prizes */}
+      <section className="prizes-section">
+        <h2 className="prizes-section-title">
+          Overall
+          <span className="prizes-section-sub"> · £{OVERALL_PRIZE_TOTAL} total</span>
+        </h2>
+        <div className="prizes-overall-grid">
+          {OVERALL_PRIZES.map((amount, i) => (
+            <div key={i} className={`prizes-overall-card prizes-overall-card--${i + 1}`}>
+              <span className="prizes-overall-medal">
+                {MEDALS[i] ?? <span className="prizes-overall-num">{i + 1}</span>}
+              </span>
+              <span className="prizes-overall-ordinal">{ORDINALS[i]}</span>
+              <span className="prizes-overall-amount">£{amount}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Per-round prizes */}
       <section className="prizes-section">
         <h2 className="prizes-section-title">
@@ -69,25 +88,6 @@ export default function PrizesPage() {
               </span>
               <span className="prizes-ordinal">{ORDINALS[i]}</span>
               <span className="prizes-amount">£{amount}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Overall prizes */}
-      <section className="prizes-section">
-        <h2 className="prizes-section-title">
-          Overall
-          <span className="prizes-section-sub"> · £{OVERALL_PRIZE_TOTAL} total</span>
-        </h2>
-        <div className="prizes-overall-grid">
-          {OVERALL_PRIZES.map((amount, i) => (
-            <div key={i} className={`prizes-overall-card prizes-overall-card--${i + 1}`}>
-              <span className="prizes-overall-medal">
-                {MEDALS[i] ?? <span className="prizes-overall-num">{i + 1}</span>}
-              </span>
-              <span className="prizes-overall-ordinal">{ORDINALS[i]}</span>
-              <span className="prizes-overall-amount">£{amount}</span>
             </div>
           ))}
         </div>
