@@ -801,6 +801,7 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Payment</th>
               <th>Change Role</th>
               <th>Action</th>
             </tr>
@@ -864,6 +865,16 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
                     )}
                   </td>
                   <td><span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span></td>
+                  <td>
+                    <span className={`payment-badge ${u.has_paid ? 'paid' : 'unpaid'}`}>
+                      {u.has_paid ? 'Paid' : 'Unpaid'}
+                    </span>
+                    {u.has_paid && u.payment_date && (
+                      <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '2px' }}>
+                        {formatDate(u.payment_date)}
+                      </div>
+                    )}
+                  </td>
                   <td>
                     {!isSelf ? (
                       <select
