@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { gamesAPI, predictionsAPI, playersAPI, newsAPI, authAPI } from '../services/api'
+import { gamesAPI, predictionsAPI, playersAPI, newsAPI, authAPI, teamsAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Game, Prediction } from '../types'
 
@@ -213,6 +213,12 @@ export default function PredictionsPage() {
   const [playerPredsLoading, setPlayerPredsLoading] = useState(false)
   const [playerPredsError, setPlayerPredsError] = useState('')
 
+  // Winner prediction stats + selected player's pick
+  const [winnerStats, setWinnerStats] = useState<{ team_id: number; team_name: string; count: number }[]>([])
+  const [teams, setTeams] = useState<{ id: number; name: string }[]>([])
+  const [selectedPlayerWinnerId, setSelectedPlayerWinnerId] = useState<number | null | undefined>(undefined)
+  // undefined = not yet loaded/reset, null = no pick, number = team id
+
   // Load open games on mount or refresh
   useEffect(() => {
     setOpenLoading(true)
@@ -269,16 +275,24 @@ export default function PredictionsPage() {
     }
   }, [pastLoaded])
 
-  // Load player list lazily
+  // Load player list lazily, alongside winner stats and teams
   const loadPlayers = useCallback(async () => {
     if (playersLoaded) return
-    try {
-      const res = await playersAPI.getAll()
-      // Exclude self
-      setPlayers(res.data.filter((p: Player) => p.id !== user?.id))
+    const [playersRes, statsRes, teamsRes] = await Promise.allSettled([
+      playersAPI.getAll(),
+      playersAPI.getWinnerPredictions(),
+      teamsAPI.getAll(),
+    ])
+    if (playersRes.status === 'fulfilled') {
+      setPlayers(playersRes.value.data.filter((p: Player) => p.id !== user?.id))
       setPlayersLoaded(true)
-    } catch {
-      // silent — search will just show empty
+    }
+    if (statsRes.status === 'fulfilled') {
+      const sorted = [...statsRes.value.data].sort((a: { count: number }, b: { count: number }) => b.count - a.count)
+      setWinnerStats(sorted)
+    }
+    if (teamsRes.status === 'fulfilled') {
+      setTeams(teamsRes.value.data)
     }
   }, [playersLoaded, user?.id])
 
@@ -332,14 +346,20 @@ export default function PredictionsPage() {
     setPlayerPredictions([])
     setPlayerPredsError('')
     setPlayerPredsLoading(true)
-    try {
-      const res = await playersAPI.getPlayerPredictions(player.id)
-      setPlayerPredictions(res.data)
-    } catch {
+    setSelectedPlayerWinnerId(undefined)
+    const [predsRes, detailRes] = await Promise.allSettled([
+      playersAPI.getPlayerPredictions(player.id),
+      playersAPI.getPlayer(player.id),
+    ])
+    if (predsRes.status === 'fulfilled') {
+      setPlayerPredictions(predsRes.value.data)
+    } else {
       setPlayerPredsError('Failed to load predictions for this player.')
-    } finally {
-      setPlayerPredsLoading(false)
     }
+    if (detailRes.status === 'fulfilled') {
+      setSelectedPlayerWinnerId(detailRes.value.data.tournament_winner_id ?? null)
+    }
+    setPlayerPredsLoading(false)
   }
 
   const filteredPlayers = useMemo(() => {
@@ -710,8 +730,31 @@ export default function PredictionsPage() {
             className="player-search"
             placeholder="Search by username or first name…"
             value={playerSearch}
-            onChange={(e) => { setPlayerSearch(e.target.value); setSelectedPlayer(null) }}
+            onChange={(e) => { setPlayerSearch(e.target.value); setSelectedPlayer(null); setSelectedPlayerWinnerId(undefined) }}
           />
+
+          {!selectedPlayer && winnerStats.length > 0 && (() => {
+            const maxCount = winnerStats[0].count
+            const total = winnerStats.reduce((s, r) => s + r.count, 0)
+            return (
+              <div className="winner-stats-block">
+                <div className="winner-stats-title">🏆 Winner Predictions</div>
+                {winnerStats.map(row => (
+                  <div key={row.team_id} className="winner-stats-row">
+                    <span className="winner-stats-team">{row.team_name}</span>
+                    <div className="winner-stats-bar-wrap">
+                      <div
+                        className="winner-stats-bar"
+                        style={{ width: `${(row.count / maxCount) * 100}%` }}
+                      />
+                    </div>
+                    <span className="winner-stats-count">{row.count}</span>
+                  </div>
+                ))}
+                <div className="winner-stats-total">{total} player{total !== 1 ? 's' : ''} have made a pick</div>
+              </div>
+            )
+          })()}
 
           {!selectedPlayer && (
             <div className="other-player-list">
@@ -734,13 +777,23 @@ export default function PredictionsPage() {
           {selectedPlayer && (
             <div className="other-player-predictions">
               <div className="other-player-header">
-                <button className="back-btn" onClick={() => setSelectedPlayer(null)}>
+                <button className="back-btn" onClick={() => { setSelectedPlayer(null); setSelectedPlayerWinnerId(undefined) }}>
                   ← Back
                 </button>
                 <span className="other-player-name">
                   {selectedPlayer.username} — {selectedPlayer.first_name} {selectedPlayer.surname}
                 </span>
               </div>
+
+              {selectedPlayerWinnerId !== undefined && (
+                <div className="winner-pick-card">
+                  <span>🏆</span>
+                  {selectedPlayerWinnerId !== null
+                    ? <span>Predicted winner: <strong>{teams.find(t => t.id === selectedPlayerWinnerId)?.name ?? `Team #${selectedPlayerWinnerId}`}</strong></span>
+                    : <span className="winner-pick-none">No winner pick recorded</span>
+                  }
+                </div>
+              )}
 
               {playerPredsLoading && <p className="loading-text">Loading predictions...</p>}
               {playerPredsError && <p className="error">{playerPredsError}</p>}
