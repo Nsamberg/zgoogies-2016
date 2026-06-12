@@ -506,6 +506,7 @@ export default function PredictionsPage() {
             const homeW = all.filter((p: any) => p.team_a_score > p.team_b_score).length
             const draws = all.filter((p: any) => p.team_a_score === p.team_b_score).length
             const awayW = all.filter((p: any) => p.team_a_score < p.team_b_score).length
+            const pct = (x: number) => Math.round(x / n * 100) + '%'
             const scoreMap: Record<string, number> = {}
             all.forEach((p: any) => {
               const k = `${p.team_a_score}–${p.team_b_score}`
@@ -514,8 +515,11 @@ export default function PredictionsPage() {
             const topScore = n > 0
               ? Object.entries(scoreMap).sort((a, b) => b[1] - a[1])[0]
               : null
+            const avgA = (all.reduce((s: number, p: any) => s + p.team_a_score, 0) / n).toFixed(1)
+            const avgB = (all.reduce((s: number, p: any) => s + p.team_b_score, 0) / n).toFixed(1)
 
             let exact = 0, correctResult = 0
+            let avgPoints: string | null = null
             if (game.is_scored && game.team_a.score != null && game.team_b.score != null) {
               const ao = game.team_a.score > game.team_b.score ? 'h' : game.team_a.score < game.team_b.score ? 'a' : 'd'
               all.forEach((p: any) => {
@@ -525,6 +529,10 @@ export default function PredictionsPage() {
                   if (po === ao) correctResult++
                 }
               })
+              const scoredPreds = all.filter((p: any) => p.points != null)
+              if (scoredPreds.length > 0) {
+                avgPoints = (scoredPreds.reduce((s: number, p: any) => s + p.points, 0) / scoredPreds.length).toFixed(1)
+              }
             }
 
             return (
@@ -577,6 +585,10 @@ export default function PredictionsPage() {
                           <span className="gp-stat-value">{n}</span>
                           <span className="gp-stat-label">predictions</span>
                         </div>
+                        <div className="gp-stat">
+                          <span className="gp-stat-value">{avgA}–{avgB}</span>
+                          <span className="gp-stat-label">avg prediction</span>
+                        </div>
                         {topScore && (
                           <div className="gp-stat">
                             <span className="gp-stat-value">{topScore[0]}</span>
@@ -584,27 +596,33 @@ export default function PredictionsPage() {
                           </div>
                         )}
                         <div className="gp-stat">
-                          <span className="gp-stat-value">{homeW}</span>
+                          <span className="gp-stat-value">{pct(homeW)}</span>
                           <span className="gp-stat-label">{game.team_a.name} win</span>
                         </div>
                         <div className="gp-stat">
-                          <span className="gp-stat-value">{draws}</span>
+                          <span className="gp-stat-value">{pct(draws)}</span>
                           <span className="gp-stat-label">draw</span>
                         </div>
                         <div className="gp-stat">
-                          <span className="gp-stat-value">{awayW}</span>
+                          <span className="gp-stat-value">{pct(awayW)}</span>
                           <span className="gp-stat-label">{game.team_b.name} win</span>
                         </div>
                         {game.is_scored && (
                           <>
                             <div className="gp-stat gp-stat-exact">
-                              <span className="gp-stat-value">{exact}</span>
+                              <span className="gp-stat-value">{pct(exact)}</span>
                               <span className="gp-stat-label">exact score</span>
                             </div>
                             <div className="gp-stat">
-                              <span className="gp-stat-value">{correctResult}</span>
+                              <span className="gp-stat-value">{pct(correctResult)}</span>
                               <span className="gp-stat-label">correct result</span>
                             </div>
+                            {avgPoints !== null && (
+                              <div className="gp-stat">
+                                <span className="gp-stat-value">{avgPoints}</span>
+                                <span className="gp-stat-label">avg points</span>
+                              </div>
+                            )}
                           </>
                         )}
                       </div>
