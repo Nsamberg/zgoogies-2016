@@ -365,6 +365,13 @@ export default function RankingsPage() {
 
   const myRow = rankings.find(r => r.user.id === user?.id)
 
+  // Derive my rank for each cached tab (overall + any loaded round)
+  const myRankByTab: Record<string, number> = {}
+  Object.entries(cache).forEach(([key, rows]) => {
+    const me = rows.find(r => r.user.id === user?.id)
+    if (me) myRankByTab[key] = me.rank
+  })
+
   return (
     <div className="rankings-page">
       <h2 className="page-title">Rankings</h2>
@@ -373,7 +380,12 @@ export default function RankingsPage() {
         <button
           className={`tab-btn${activeTab === 'overall' ? ' active' : ''}`}
           onClick={() => handleTabChange('overall')}
-        >Overall</button>
+        >
+          Overall
+          {myRankByTab['overall'] != null && (
+            <span className="tab-my-rank">#{myRankByTab['overall']}</span>
+          )}
+        </button>
         {rounds.map((round) => (
           <button
             key={round.id}
@@ -381,8 +393,8 @@ export default function RankingsPage() {
             onClick={() => handleTabChange(round.id)}
           >
             {round.name}
-            {round.game_count != null && (
-              <span className="tab-game-count">{round.game_count}</span>
+            {myRankByTab[String(round.id)] != null && (
+              <span className="tab-my-rank">#{myRankByTab[String(round.id)]}</span>
             )}
           </button>
         ))}

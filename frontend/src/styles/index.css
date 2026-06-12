@@ -1231,6 +1231,26 @@ button[type="submit"]:disabled {
   background: rgba(255, 255, 255, 0.25);
 }
 
+.tab-my-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  background: rgba(212, 172, 13, 0.2);
+  color: #7a6000;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0 0.4rem;
+  min-width: 1.2rem;
+  line-height: 1.5;
+}
+
+.tab-btn.active .tab-my-rank {
+  background: rgba(255, 215, 0, 0.35);
+  color: #ffe066;
+}
+
 .rankings-table-wrap {
   overflow-x: auto;
 }
