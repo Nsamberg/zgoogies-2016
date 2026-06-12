@@ -29,7 +29,7 @@ def get_news():
             'first_name': n.author.first_name,
             'surname': n.author.surname
         },
-        'created_at': n.created_at.isoformat(),
+        'created_at': n.created_at.isoformat() + 'Z',
         'likes_count': n.reactions.filter_by(reaction_type='like').count(),
         'dislikes_count': n.reactions.filter_by(reaction_type='dislike').count(),
         'comments_count': n.comments.count(),
@@ -58,8 +58,8 @@ def get_news_item(news_id):
             'first_name': news_item.author.first_name,
             'surname': news_item.author.surname
         },
-        'created_at': news_item.created_at.isoformat(),
-        'updated_at': news_item.updated_at.isoformat(),
+        'created_at': news_item.created_at.isoformat() + 'Z',
+        'updated_at': news_item.updated_at.isoformat() + 'Z',
         'likes_count': news_item.reactions.filter_by(reaction_type='like').count(),
         'dislikes_count': news_item.reactions.filter_by(reaction_type='dislike').count(),
         'comments_count': news_item.comments.count(),
@@ -177,8 +177,8 @@ def get_comments(news_id):
             'first_name': c.user.first_name,
             'surname': c.user.surname
         },
-        'created_at': c.created_at.isoformat(),
-        'updated_at': c.updated_at.isoformat()
+        'created_at': c.created_at.isoformat() + 'Z',
+        'updated_at': c.updated_at.isoformat() + 'Z'
     } for c in comments]), 200
 
 
@@ -216,8 +216,8 @@ def add_comment(news_id):
                 'first_name': current_user.first_name,
                 'surname': current_user.surname
             },
-            'created_at': comment.created_at.isoformat(),
-            'updated_at': comment.updated_at.isoformat()
+            'created_at': comment.created_at.isoformat() + 'Z',
+            'updated_at': comment.updated_at.isoformat() + 'Z'
         }
     }), 201
 

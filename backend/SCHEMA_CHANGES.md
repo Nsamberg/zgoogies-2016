@@ -1,3 +1,22 @@
+# Database Schema Changes
+
+## Date: 2026-06-07
+
+## New table: `user_rivals`
+
+Stores each user's list of rivals for the Rankings page comparison feature.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | INTEGER PK | |
+| `user_id` | INTEGER FK → users.id | The user who added the rival |
+| `rival_id` | INTEGER FK → users.id | The rival player |
+| `created_at` | DATETIME | |
+
+Unique constraint on `(user_id, rival_id)`. Table is created automatically by `db.create_all()` on app startup.
+
+---
+
 # Database Schema Changes - Competition Rounds System
 
 ## Date: 2026-03-13

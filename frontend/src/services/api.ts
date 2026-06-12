@@ -41,6 +41,7 @@ export const authAPI = {
 
   getApiToken: () => api.get('/auth/token'),
   regenerateApiToken: () => api.post('/auth/token/regenerate'),
+  recordPredictionsVisit: () => api.post<{ previous_visit: string | null }>('/auth/predictions-visited'),
 }
 
 // Games API
@@ -107,6 +108,8 @@ export const adminAPI = {
   deleteUser: (userId: number) => api.delete(`/admin/users/${userId}`),
   updateUserRole: (userId: number, roles: { is_admin?: boolean; is_cachier?: boolean; is_player?: boolean }) =>
     api.put(`/admin/users/${userId}/role`, roles),
+  updateUserEmail: (userId: number, email: string) =>
+    api.put(`/admin/users/${userId}/email`, { email }),
 
   // Score entry
   getGames: () => api.get('/admin/games'),
@@ -139,6 +142,29 @@ export const adminAPI = {
   // AI daily limit
   getAiLimit: () => api.get('/admin/ai-limit'),
   setAiLimit: (limit: number) => api.post('/admin/ai-limit', { limit }),
+}
+
+// Audit log API
+export const auditAPI = {
+  getMyLogs: (params?: { action?: string; limit?: number; offset?: number }) =>
+    api.get<{ logs: AuditLogEntry[]; total: number }>('/auth/audit-log', { params }),
+  getUserLogs: (userId: number, params?: { action?: string; limit?: number; offset?: number }) =>
+    api.get<{ logs: AuditLogEntry[]; total: number }>(`/admin/audit-log/${userId}`, { params }),
+}
+
+export interface AuditLogEntry {
+  id: number
+  action: string
+  page: string | null
+  ip_address: string | null
+  created_at: string
+}
+
+// Rivals API
+export const rivalsAPI = {
+  get: () => api.get<number[]>('/rivals/'),
+  add: (rivalId: number) => api.post(`/rivals/${rivalId}`),
+  remove: (rivalId: number) => api.delete(`/rivals/${rivalId}`),
 }
 
 // Teams API

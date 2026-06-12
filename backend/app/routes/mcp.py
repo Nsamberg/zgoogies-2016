@@ -1,11 +1,13 @@
 """
 ZGoogies MCP Server — MCP Streamable HTTP Transport (2025-03-26)
 
-Exposes 6 tools for AI assistants (Claude.ai, Google AI Studio) to interact
-with ZGoogies data on behalf of authenticated users.
+Exposes 8 tools for AI assistants (Claude.ai, Google AI Studio):
+- 6 tools available to any authenticated user (predictions, rankings, games)
+- 2 admin-only tools (list_players, get_player_details) — visible to all but
+  rejected at call time if the token does not belong to an admin.
 
-Each tool accepts a personal API token (obtained from Account → AI Assistant
-in the ZGoogies app) and enforces a configurable daily rate limit per user.
+Tokens are obtained from Account → AI Assistant on zgoogies.online.
+A configurable daily rate limit is enforced per user.
 """
 from flask import Blueprint, request, jsonify, current_app, Response, stream_with_context
 from app import db
@@ -23,8 +25,6 @@ import queue
 import uuid
 import json
 
-# In-memory session store for SSE transport (HTTP+SSE, used by Claude.ai).
-# Works correctly only when gunicorn runs with a single process (gthread worker).
 _sessions: dict = {}
 _sessions_lock = threading.Lock()
 
@@ -53,6 +53,16 @@ def _get_user(token):
     return User.query.filter_by(api_token=str(token)).first()
 
 
+def _require_admin(token):
+    """Returns (user, error_string). error_string is None when user is a valid admin."""
+    user = _get_user(token)
+    if not user:
+        return None, 'Error: Invalid or missing token. Get yours from Account → AI Assistant on zgoogies.online.'
+    if not user.is_admin:
+        return None, 'Error: This tool is restricted to admins.'
+    return user, None
+
+
 def _check_rate_limit(user_id):
     """Increment the daily call counter. Raises ValueError if the limit is hit."""
     limit = int(AppSetting.get('ai_daily_limit') or DEFAULT_DAILY_LIMIT)
@@ -72,6 +82,7 @@ def _check_rate_limit(user_id):
 # ---------------------------------------------------------------------------
 
 TOOL_DEFINITIONS = [
+    # ── Available to all authenticated users ──────────────────────────────
     {
         'name': 'get_my_predictions',
         'description': (
@@ -155,6 +166,72 @@ TOOL_DEFINITIONS = [
                 'token': {'type': 'string', 'description': 'Your personal ZGoogies API token'}
             },
             'required': ['token']
+        }
+    },
+    # ── Admin-only tools ──────────────────────────────────────────────────
+    {
+        'name': 'list_players',
+        'description': (
+            '[Admin only] List all registered players with their details: username, full name, '
+            'email, role (player/cashier/admin), payment status, who collected the payment, '
+            'and registration date.'
+        ),
+        'inputSchema': {
+            'type': 'object',
+            'properties': {
+                'token': {
+                    'type': 'string',
+                    'description': 'Your admin ZGoogies API token (Account → AI Assistant on zgoogies.online)'
+                }
+            },
+            'required': ['token']
+        }
+    },
+    {
+        'name': 'get_player_details',
+        'description': (
+            '[Admin only] Get the full profile for a specific player by username: personal info, '
+            'payment status, current overall ranking and points, per-round breakdown, and total '
+            'number of predictions submitted.'
+        ),
+        'inputSchema': {
+            'type': 'object',
+            'properties': {
+                'token': {
+                    'type': 'string',
+                    'description': 'Your admin ZGoogies API token'
+                },
+                'username': {
+                    'type': 'string',
+                    'description': 'The username of the player to look up'
+                }
+            },
+            'required': ['token', 'username']
+        }
+    },
+    {
+        'name': 'update_player_email',
+        'description': (
+            '[Admin only] Update the email address of a registered player. '
+            'Provide the player\'s username and the new email address.'
+        ),
+        'inputSchema': {
+            'type': 'object',
+            'properties': {
+                'token': {
+                    'type': 'string',
+                    'description': 'Your admin ZGoogies API token'
+                },
+                'username': {
+                    'type': 'string',
+                    'description': 'The username of the player whose email should be updated'
+                },
+                'email': {
+                    'type': 'string',
+                    'description': 'The new email address'
+                }
+            },
+            'required': ['token', 'username', 'email']
         }
     },
 ]
@@ -389,13 +466,131 @@ def _tool_get_game_list(args):
     return '\n'.join(lines)
 
 
+def _tool_list_players(args):
+    user, err = _require_admin(args.get('token'))
+    if err:
+        return err
+    _check_rate_limit(user.id)
+
+    users = User.query.order_by(User.created_at.desc()).all()
+    paid_count = sum(1 for u in users if u.has_paid)
+    lines = [f'Registered players — {len(users)} total, {paid_count} paid, {len(users) - paid_count} unpaid\n']
+
+    for u in users:
+        role = 'admin' if u.is_admin else 'cashier' if u.is_cachier else 'player'
+        if u.has_paid:
+            date_str = u.payment_date.strftime('%d %b %Y') if u.payment_date else 'date unknown'
+            payment = f'PAID (to {u.payment_received_by or "?"}, {date_str})'
+        else:
+            payment = 'UNPAID'
+        reg_date = u.created_at.strftime('%d %b %Y') if u.created_at else '?'
+        lines.append(
+            f'  {u.username} — {u.first_name} {u.surname} | {u.email} | '
+            f'{role} | {payment} | Registered: {reg_date}'
+        )
+
+    return '\n'.join(lines)
+
+
+def _tool_get_player_details(args):
+    user, err = _require_admin(args.get('token'))
+    if err:
+        return err
+    _check_rate_limit(user.id)
+
+    username = (args.get('username') or '').strip()
+    if not username:
+        return 'Error: username is required.'
+
+    target = User.query.filter_by(username=username).first()
+    if not target:
+        return f'Error: No player found with username "{username}".'
+
+    role = 'admin' if target.is_admin else 'cashier' if target.is_cachier else 'player'
+    if target.has_paid:
+        date_str = target.payment_date.strftime('%d %b %Y') if target.payment_date else 'date unknown'
+        payment_info = f'Paid — received by {target.payment_received_by or "?"} on {date_str}'
+    else:
+        payment_info = 'Not paid'
+
+    reg_date = target.created_at.strftime('%d %b %Y') if target.created_at else '?'
+
+    lines = [f'Player: {target.username} ({target.first_name} {target.surname})']
+    lines.append(f'  Email:      {target.email}')
+    lines.append(f'  Role:       {role}')
+    lines.append(f'  Timezone:   {target.timezone}')
+    lines.append(f'  Payment:    {payment_info}')
+    lines.append(f'  Registered: {reg_date}')
+
+    overall = Ranking.query.filter_by(user_id=target.id, competition_round_id=None).first()
+    if overall:
+        total_players = Ranking.query.filter_by(competition_round_id=None).count()
+        move = ''
+        if overall.previous_rank:
+            diff = overall.previous_rank - overall.rank
+            if diff > 0:
+                move = f' (up {diff})'
+            elif diff < 0:
+                move = f' (down {abs(diff)})'
+        lines.append(f'  Overall:    Rank {overall.rank} of {total_players}{move} — {overall.total_points} pts')
+
+        from app.models.competition_round import CompetitionRound
+        round_rankings = Ranking.query.filter(
+            Ranking.user_id == target.id,
+            Ranking.competition_round_id.isnot(None)
+        ).all()
+        if round_rankings:
+            lines.append('  Per round:')
+            for rr in round_rankings:
+                round_obj = CompetitionRound.query.get(rr.competition_round_id)
+                round_name = round_obj.name if round_obj else f'Round {rr.competition_round_id}'
+                lines.append(f'    {round_name}: Rank {rr.rank} — {rr.total_points} pts')
+    else:
+        lines.append('  Ranking:    not yet ranked')
+
+    pred_count = Prediction.query.filter_by(user_id=target.id).count()
+    lines.append(f'  Predictions submitted: {pred_count}')
+
+    return '\n'.join(lines)
+
+
+def _tool_update_player_email(args):
+    user, err = _require_admin(args.get('token'))
+    if err:
+        return err
+    _check_rate_limit(user.id)
+
+    username = (args.get('username') or '').strip()
+    email = (args.get('email') or '').strip().lower()
+    if not username:
+        return 'Error: username is required.'
+    if not email:
+        return 'Error: email is required.'
+
+    target = User.query.filter_by(username=username).first()
+    if not target:
+        return f'Error: No player found with username "{username}".'
+
+    existing = User.query.filter(User.email == email, User.id != target.id).first()
+    if existing:
+        return f'Error: Email "{email}" is already in use by another account.'
+
+    old_email = target.email
+    target.email = email
+    db.session.commit()
+    return f'Email updated for {target.username}: {old_email} → {email}'
+
+
 TOOL_HANDLERS = {
-    'get_my_predictions': _tool_get_my_predictions,
-    'get_upcoming_games': _tool_get_upcoming_games,
-    'get_my_ranking': _tool_get_my_ranking,
-    'get_all_rankings': _tool_get_all_rankings,
-    'submit_prediction': _tool_submit_prediction,
-    'get_game_list': _tool_get_game_list,
+    'get_my_predictions':    _tool_get_my_predictions,
+    'get_upcoming_games':    _tool_get_upcoming_games,
+    'get_my_ranking':        _tool_get_my_ranking,
+    'get_all_rankings':      _tool_get_all_rankings,
+    'submit_prediction':     _tool_submit_prediction,
+    'get_game_list':         _tool_get_game_list,
+    'list_players':          _tool_list_players,
+    'get_player_details':    _tool_get_player_details,
+    'update_player_email':   _tool_update_player_email,
 }
 
 
@@ -414,11 +609,11 @@ def _handle_one(req):
         return _ok(req_id, {
             'protocolVersion': negotiated,
             'capabilities': {'tools': {}},
-            'serverInfo': {'name': 'ZGoogies', 'version': '1.0.0'}
+            'serverInfo': {'name': 'ZGoogies', 'version': '2.0.0'}
         })
 
     if method in ('notifications/initialized', 'notifications/cancelled'):
-        return None  # Notifications get no response
+        return None
 
     if method == 'ping':
         return _ok(req_id, {})
@@ -447,7 +642,7 @@ def _handle_one(req):
 
 
 # ---------------------------------------------------------------------------
-# HTTP endpoint
+# HTTP endpoints
 # ---------------------------------------------------------------------------
 
 @bp.route('', methods=['OPTIONS'])
@@ -457,12 +652,6 @@ def mcp_options():
 
 @bp.route('', methods=['GET'])
 def mcp_sse():
-    """HTTP+SSE transport endpoint — required by Claude.ai custom connectors.
-
-    Claude.ai opens this as a long-lived SSE stream. We immediately send
-    an 'endpoint' event pointing to /api/mcp/messages, then stream tool
-    responses back as 'message' events.
-    """
     if 'text/event-stream' not in request.headers.get('Accept', ''):
         return '', 405
 
@@ -480,11 +669,11 @@ def mcp_sse():
             while True:
                 try:
                     item = response_queue.get(timeout=25)
-                    if item is None:  # sentinel: close the stream
+                    if item is None:
                         break
                     yield f'event: message\ndata: {json.dumps(item)}\n\n'
                 except queue.Empty:
-                    yield ': keepalive\n\n'  # prevent proxy/browser timeout
+                    yield ': keepalive\n\n'
         finally:
             with _sessions_lock:
                 _sessions.pop(session_id, None)
@@ -494,7 +683,7 @@ def mcp_sse():
         mimetype='text/event-stream',
         headers={
             'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no',   # disable nginx buffering for SSE
+            'X-Accel-Buffering': 'no',
             'Connection': 'keep-alive',
         }
     )
@@ -502,12 +691,6 @@ def mcp_sse():
 
 @bp.route('/messages', methods=['POST'])
 def mcp_messages():
-    """Receive MCP messages from Claude.ai (SSE transport).
-
-    Claude.ai POSTs here after establishing the SSE stream via GET.
-    We process the request and push the response onto the session queue,
-    which the SSE generator streams back to the client.
-    """
     session_id = request.args.get('sessionId', '')
     with _sessions_lock:
         response_queue = _sessions.get(session_id)

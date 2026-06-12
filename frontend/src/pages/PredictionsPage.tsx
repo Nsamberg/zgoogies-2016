@@ -1,7 +1,33 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { gamesAPI, predictionsAPI, playersAPI } from '../services/api'
+import { gamesAPI, predictionsAPI, playersAPI, newsAPI, authAPI, teamsAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Game, Prediction } from '../types'
+
+interface BannerItem {
+  type: 'news' | 'rankings'
+  message: string
+  linkTo: string
+  linkLabel: string
+}
+
+function NotificationBanners({ banners, onDismiss }: {
+  banners: BannerItem[]
+  onDismiss: (type: BannerItem['type']) => void
+}) {
+  if (banners.length === 0) return null
+  return (
+    <div className="notif-banners">
+      {banners.map(b => (
+        <div key={b.type} className={`notif-banner notif-banner--${b.type}`}>
+          <span className="notif-banner-icon">{b.type === 'news' ? '📰' : '🏆'}</span>
+          <span className="notif-banner-msg">{b.message}</span>
+          <a className="notif-banner-link" href={b.linkTo}>{b.linkLabel} →</a>
+          <button className="notif-banner-close" onClick={() => onDismiss(b.type)} aria-label="Dismiss">✕</button>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 type Tab = 'open' | 'past' | 'others'
 
@@ -19,6 +45,7 @@ interface Player {
   username: string
   first_name: string
   surname: string
+  tournament_winner_id: number | null
 }
 
 interface PlayerGamePrediction {
@@ -81,7 +108,62 @@ export default function PredictionsPage() {
   const { user } = useAuthStore()
   const timezone = user?.timezone || 'UTC'
 
+  const [banners, setBanners] = useState<BannerItem[]>([])
+
+  // Record this visit server-side (cross-device); get previous visit time to detect new content
+  useEffect(() => {
+    authAPI.recordPredictionsVisit().then(res => {
+      const previousVisit = res.data.previous_visit
+      if (!previousVisit) return  // first ever visit — nothing to flag
+
+      const lastDate = new Date(previousVisit)
+      Promise.allSettled([
+        newsAPI.getAll(),
+        gamesAPI.getClosed(),
+      ]).then(([newsResult, closedResult]) => {
+        const newBanners: BannerItem[] = []
+
+        if (newsResult.status === 'fulfilled') {
+          const articles: { created_at: string; title: string }[] = newsResult.value.data
+          const newest = articles
+            .filter(a => new Date(a.created_at) > lastDate)
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+          if (newest) {
+            newBanners.push({
+              type: 'news',
+              message: `New post: "${newest.title}"`,
+              linkTo: '/news',
+              linkLabel: 'Read',
+            })
+          }
+        }
+
+        if (closedResult.status === 'fulfilled') {
+          const games: { scored_at: string | null }[] = closedResult.value.data
+          const newlyScored = games.some(
+            g => g.scored_at && new Date(g.scored_at) > lastDate
+          )
+          if (newlyScored) {
+            newBanners.push({
+              type: 'rankings',
+              message: 'New rankings are available!',
+              linkTo: '/rankings',
+              linkLabel: 'See Rankings',
+            })
+          }
+        }
+
+        setBanners(newBanners)
+      })
+    }).catch(() => {})  // silent — banners are non-critical
+  }, [])
+
+  const dismissBanner = useCallback((type: BannerItem['type']) => {
+    setBanners(prev => prev.filter(b => b.type !== type))
+  }, [])
+
   const [tab, setTab] = useState<Tab>('open')
+  const [teamSearch, setTeamSearch] = useState('')
 
   // Open games (formerly upcoming)
   const [openGames, setOpenGames] = useState<Game[]>([])
@@ -131,6 +213,12 @@ export default function PredictionsPage() {
   const [playerPredictions, setPlayerPredictions] = useState<PlayerGamePrediction[]>([])
   const [playerPredsLoading, setPlayerPredsLoading] = useState(false)
   const [playerPredsError, setPlayerPredsError] = useState('')
+
+  // Winner prediction stats + selected player's pick
+  const [winnerStats, setWinnerStats] = useState<{ team_id: number; team_name: string; count: number }[]>([])
+  const [teams, setTeams] = useState<{ id: number; name: string }[]>([])
+  const [selectedPlayerWinnerId, setSelectedPlayerWinnerId] = useState<number | null | undefined>(undefined)
+  // undefined = not yet loaded/reset, null = no pick, number = team id
 
   // Load open games on mount or refresh
   useEffect(() => {
@@ -188,23 +276,38 @@ export default function PredictionsPage() {
     }
   }, [pastLoaded])
 
-  // Load player list lazily
+  // Load player list lazily, alongside winner stats and teams
   const loadPlayers = useCallback(async () => {
     if (playersLoaded) return
-    try {
-      const res = await playersAPI.getAll()
-      // Exclude self
-      setPlayers(res.data.filter((p: Player) => p.id !== user?.id))
+    const [playersRes, statsRes, teamsRes] = await Promise.allSettled([
+      playersAPI.getAll(),
+      playersAPI.getWinnerPredictions(),
+      teamsAPI.getAll(),
+    ])
+    if (playersRes.status === 'fulfilled') {
+      setPlayers(playersRes.value.data.filter((p: Player) => p.id !== user?.id))
       setPlayersLoaded(true)
-    } catch {
-      // silent — search will just show empty
+    }
+    if (statsRes.status === 'fulfilled') {
+      const sorted = [...statsRes.value.data].sort((a: { count: number }, b: { count: number }) => b.count - a.count)
+      setWinnerStats(sorted)
+    }
+    if (teamsRes.status === 'fulfilled') {
+      setTeams(teamsRes.value.data)
     }
   }, [playersLoaded, user?.id])
 
   const handleTabChange = (t: Tab) => {
     setTab(t)
+    setTeamSearch('')
     if (t === 'past') loadPast()
     if (t === 'others') loadPlayers()
+  }
+
+  const matchesTeam = (g: { team_a: { name: string }; team_b: { name: string } }) => {
+    if (!teamSearch) return true
+    const q = teamSearch.toLowerCase()
+    return g.team_a.name.toLowerCase().includes(q) || g.team_b.name.toLowerCase().includes(q)
   }
 
   const handleInput = (gameId: number, side: 'teamA' | 'teamB', value: string) => {
@@ -244,14 +347,20 @@ export default function PredictionsPage() {
     setPlayerPredictions([])
     setPlayerPredsError('')
     setPlayerPredsLoading(true)
-    try {
-      const res = await playersAPI.getPlayerPredictions(player.id)
-      setPlayerPredictions(res.data)
-    } catch {
+    setSelectedPlayerWinnerId(undefined)
+    const [predsRes, detailRes] = await Promise.allSettled([
+      playersAPI.getPlayerPredictions(player.id),
+      playersAPI.getPlayer(player.id),
+    ])
+    if (predsRes.status === 'fulfilled') {
+      setPlayerPredictions(predsRes.value.data)
+    } else {
       setPlayerPredsError('Failed to load predictions for this player.')
-    } finally {
-      setPlayerPredsLoading(false)
     }
+    if (detailRes.status === 'fulfilled') {
+      setSelectedPlayerWinnerId(detailRes.value.data.tournament_winner_id ?? null)
+    }
+    setPlayerPredsLoading(false)
   }
 
   const filteredPlayers = useMemo(() => {
@@ -266,6 +375,7 @@ export default function PredictionsPage() {
 
   return (
     <div className="predictions-page">
+      <NotificationBanners banners={banners} onDismiss={dismissBanner} />
       <div className="page-tabs">
         <button
           className={`tab-btn${tab === 'open' ? ' active' : ''}`}
@@ -297,11 +407,19 @@ export default function PredictionsPage() {
           )}
           {openLoading && <p className="loading-text">Loading games...</p>}
           {openError && <p className="error">{openError}</p>}
+          {!openLoading && !openError && openGames.length > 0 && (
+            <input
+              className="team-filter-search"
+              placeholder="Filter by team name…"
+              value={teamSearch}
+              onChange={e => setTeamSearch(e.target.value)}
+            />
+          )}
           {!openLoading && !openError && openGames.length === 0 && (
             <p className="empty-state">No upcoming games open for predictions.</p>
           )}
           <div className="games-list">
-            {openGames.map((game) => {
+            {openGames.filter(matchesTeam).map((game) => {
               const input = inputs[game.id] || { teamA: '0', teamB: '0', status: 'idle', existed: false, touched: false }
               const isDefault = !input.existed && !input.touched
               return (
@@ -388,6 +506,7 @@ export default function PredictionsPage() {
             const homeW = all.filter((p: any) => p.team_a_score > p.team_b_score).length
             const draws = all.filter((p: any) => p.team_a_score === p.team_b_score).length
             const awayW = all.filter((p: any) => p.team_a_score < p.team_b_score).length
+            const pct = (x: number) => Math.round(x / n * 100) + '%'
             const scoreMap: Record<string, number> = {}
             all.forEach((p: any) => {
               const k = `${p.team_a_score}–${p.team_b_score}`
@@ -396,8 +515,11 @@ export default function PredictionsPage() {
             const topScore = n > 0
               ? Object.entries(scoreMap).sort((a, b) => b[1] - a[1])[0]
               : null
+            const avgA = (all.reduce((s: number, p: any) => s + p.team_a_score, 0) / n).toFixed(1)
+            const avgB = (all.reduce((s: number, p: any) => s + p.team_b_score, 0) / n).toFixed(1)
 
             let exact = 0, correctResult = 0
+            let avgPoints: string | null = null
             if (game.is_scored && game.team_a.score != null && game.team_b.score != null) {
               const ao = game.team_a.score > game.team_b.score ? 'h' : game.team_a.score < game.team_b.score ? 'a' : 'd'
               all.forEach((p: any) => {
@@ -407,6 +529,10 @@ export default function PredictionsPage() {
                   if (po === ao) correctResult++
                 }
               })
+              const scoredPreds = all.filter((p: any) => p.points != null)
+              if (scoredPreds.length > 0) {
+                avgPoints = (scoredPreds.reduce((s: number, p: any) => s + p.points, 0) / scoredPreds.length).toFixed(1)
+              }
             }
 
             return (
@@ -459,6 +585,10 @@ export default function PredictionsPage() {
                           <span className="gp-stat-value">{n}</span>
                           <span className="gp-stat-label">predictions</span>
                         </div>
+                        <div className="gp-stat">
+                          <span className="gp-stat-value">{avgA}–{avgB}</span>
+                          <span className="gp-stat-label">avg prediction</span>
+                        </div>
                         {topScore && (
                           <div className="gp-stat">
                             <span className="gp-stat-value">{topScore[0]}</span>
@@ -466,27 +596,33 @@ export default function PredictionsPage() {
                           </div>
                         )}
                         <div className="gp-stat">
-                          <span className="gp-stat-value">{homeW}</span>
+                          <span className="gp-stat-value">{pct(homeW)}</span>
                           <span className="gp-stat-label">{game.team_a.name} win</span>
                         </div>
                         <div className="gp-stat">
-                          <span className="gp-stat-value">{draws}</span>
+                          <span className="gp-stat-value">{pct(draws)}</span>
                           <span className="gp-stat-label">draw</span>
                         </div>
                         <div className="gp-stat">
-                          <span className="gp-stat-value">{awayW}</span>
+                          <span className="gp-stat-value">{pct(awayW)}</span>
                           <span className="gp-stat-label">{game.team_b.name} win</span>
                         </div>
                         {game.is_scored && (
                           <>
                             <div className="gp-stat gp-stat-exact">
-                              <span className="gp-stat-value">{exact}</span>
+                              <span className="gp-stat-value">{pct(exact)}</span>
                               <span className="gp-stat-label">exact score</span>
                             </div>
                             <div className="gp-stat">
-                              <span className="gp-stat-value">{correctResult}</span>
+                              <span className="gp-stat-value">{pct(correctResult)}</span>
                               <span className="gp-stat-label">correct result</span>
                             </div>
+                            {avgPoints !== null && (
+                              <div className="gp-stat">
+                                <span className="gp-stat-value">{avgPoints}</span>
+                                <span className="gp-stat-label">avg points</span>
+                              </div>
+                            )}
                           </>
                         )}
                       </div>
@@ -537,11 +673,19 @@ export default function PredictionsPage() {
             <>
               {pastLoading && <p className="loading-text">Loading past games...</p>}
               {pastError && <p className="error">{pastError}</p>}
+              {!pastLoading && !pastError && pastGames.length > 0 && (
+                <input
+                  className="team-filter-search"
+                  placeholder="Filter by team name…"
+                  value={teamSearch}
+                  onChange={e => setTeamSearch(e.target.value)}
+                />
+              )}
               {!pastLoading && !pastError && pastGames.length === 0 && (
                 <p className="empty-state">No past games yet.</p>
               )}
               <div className="games-list">
-                {pastGames.map((game) => {
+                {pastGames.filter(matchesTeam).map((game) => {
                   const pred = pastPredictions[game.id]
                   return (
                     <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
@@ -605,37 +749,78 @@ export default function PredictionsPage() {
             className="player-search"
             placeholder="Search by username or first name…"
             value={playerSearch}
-            onChange={(e) => { setPlayerSearch(e.target.value); setSelectedPlayer(null) }}
+            onChange={(e) => { setPlayerSearch(e.target.value); setSelectedPlayer(null); setSelectedPlayerWinnerId(undefined) }}
           />
+
+          {!selectedPlayer && winnerStats.length > 0 && (() => {
+            const maxCount = winnerStats[0].count
+            const total = winnerStats.reduce((s, r) => s + r.count, 0)
+            return (
+              <div className="winner-stats-block">
+                <div className="winner-stats-title">🏆 Winner Predictions</div>
+                {winnerStats.map(row => (
+                  <div key={row.team_id} className="winner-stats-row">
+                    <span className="winner-stats-team">{row.team_name}</span>
+                    <div className="winner-stats-bar-wrap">
+                      <div
+                        className="winner-stats-bar"
+                        style={{ width: `${(row.count / maxCount) * 100}%` }}
+                      />
+                    </div>
+                    <span className="winner-stats-count">{row.count}</span>
+                  </div>
+                ))}
+                <div className="winner-stats-total">{total} player{total !== 1 ? 's' : ''} have made a pick</div>
+              </div>
+            )
+          })()}
 
           {!selectedPlayer && (
             <div className="other-player-list">
               {filteredPlayers.length === 0 && playerSearch && (
                 <p className="empty-state">No players found.</p>
               )}
-              {filteredPlayers.map((p) => (
-                <button
-                  key={p.id}
-                  className="other-player-btn"
-                  onClick={() => handleSelectPlayer(p)}
-                >
-                  <span className="player-username">{p.username}</span>
-                  <span className="player-fullname">{p.first_name} {p.surname}</span>
-                </button>
-              ))}
+              {filteredPlayers.map((p) => {
+                const winnerTeam = p.tournament_winner_id
+                  ? teams.find(t => t.id === p.tournament_winner_id)?.name
+                  : null
+                return (
+                  <button
+                    key={p.id}
+                    className="other-player-btn"
+                    onClick={() => handleSelectPlayer(p)}
+                  >
+                    <span className="player-username">{p.username}</span>
+                    <span className="player-fullname">{p.first_name} {p.surname}</span>
+                    {winnerTeam && (
+                      <span className="player-winner-pick">🏆 {winnerTeam}</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )}
 
           {selectedPlayer && (
             <div className="other-player-predictions">
               <div className="other-player-header">
-                <button className="back-btn" onClick={() => setSelectedPlayer(null)}>
+                <button className="back-btn" onClick={() => { setSelectedPlayer(null); setSelectedPlayerWinnerId(undefined) }}>
                   ← Back
                 </button>
                 <span className="other-player-name">
                   {selectedPlayer.username} — {selectedPlayer.first_name} {selectedPlayer.surname}
                 </span>
               </div>
+
+              {selectedPlayerWinnerId !== undefined && (
+                <div className="winner-pick-card">
+                  <span>🏆</span>
+                  {selectedPlayerWinnerId !== null
+                    ? <span>Predicted winner: <strong>{teams.find(t => t.id === selectedPlayerWinnerId)?.name ?? `Team #${selectedPlayerWinnerId}`}</strong></span>
+                    : <span className="winner-pick-none">No winner pick recorded</span>
+                  }
+                </div>
+              )}
 
               {playerPredsLoading && <p className="loading-text">Loading predictions...</p>}
               {playerPredsError && <p className="error">{playerPredsError}</p>}

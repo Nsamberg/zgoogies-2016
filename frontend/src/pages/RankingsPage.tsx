@@ -1,20 +1,32 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts'
-import { rankingsAPI } from '../services/api'
+import { rankingsAPI, rivalsAPI, playersAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
-type TabId = 'overall' | number
+type TabId = 'overall' | 'rivals' | number
 
 interface HistoryPoint {
   rank: number
   total_points: number
   game_id: number
   created_at: string
-  label: string   // "Game N"
+  label: string
+}
+
+interface PlayerPrediction {
+  game_id: number
+  team_a: { id: number; name: string; score: number | null }
+  team_b: { id: number; name: string; score: number | null }
+  game_date: string
+  stage: string
+  competition_round: { id: number; name: string } | null
+  is_scored: boolean
+  is_double_points: boolean
+  prediction: { team_a_score: number; team_b_score: number; points: number | null }
 }
 
 function TrendIcon({ rank, previous }: { rank: number; previous?: number | null }) {
@@ -37,12 +49,13 @@ function PlayerHistoryView({
 }) {
   const [histTab, setHistTab] = useState<TabId>('overall')
   const [history, setHistory] = useState<HistoryPoint[]>([])
+  const [predictions, setPredictions] = useState<PlayerPrediction[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchHistory = useCallback(async (tab: TabId) => {
     setLoading(true)
     try {
-      const roundId = tab === 'overall' ? undefined : (tab as number)
+      const roundId = (tab === 'overall' || tab === 'rivals') ? undefined : (tab as number)
       const res = await rankingsAPI.getHistory(player.user.id, roundId)
       const pts: HistoryPoint[] = res.data.map((h: any, i: number) => ({
         ...h,
@@ -56,7 +69,12 @@ function PlayerHistoryView({
     }
   }, [player.user.id])
 
-  useEffect(() => { fetchHistory('overall') }, [fetchHistory])
+  useEffect(() => {
+    fetchHistory('overall')
+    playersAPI.getPlayerPredictions(player.user.id)
+      .then(res => setPredictions(res.data))
+      .catch(() => setPredictions([]))
+  }, [fetchHistory, player.user.id])
 
   const handleHistTab = (tab: TabId) => {
     setHistTab(tab)
@@ -163,6 +181,145 @@ function PlayerHistoryView({
 
         </div>
       )}
+
+      {/* Game-by-game predictions table */}
+      {(() => {
+        const roundId = (histTab === 'overall' || histTab === 'rivals') ? null : (histTab as number)
+        const filtered = predictions.filter(p =>
+          p.is_scored && (roundId === null || p.competition_round?.id === roundId)
+        )
+        if (filtered.length === 0) return null
+        const totalPts = filtered.reduce((sum, p) => sum + (p.prediction.points ?? 0), 0)
+        return (
+          <div className="ph-games-section">
+            <h3 className="ph-games-title">
+              Games · <span className="ph-games-pts">{totalPts} pts</span>
+            </h3>
+            <div className="ph-games-table-wrap">
+              <table className="ph-games-table">
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Result</th>
+                    <th>Predicted</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(p => (
+                    <tr key={p.game_id}>
+                      <td className="ph-game-teams">
+                        {p.team_a.name} v {p.team_b.name}
+                        {p.is_double_points && <span className="ph-double-badge">×2</span>}
+                      </td>
+                      <td className="ph-score">{p.team_a.score}–{p.team_b.score}</td>
+                      <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
+                      <td className={`ph-pts ph-pts--${(p.prediction.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
+                        {p.prediction.points ?? 0}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
+    </div>
+  )
+}
+
+// ── Rivals tab view ───────────────────────────────────────────────────────────
+
+function RivalsView({
+  overallRankings,
+  rivals,
+  currentUserId,
+  onToggleRival,
+  onSelectPlayer,
+}: {
+  overallRankings: Ranking[]
+  rivals: number[]
+  currentUserId: number
+  onToggleRival: (rivalId: number, isRival: boolean) => void
+  onSelectPlayer: (r: Ranking) => void
+}) {
+  const filtered = overallRankings.filter(
+    r => r.user.id === currentUserId || rivals.includes(r.user.id)
+  )
+
+  const myEntry = filtered.find(r => r.user.id === currentUserId)
+  const myPoints = myEntry?.total_points ?? 0
+
+  if (rivals.length === 0) {
+    return (
+      <p className="rivals-empty-state">
+        Click ★ next to any player to add them as a rival.
+      </p>
+    )
+  }
+
+  return (
+    <div className="rankings-table-wrap">
+      <p className="rankings-click-hint">Showing you vs your rivals · click a player for their history</p>
+      <table className="rankings-table">
+        <thead>
+          <tr>
+            <th className="col-rank">#</th>
+            <th className="col-player">Player</th>
+            <th className="col-points">Points</th>
+            <th className="col-delta">vs me</th>
+            <th className="col-rank">Overall</th>
+            <th className="col-rival-star" aria-label="Rivals"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((r, idx) => {
+            const isMe = r.user.id === currentUserId
+            const delta = r.total_points - myPoints
+            const isRival = rivals.includes(r.user.id)
+            return (
+              <tr
+                key={r.user.id}
+                className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
+                onClick={() => onSelectPlayer(r)}
+                title="View ranking history"
+              >
+                <td className="col-rank">{idx + 1}</td>
+                <td className="col-player">
+                  <span className="player-username">{r.user.username}</span>
+                  <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
+                </td>
+                <td className="col-points">{r.total_points}</td>
+                <td className="col-delta">
+                  {isMe ? (
+                    <span className="rivals-delta rivals-delta--neutral">—</span>
+                  ) : delta > 0 ? (
+                    <span className="rivals-delta rivals-delta--positive">+{delta}</span>
+                  ) : delta < 0 ? (
+                    <span className="rivals-delta rivals-delta--negative">{delta}</span>
+                  ) : (
+                    <span className="rivals-delta rivals-delta--neutral">0</span>
+                  )}
+                </td>
+                <td className="col-rank">#{r.rank}</td>
+                <td className="col-rival-star">
+                  {!isMe && (
+                    <button
+                      className={`rival-star${isRival ? ' rival-star--active' : ''}`}
+                      title={isRival ? 'Remove rival' : 'Add rival'}
+                      onClick={e => { e.stopPropagation(); onToggleRival(r.user.id, isRival) }}
+                      aria-label={isRival ? 'Remove rival' : 'Add rival'}
+                    >
+                      {isRival ? '★' : '☆'}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -175,12 +332,17 @@ export default function RankingsPage() {
   const [rounds, setRounds] = useState<CompetitionRound[]>([])
   const [activeTab, setActiveTab] = useState<TabId>('overall')
   const [rankings, setRankings] = useState<Ranking[]>([])
+  const [overallRankings, setOverallRankings] = useState<Ranking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
+  const [rivals, setRivals] = useState<number[]>([])
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
+
+  // Ref for scrolling to current user's row
+  const myRowRef = useRef<HTMLTableRowElement | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -193,12 +355,31 @@ export default function RankingsPage() {
           rankingsAPI.getRounds(),
           rankingsAPI.getOverall(),
         ])
-        setRounds(roundsRes.data)
+        const fetchedRounds: CompetitionRound[] = roundsRes.data
+        setRounds(fetchedRounds)
         const overall: Ranking[] = overallRes.data
         setRankings(overall)
-        setCache({ overall: overall })
+        setOverallRankings(overall)
+        const initialCache: Record<string, Ranking[]> = { overall }
+        setCache(initialCache)
+        // Preload all round rankings in background so rank badges show immediately
+        const roundResults = await Promise.allSettled(
+          fetchedRounds.map(r => rankingsAPI.getRound(r.id))
+        )
+        const fullCache: Record<string, Ranking[]> = { overall }
+        fetchedRounds.forEach((r, i) => {
+          const res = roundResults[i]
+          if (res.status === 'fulfilled') fullCache[String(r.id)] = res.value.data
+        })
+        setCache(fullCache)
       } catch {
         setError('Failed to load rankings. Please refresh.')
+      }
+      try {
+        const rivalsRes = await rivalsAPI.get()
+        setRivals(rivalsRes.data)
+      } catch {
+        // rivals fetch failing should not block the rankings page
       } finally {
         setLoading(false)
       }
@@ -209,6 +390,7 @@ export default function RankingsPage() {
   const handleTabChange = async (tab: TabId) => {
     setActiveTab(tab)
     setSelectedPlayer(null)
+    if (tab === 'rivals') return
     const key = tab === 'overall' ? 'overall' : String(tab)
     if (cache[key]) { setRankings(cache[key]); return }
     setLoading(true)
@@ -227,6 +409,21 @@ export default function RankingsPage() {
     }
   }
 
+  const handleToggleRival = async (rivalId: number, isRival: boolean) => {
+    // Optimistic update
+    if (isRival) {
+      setRivals(prev => prev.filter(id => id !== rivalId))
+      try { await rivalsAPI.remove(rivalId) } catch { setRivals(prev => [...prev, rivalId]) }
+    } else {
+      setRivals(prev => [...prev, rivalId])
+      try { await rivalsAPI.add(rivalId) } catch { setRivals(prev => prev.filter(id => id !== rivalId)) }
+    }
+  }
+
+  const scrollToMe = () => {
+    myRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
   // Player history view
   if (selectedPlayer) {
     return (
@@ -240,6 +437,15 @@ export default function RankingsPage() {
     )
   }
 
+  const myRow = rankings.find(r => r.user.id === user?.id)
+
+  // Derive my rank for each cached tab (overall + any loaded round)
+  const myRankByTab: Record<string, number> = {}
+  Object.entries(cache).forEach(([key, rows]) => {
+    const me = rows.find(r => r.user.id === user?.id)
+    if (me) myRankByTab[key] = me.rank
+  })
+
   return (
     <div className="rankings-page">
       <h2 className="page-title">Rankings</h2>
@@ -248,7 +454,12 @@ export default function RankingsPage() {
         <button
           className={`tab-btn${activeTab === 'overall' ? ' active' : ''}`}
           onClick={() => handleTabChange('overall')}
-        >Overall</button>
+        >
+          Overall
+          {myRankByTab['overall'] != null && (
+            <span className="tab-my-rank">#{myRankByTab['overall']}</span>
+          )}
+        </button>
         {rounds.map((round) => (
           <button
             key={round.id}
@@ -256,22 +467,52 @@ export default function RankingsPage() {
             onClick={() => handleTabChange(round.id)}
           >
             {round.name}
-            {round.game_count != null && (
-              <span className="tab-game-count">{round.game_count}</span>
+            {myRankByTab[String(round.id)] != null && (
+              <span className="tab-my-rank">#{myRankByTab[String(round.id)]}</span>
             )}
           </button>
         ))}
+        <button
+          className={`tab-btn tab-btn--rivals${activeTab === 'rivals' ? ' active' : ''}`}
+          onClick={() => handleTabChange('rivals')}
+        >
+          Rivals
+          {rivals.length > 0 && (
+            <span className="tab-rivals-count">{rivals.length}</span>
+          )}
+        </button>
       </div>
 
       {loading && <p className="loading-text">Loading rankings...</p>}
       {error && <p className="error">{error}</p>}
 
-      {!loading && !error && rankings.length === 0 && (
+      {!loading && !error && activeTab === 'rivals' && (
+        <RivalsView
+          overallRankings={overallRankings}
+          rivals={rivals}
+          currentUserId={user!.id}
+          onToggleRival={handleToggleRival}
+          onSelectPlayer={setSelectedPlayer}
+        />
+      )}
+
+      {!loading && !error && activeTab !== 'rivals' && rankings.length === 0 && (
         <p className="empty-state">No rankings yet — they update after each game is scored.</p>
       )}
 
-      {!loading && !error && rankings.length > 0 && (
+      {!loading && !error && activeTab !== 'rivals' && rankings.length > 0 && (
         <div className="rankings-table-wrap">
+          {myRow && (
+            <div className="my-rank-card">
+              <span className="my-rank-label">Your position</span>
+              <span className="my-rank-position">#{myRow.rank}</span>
+              <span className="my-rank-separator">·</span>
+              <span className="my-rank-points">{myRow.total_points} pts</span>
+              <button className="my-rank-scroll-btn" onClick={scrollToMe}>
+                Scroll to my row ↓
+              </button>
+            </div>
+          )}
           <p className="rankings-click-hint">Click any player to view their ranking history</p>
           <table className="rankings-table">
             <thead>
@@ -280,14 +521,17 @@ export default function RankingsPage() {
                 <th className="col-player">Player</th>
                 <th className="col-points">Points</th>
                 <th className="col-trend">Trend</th>
+                <th className="col-rival-star" aria-label="Rivals"></th>
               </tr>
             </thead>
             <tbody>
               {rankings.map((r) => {
                 const isMe = r.user.id === user?.id
+                const isRival = rivals.includes(r.user.id)
                 return (
                   <tr
                     key={r.user.id}
+                    ref={isMe ? myRowRef : undefined}
                     className={`ranking-row-clickable${isMe ? ' row-me' : ''}`}
                     onClick={() => setSelectedPlayer(r)}
                     title="View ranking history"
@@ -304,6 +548,18 @@ export default function RankingsPage() {
                     <td className="col-points">{r.total_points}</td>
                     <td className="col-trend">
                       <TrendIcon rank={r.rank} previous={r.previous_rank} />
+                    </td>
+                    <td className="col-rival-star">
+                      {!isMe && (
+                        <button
+                          className={`rival-star${isRival ? ' rival-star--active' : ''}`}
+                          title={isRival ? 'Remove rival' : 'Add rival'}
+                          onClick={e => { e.stopPropagation(); handleToggleRival(r.user.id, isRival) }}
+                          aria-label={isRival ? 'Remove rival' : 'Add rival'}
+                        >
+                          {isRival ? '★' : '☆'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 )

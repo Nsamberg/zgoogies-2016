@@ -45,6 +45,9 @@ class User(UserMixin, db.Model):
     tournament_winner_team = db.relationship('Team', foreign_keys=[tournament_winner_id])
     payment_received_by = db.relationship('User', remote_side=[id], foreign_keys=[payment_received_by_id])
     access_logs = db.relationship('AccessLog', backref='user', lazy='dynamic')
+    rival_entries = db.relationship('UserRival', foreign_keys='UserRival.user_id',
+                                    backref='owner', lazy='dynamic',
+                                    cascade='all, delete-orphan')
 
     def set_password(self, password):
         """Hash and set user password"""

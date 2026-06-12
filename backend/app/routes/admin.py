@@ -12,6 +12,7 @@ from app.models.ranking import Ranking
 from app.models.ranking_history import RankingHistory
 from app.models.news import News
 from app.models.app_setting import AppSetting
+from app.models.access_log import AccessLog
 from app.services.ranking_service import (
     update_rankings_after_game,
     recalculate_rankings_for_round,
@@ -63,9 +64,9 @@ def get_users():
         'is_cachier': u.is_cachier,
         'is_player': u.is_player,
         'has_paid': u.has_paid,
-        'payment_date': u.payment_date.isoformat() if u.payment_date else None,
+        'payment_date': u.payment_date.isoformat() + 'Z' if u.payment_date else None,
         'payment_received_by': u.payment_received_by.username if u.payment_received_by else None,
-        'created_at': u.created_at.isoformat()
+        'created_at': u.created_at.isoformat() + 'Z'
     } for u in users]), 200
 
 
@@ -78,6 +79,9 @@ def record_payment(user_id):
     user.has_paid = True
     user.payment_received_by_id = current_user.id
     user.payment_date = db.func.now()
+    log = AccessLog(user_id=current_user.id, action='payment_recorded',
+                    page=f'user:{user.username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     app = current_app._get_current_object()
     threading.Thread(target=send_payment_confirmation_email, args=(app, user.email, user.first_name, user.surname), daemon=True).start()
@@ -93,6 +97,9 @@ def remove_payment(user_id):
     user.has_paid = False
     user.payment_received_by_id = None
     user.payment_date = None
+    log = AccessLog(user_id=current_user.id, action='payment_removed',
+                    page=f'user:{user.username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Payment removed'}), 200
 
@@ -136,9 +143,30 @@ def update_user_role(user_id):
     user.is_admin = data.get('is_admin', user.is_admin)
     user.is_cachier = data.get('is_cachier', user.is_cachier)
     user.is_player = data.get('is_player', user.is_player)
+    log = AccessLog(user_id=current_user.id, action='role_changed',
+                    page=f'user:{user.username}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
 
     return jsonify({'message': 'Role updated'}), 200
+
+
+@bp.route('/users/<int:user_id>/email', methods=['PUT'])
+@login_required
+@admin_required
+def update_user_email(user_id):
+    """Update a user's email address"""
+    user = User.query.get_or_404(user_id)
+    data = request.get_json()
+    email = (data.get('email') or '').strip().lower()
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+    existing = User.query.filter(User.email == email, User.id != user_id).first()
+    if existing:
+        return jsonify({'error': 'Email already in use by another account'}), 400
+    user.email = email
+    db.session.commit()
+    return jsonify({'message': 'Email updated'}), 200
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +210,9 @@ def enter_score(game_id):
         )
         prediction.is_calculated = True
 
+    log = AccessLog(user_id=current_user.id, action='score_entered',
+                    page=f'game:{game_id}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     update_rankings_after_game(game)
 
@@ -212,6 +243,9 @@ def rollback_score(game_id):
         'is_calculated': False
     })
 
+    log = AccessLog(user_id=current_user.id, action='score_rolled_back',
+                    page=f'game:{game_id}', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
 
     # Recalculate rankings excluding this game
@@ -310,7 +344,7 @@ def get_news_admin():
         'content': n.content,
         'image_url': n.image_url,
         'author': n.author.username,
-        'created_at': n.created_at.isoformat()
+        'created_at': n.created_at.isoformat() + 'Z'
     } for n in news_items]), 200
 
 
@@ -369,7 +403,7 @@ def get_datetime_override():
     if offset_str:
         offset_secs = float(offset_str)
         simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
-        return jsonify({'override': simulated.isoformat(), 'offset_seconds': offset_secs}), 200
+        return jsonify({'override': simulated.isoformat() + 'Z', 'offset_seconds': offset_secs}), 200
     return jsonify({'override': None, 'offset_seconds': None}), 200
 
 
@@ -396,7 +430,7 @@ def set_datetime_override():
     simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
     return jsonify({
         'message': f'Datetime override set — offset {offset_secs:.0f}s from real time',
-        'override': simulated.isoformat(),
+        'override': simulated.isoformat() + 'Z',
         'offset_seconds': offset_secs
     }), 200
 
@@ -487,6 +521,38 @@ def reset_all():
 
 
 # ---------------------------------------------------------------------------
+# Audit log
+# ---------------------------------------------------------------------------
+
+@bp.route('/audit-log/<int:user_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_user_audit_log(user_id):
+    """Get activity log for any user (admin only)."""
+    User.query.get_or_404(user_id)
+    action_filter = request.args.get('action')
+    limit = min(int(request.args.get('limit', 50)), 200)
+    offset = int(request.args.get('offset', 0))
+
+    query = AccessLog.query.filter_by(user_id=user_id)
+    if action_filter:
+        query = query.filter_by(action=action_filter)
+    total = query.count()
+    logs = query.order_by(AccessLog.created_at.desc()).offset(offset).limit(limit).all()
+
+    return jsonify({
+        'logs': [{
+            'id': l.id,
+            'action': l.action,
+            'page': l.page,
+            'ip_address': l.ip_address,
+            'created_at': l.created_at.isoformat() + 'Z'
+        } for l in logs],
+        'total': total
+    }), 200
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -495,7 +561,7 @@ def _game_dict(g):
         'id': g.id,
         'team_a': {'id': g.team_a.id, 'name': g.team_a.name},
         'team_b': {'id': g.team_b.id, 'name': g.team_b.name},
-        'game_date': g.game_date.isoformat(),
+        'game_date': g.game_date.isoformat() + 'Z',
         'location': g.location.name if g.location else '',
         'stage': g.stage,
         'group': g.group,
@@ -509,5 +575,5 @@ def _game_dict(g):
         'team_a_score': g.team_a_score,
         'team_b_score': g.team_b_score,
         'is_double_points': g.is_double_points(),
-        'scored_at': g.scored_at.isoformat() if g.scored_at else None
+        'scored_at': g.scored_at.isoformat() + 'Z' if g.scored_at else None
     }

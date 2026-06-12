@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy import event, text
 import sqlite3
 from config import config
@@ -19,6 +20,7 @@ def create_app(config_name='default'):
     """Application factory pattern"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     # Initialize extensions with app
     db.init_app(app)
@@ -37,7 +39,7 @@ def create_app(config_name='default'):
         return jsonify({'error': 'Authentication required'}), 401
 
     # Register blueprints
-    from app.routes import auth, predictions, rankings, players, admin, games, news, teams, mcp
+    from app.routes import auth, predictions, rankings, players, admin, games, news, teams, mcp, rivals
     app.register_blueprint(auth.bp)
     app.register_blueprint(predictions.bp)
     app.register_blueprint(rankings.bp)
@@ -47,6 +49,7 @@ def create_app(config_name='default'):
     app.register_blueprint(news.bp)
     app.register_blueprint(teams.bp)
     app.register_blueprint(mcp.bp)
+    app.register_blueprint(rivals.bp)
 
     # Ensure all tables exist (including newly added models)
     with app.app_context():
@@ -70,10 +73,8 @@ def create_app(config_name='default'):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Initialize database admin interface (development mode only)
-    if app.config.get('DEBUG'):
-        from app.db_admin import init_admin
-        init_admin(app)
-        print("[OK] Database browser available at: http://localhost:5000/db-admin")
+    # Initialize database admin interface (admin-only, all environments)
+    from app.db_admin import init_admin
+    init_admin(app)
 
     return app

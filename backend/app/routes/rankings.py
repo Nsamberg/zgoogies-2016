@@ -64,7 +64,7 @@ def get_ranking_history(user_id):
         'rank': h.rank,
         'total_points': h.total_points,
         'game_id': h.game_id,
-        'created_at': h.created_at.isoformat()
+        'created_at': h.created_at.isoformat() + 'Z'
     } for h in history]), 200
 
 

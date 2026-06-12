@@ -4,6 +4,7 @@ from app import db
 from app.models.user import User
 from app.models.game import Game
 from app.models.access_log import AccessLog
+from app.models.app_setting import AppSetting
 from app.services.email_service import send_registration_email, send_password_reset_email
 from app.utils.datetime_utils import get_current_utc
 from datetime import timedelta
@@ -17,6 +18,15 @@ bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 # Google reCAPTCHA v2 verification endpoint
 RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+
+
+def _winner_pick_is_locked() -> bool:
+    """Winner pick locks 2 hours before the first game kicks off."""
+    first_game = Game.query.order_by(Game.game_date.asc()).first()
+    if not first_game:
+        return False
+    deadline = first_game.game_date - timedelta(hours=2)
+    return get_current_utc() >= deadline
 
 
 def verify_recaptcha(token: str) -> bool:
@@ -110,7 +120,7 @@ def registration_status():
         return jsonify({'open': True, 'deadline': None})
     deadline = first_game.game_date - timedelta(hours=2)
     is_open = get_current_utc() < deadline
-    return jsonify({'open': is_open, 'deadline': deadline.isoformat()})
+    return jsonify({'open': is_open, 'deadline': deadline.isoformat() + 'Z'})
 
 
 @bp.route('/login', methods=['POST'])
@@ -215,7 +225,7 @@ def get_current_user():
         'is_cachier': current_user.is_cachier,
         'has_paid': current_user.has_paid,
         'tournament_winner_id': current_user.tournament_winner_id,
-        'tournament_winner_locked': current_user.tournament_winner_locked
+        'tournament_winner_locked': _winner_pick_is_locked()
     }), 200
 
 
@@ -234,10 +244,12 @@ def update_profile():
     if 'timezone' in data:
         current_user.timezone = data['timezone']
     if 'tournament_winner_id' in data:
-        if current_user.tournament_winner_locked:
+        if _winner_pick_is_locked():
             return jsonify({'error': 'Tournament winner prediction is locked'}), 403
         current_user.tournament_winner_id = data['tournament_winner_id']
 
+    log = AccessLog(user_id=current_user.id, action='profile_updated', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Profile updated'}), 200
 
@@ -258,6 +270,8 @@ def change_password():
         return jsonify({'error': 'New password must be at least 6 characters'}), 400
 
     current_user.set_password(data['new_password'])
+    log = AccessLog(user_id=current_user.id, action='password_changed', ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
     return jsonify({'message': 'Password changed successfully'}), 200
 
@@ -279,3 +293,44 @@ def regenerate_api_token():
     current_user.api_token = uuid.uuid4().hex
     db.session.commit()
     return jsonify({'token': current_user.api_token}), 200
+
+
+@bp.route('/audit-log', methods=['GET'])
+@login_required
+def get_audit_log():
+    """Get the current user's activity log."""
+    action_filter = request.args.get('action')
+    limit = min(int(request.args.get('limit', 50)), 200)
+    offset = int(request.args.get('offset', 0))
+
+    query = AccessLog.query.filter_by(user_id=current_user.id)
+    if action_filter:
+        query = query.filter_by(action=action_filter)
+    total = query.count()
+    logs = query.order_by(AccessLog.created_at.desc()).offset(offset).limit(limit).all()
+
+    return jsonify({
+        'logs': [{
+            'id': l.id,
+            'action': l.action,
+            'page': l.page,
+            'ip_address': l.ip_address,
+            'created_at': l.created_at.isoformat() + 'Z'
+        } for l in logs],
+        'total': total
+    }), 200
+
+
+@bp.route('/predictions-visited', methods=['GET', 'POST'])
+@login_required
+def predictions_visited():
+    key = f'predictions_visit_{current_user.id}'
+    if request.method == 'GET':
+        val = AppSetting.get(key)
+        return jsonify({'last_visit': val}), 200
+    # POST: record current time and return previous value
+    from app.utils.datetime_utils import get_current_utc
+    now = get_current_utc().isoformat() + 'Z'
+    previous = AppSetting.get(key)
+    AppSetting.set(key, now)
+    return jsonify({'previous_visit': previous}), 200

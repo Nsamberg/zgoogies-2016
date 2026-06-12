@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { adminAPI, teamsAPI } from '../services/api'
+import { adminAPI, teamsAPI, playersAPI, auditAPI, AuditLogEntry } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import type { Team } from '../types'
 
@@ -117,7 +117,8 @@ function PaymentsTab() {
       const matchesSearch =
         u.username.toLowerCase().includes(search.toLowerCase()) ||
         u.first_name.toLowerCase().includes(search.toLowerCase()) ||
-        u.surname.toLowerCase().includes(search.toLowerCase())
+        u.surname.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase())
       if (!matchesSearch) return false
       if (filter === 'unpaid') return !u.has_paid
       if (filter === 'paid_to_me') return u.payment_received_by === currentUser?.username
@@ -141,18 +142,12 @@ function PaymentsTab() {
           <h2>Payment Management</h2>
           <p className="admin-subtitle">{paid} / {users.length} players have paid</p>
         </div>
-        <div className="admin-header-controls">
-          <input
-            className="admin-search"
-            placeholder="Search player..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <select className="admin-select" value={sort} onChange={e => setSort(e.target.value as UserSortKey)}>
-            <option value="newest">Newest first</option>
-            <option value="alpha">Alphabetical</option>
-          </select>
-        </div>
+        <input
+          className="admin-search"
+          placeholder="Search player..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
       <div className="admin-filters payment-filters">
         <button className={`role-filter-btn${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
@@ -165,6 +160,14 @@ function PaymentsTab() {
           Paid to me <span className="role-filter-count">{paidToMeCount}</span>
         </button>
       </div>
+      <div className="admin-filters admin-sort-row">
+        <button className={`role-filter-btn${sort === 'newest' ? ' active' : ''}`} onClick={() => setSort('newest')}>
+          Newest first
+        </button>
+        <button className={`role-filter-btn${sort === 'alpha' ? ' active' : ''}`} onClick={() => setSort('alpha')}>
+          A–Z
+        </button>
+      </div>
 
       {msg && <div className="admin-message">{msg}</div>}
 
@@ -175,6 +178,7 @@ function PaymentsTab() {
               <div className="payment-card-identity">
                 <strong className="payment-card-username">{u.username}</strong>
                 <span className="payment-card-name">{u.first_name} {u.surname}</span>
+                <span className="payment-card-email">{u.email}</span>
               </div>
               <div className="payment-card-badges">
                 <span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span>
@@ -199,6 +203,92 @@ function PaymentsTab() {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function CollectionsTab() {
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    adminAPI.getUsers().then(r => setUsers(r.data)).finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className="admin-loading">Loading...</div>
+
+  const paid = users.filter(u => u.has_paid)
+  const unpaid = users.filter(u => !u.has_paid)
+  const FEE = 5
+
+  const byCollector = paid.reduce<Record<string, AdminUser[]>>((acc, u) => {
+    const key = u.payment_received_by ?? 'Unknown'
+    ;(acc[key] ??= []).push(u)
+    return acc
+  }, {})
+
+  const rows = Object.entries(byCollector).sort((a, b) => b[1].length - a[1].length)
+
+  return (
+    <div className="admin-tab-content">
+      <div className="admin-section-header">
+        <div>
+          <h2>Collections Recap</h2>
+          <p className="admin-subtitle">
+            {paid.length} paid · {unpaid.length} unpaid · £{paid.length * FEE} total collected
+          </p>
+        </div>
+      </div>
+
+      <div className="admin-table-wrap" style={{ marginBottom: '1.5rem' }}>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Cashier</th>
+              <th>Amount</th>
+              <th>Players</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([collector, players]) => (
+              <tr key={collector}>
+                <td><strong>{collector}</strong></td>
+                <td>£{players.length * FEE}</td>
+                <td>{players.length}</td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={3} style={{ textAlign: 'center', color: '#999' }}>No payments recorded yet</td></tr>
+            )}
+          </tbody>
+          {rows.length > 0 && (
+            <tfoot>
+              <tr className="collections-total-row">
+                <td><strong>Total</strong></td>
+                <td><strong>£{paid.length * FEE}</strong></td>
+                <td><strong>{paid.length}</strong></td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+
+      {rows.map(([collector, players]) => (
+        <div key={collector} className="collections-detail">
+          <h3 className="collections-detail-title">{collector} — {players.length} player{players.length !== 1 ? 's' : ''} · £{players.length * FEE}</h3>
+          <div className="collections-player-list">
+            {players
+              .sort((a, b) => new Date(b.payment_date ?? 0).getTime() - new Date(a.payment_date ?? 0).getTime())
+              .map(u => (
+                <div key={u.id} className="collections-player-row">
+                  <span className="collections-player-name">{u.first_name} {u.surname}</span>
+                  <span className="collections-player-username">@{u.username}</span>
+                  {u.payment_date && <span className="collections-player-date">{formatDate(u.payment_date)}</span>}
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -600,6 +690,7 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
   const [sort, setSort] = useState<UserSortKey>('newest')
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
+  const [editingEmail, setEditingEmail] = useState<{ id: number; value: string } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -623,6 +714,24 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
       await load()
     } catch (e: any) {
       setMsg({ text: e.response?.data?.error ?? 'Error deleting user', type: 'err' })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const saveEmail = async (u: AdminUser) => {
+    if (!editingEmail) return
+    const email = editingEmail.value.trim()
+    if (!email || email === u.email) { setEditingEmail(null); return }
+    setBusy(u.id)
+    setMsg(null)
+    try {
+      await adminAPI.updateUserEmail(u.id, email)
+      setMsg({ text: `Email updated for ${u.username}`, type: 'ok' })
+      setEditingEmail(null)
+      await load()
+    } catch (e: any) {
+      setMsg({ text: e.response?.data?.error ?? 'Error updating email', type: 'err' })
     } finally {
       setBusy(null)
     }
@@ -666,18 +775,20 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
           <h2>User Management</h2>
           <p className="admin-subtitle">{users.length} registered user{users.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="admin-header-controls">
-          <input
-            className="admin-search"
-            placeholder="Search player..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <select className="admin-select" value={sort} onChange={e => setSort(e.target.value as UserSortKey)}>
-            <option value="newest">Newest first</option>
-            <option value="alpha">Alphabetical</option>
-          </select>
-        </div>
+        <input
+          className="admin-search"
+          placeholder="Search player..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+      <div className="admin-filters admin-sort-row">
+        <button className={`role-filter-btn${sort === 'newest' ? ' active' : ''}`} onClick={() => setSort('newest')}>
+          Newest first
+        </button>
+        <button className={`role-filter-btn${sort === 'alpha' ? ' active' : ''}`} onClick={() => setSort('alpha')}>
+          A–Z
+        </button>
       </div>
 
       {msg && <div className={`admin-message ${msg.type === 'err' ? 'admin-message-error' : ''}`}>{msg.text}</div>}
@@ -701,8 +812,57 @@ function UsersTab({ currentUserId }: { currentUserId: number }) {
               return (
                 <tr key={u.id}>
                   <td><strong>{u.username}</strong>{isSelf && <span className="self-badge"> (you)</span>}</td>
-                  <td>{u.first_name} {u.surname}</td>
-                  <td className="admin-email">{u.email}</td>
+                  <td>
+                    {u.first_name} {u.surname}
+                    <div className="admin-email-mobile">
+                      {editingEmail?.id === u.id ? (
+                        <div className="email-edit-row">
+                          <input
+                            className="email-edit-input"
+                            type="email"
+                            value={editingEmail.value}
+                            onChange={e => setEditingEmail({ id: u.id, value: e.target.value })}
+                            onKeyDown={e => { if (e.key === 'Enter') saveEmail(u); if (e.key === 'Escape') setEditingEmail(null) }}
+                            autoFocus
+                            disabled={busy === u.id}
+                          />
+                          <button className="admin-btn-sm btn-success" onClick={() => saveEmail(u)} disabled={busy === u.id}>
+                            {busy === u.id ? '...' : '✓'}
+                          </button>
+                          <button className="admin-btn-sm" onClick={() => setEditingEmail(null)} disabled={busy === u.id}>✕</button>
+                        </div>
+                      ) : (
+                        <div className="email-display-row">
+                          <span>{u.email}</span>
+                          <button className="email-edit-btn" onClick={() => setEditingEmail({ id: u.id, value: u.email })} title="Edit email">✎</button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="admin-email">
+                    {editingEmail?.id === u.id ? (
+                      <div className="email-edit-row">
+                        <input
+                          className="email-edit-input"
+                          type="email"
+                          value={editingEmail.value}
+                          onChange={e => setEditingEmail({ id: u.id, value: e.target.value })}
+                          onKeyDown={e => { if (e.key === 'Enter') saveEmail(u); if (e.key === 'Escape') setEditingEmail(null) }}
+                          autoFocus
+                          disabled={busy === u.id}
+                        />
+                        <button className="admin-btn-sm btn-success" onClick={() => saveEmail(u)} disabled={busy === u.id}>
+                          {busy === u.id ? '...' : '✓'}
+                        </button>
+                        <button className="admin-btn-sm" onClick={() => setEditingEmail(null)} disabled={busy === u.id}>✕</button>
+                      </div>
+                    ) : (
+                      <div className="email-display-row">
+                        <span>{u.email}</span>
+                        <button className="email-edit-btn" onClick={() => setEditingEmail({ id: u.id, value: u.email })} title="Edit email">✎</button>
+                      </div>
+                    )}
+                  </td>
                   <td><span className={`role-badge role-${getRoleLabel(u).toLowerCase()}`}>{getRoleLabel(u)}</span></td>
                   <td>
                     {!isSelf ? (
@@ -961,9 +1121,147 @@ function SettingsTab() {
   )
 }
 
+// ─── Audit Trail Tab ──────────────────────────────────────────────────────────
+
+const AUDIT_ACTION_LABELS: Record<string, string> = {
+  login: 'Login', logout: 'Logout', profile_updated: 'Profile updated',
+  password_changed: 'Password changed', prediction_submitted: 'Prediction submitted',
+  rival_added: 'Rival added', rival_removed: 'Rival removed',
+  score_entered: 'Score entered', score_rolled_back: 'Score rolled back',
+  payment_recorded: 'Payment recorded', payment_removed: 'Payment removed',
+  role_changed: 'Role changed',
+}
+
+function AuditTab() {
+  const [players, setPlayers] = useState<{ id: number; username: string; first_name: string; surname: string }[]>([])
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [logs, setLogs] = useState<AuditLogEntry[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [actionFilter, setActionFilter] = useState('')
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    playersAPI.getAll().then(r => setPlayers(r.data)).catch(() => {})
+  }, [])
+
+  const fetchLogs = useCallback(async (userId: number, filter: string, offset: number, append: boolean) => {
+    setLoading(true)
+    try {
+      const res = await auditAPI.getUserLogs(userId, { action: filter || undefined, limit: 50, offset })
+      setTotal(res.data.total)
+      setLogs(prev => append ? [...prev, ...res.data.logs] : res.data.logs)
+    } catch {
+      setLogs([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const handleSelectUser = (userId: number) => {
+    setSelectedUserId(userId)
+    setActionFilter('')
+    setLogs([])
+    fetchLogs(userId, '', 0, false)
+  }
+
+  const handleFilterChange = (filter: string) => {
+    setActionFilter(filter)
+    if (selectedUserId) fetchLogs(selectedUserId, filter, 0, false)
+  }
+
+  const filteredPlayers = players.filter(p => {
+    const q = search.toLowerCase()
+    return !q || p.username.toLowerCase().includes(q) ||
+      `${p.first_name} ${p.surname}`.toLowerCase().includes(q)
+  })
+
+  const selectedUser = players.find(p => p.id === selectedUserId)
+
+  return (
+    <div className="admin-section">
+      <div className="admin-section-header"><div><h2>Audit Trail</h2></div></div>
+
+      <div className="audit-admin-layout">
+        <div className="audit-user-list">
+          <input
+            type="text"
+            className="player-search"
+            placeholder="Search player…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <div className="audit-user-items">
+            {filteredPlayers.map(p => (
+              <button
+                key={p.id}
+                className={`audit-user-item${selectedUserId === p.id ? ' active' : ''}`}
+                onClick={() => handleSelectUser(p.id)}
+              >
+                <span className="player-username">{p.username}</span>
+                <span className="player-fullname">{p.first_name} {p.surname}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="audit-log-panel">
+          {!selectedUser && (
+            <p className="empty-state">Select a player to view their activity log.</p>
+          )}
+          {selectedUser && (
+            <>
+              <div className="audit-filters">
+                <span className="audit-panel-user">{selectedUser.username}</span>
+                <select
+                  className="audit-filter-select"
+                  value={actionFilter}
+                  onChange={e => handleFilterChange(e.target.value)}
+                >
+                  <option value="">All actions</option>
+                  {Object.entries(AUDIT_ACTION_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+                <span className="audit-total">{total} event{total !== 1 ? 's' : ''}</span>
+              </div>
+              {loading && logs.length === 0 && <p className="loading-text">Loading…</p>}
+              {!loading && logs.length === 0 && <p className="empty-state">No activity recorded.</p>}
+              {logs.length > 0 && (
+                <div>
+                  <div className="audit-table-wrap">
+                    <table className="audit-table">
+                      <thead><tr><th>Date / Time</th><th>Action</th><th>Details</th><th>IP</th></tr></thead>
+                      <tbody>
+                        {logs.map(l => (
+                          <tr key={l.id}>
+                            <td className="audit-date">{new Date(l.created_at).toLocaleString()}</td>
+                            <td><span className={`audit-action audit-action--${l.action}`}>{AUDIT_ACTION_LABELS[l.action] ?? l.action}</span></td>
+                            <td className="audit-detail">{l.page ?? '—'}</td>
+                            <td className="audit-ip">{l.ip_address ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {logs.length < total && (
+                    <button className="audit-load-more" onClick={() => fetchLogs(selectedUserId!, actionFilter, logs.length, true)} disabled={loading}>
+                      {loading ? 'Loading...' : `Load more (${total - logs.length} remaining)`}
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-type TabId = 'payments' | 'scores' | 'tournament' | 'news' | 'users' | 'settings'
+type TabId = 'payments' | 'collections' | 'scores' | 'tournament' | 'news' | 'users' | 'settings' | 'audit'
 
 export default function AdminPage() {
   const { user } = useAuthStore()
@@ -971,12 +1269,14 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabId>('payments')
 
   const tabs: { id: TabId; label: string; adminOnly: boolean }[] = [
-    { id: 'payments',   label: 'Payments',    adminOnly: false },
-    { id: 'scores',     label: 'Score Entry', adminOnly: true  },
+    { id: 'payments',    label: 'Payments',    adminOnly: false },
+    { id: 'collections', label: 'Collections', adminOnly: false },
+    { id: 'scores',      label: 'Score Entry', adminOnly: true  },
     { id: 'tournament', label: 'Tournament',  adminOnly: true  },
     { id: 'news',       label: 'News',        adminOnly: false },
     { id: 'users',      label: 'Users',       adminOnly: true  },
     { id: 'settings',   label: '⏱ Settings',  adminOnly: true  },
+    { id: 'audit',     label: 'Audit Trail', adminOnly: true  },
   ]
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin)
@@ -993,6 +1293,14 @@ export default function AdminPage() {
           <span className={`role-badge role-${isAdmin ? 'admin' : 'cashier'}`}>
             {isAdmin ? 'Admin' : 'Cashier'}
           </span>
+          {isAdmin && (
+            <>
+              {' '}·{' '}
+              <a href="/db-admin" target="_blank" rel="noopener noreferrer" className="db-admin-link">
+                DB Browser ↗
+              </a>
+            </>
+          )}
         </p>
       </div>
 
@@ -1008,12 +1316,14 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {currentTab === 'payments'   && <PaymentsTab />}
-      {currentTab === 'scores'     && <ScoreEntryTab />}
+      {currentTab === 'payments'    && <PaymentsTab />}
+      {currentTab === 'collections' && <CollectionsTab />}
+      {currentTab === 'scores'      && <ScoreEntryTab />}
       {currentTab === 'tournament' && <TournamentTab />}
       {currentTab === 'news'       && <NewsTab />}
       {currentTab === 'users'      && <UsersTab currentUserId={user?.id ?? 0} />}
       {currentTab === 'settings'   && <SettingsTab />}
+      {currentTab === 'audit'      && <AuditTab />}
     </div>
   )
 }

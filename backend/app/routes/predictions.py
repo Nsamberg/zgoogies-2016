@@ -4,6 +4,7 @@ from app import db
 from app.models.prediction import Prediction
 from app.models.prediction_history import PredictionHistory
 from app.models.game import Game
+from app.models.access_log import AccessLog
 
 bp = Blueprint('predictions', __name__, url_prefix='/api/predictions')
 
@@ -63,11 +64,11 @@ def create_prediction():
     action = 'E' if prediction else 'N'
 
     if prediction:
-        # Update existing prediction (use validated integers, not raw request values)
+        old_score = f'{prediction.team_a_score}-{prediction.team_b_score}'
         prediction.team_a_score = score_a
         prediction.team_b_score = score_b
+        log_page = f'game:{data["game_id"]} {old_score}->{score_a}-{score_b}'
     else:
-        # Create new prediction
         prediction = Prediction(
             user_id=current_user.id,
             game_id=data['game_id'],
@@ -75,6 +76,7 @@ def create_prediction():
             team_b_score=score_b
         )
         db.session.add(prediction)
+        log_page = f'game:{data["game_id"]} new:{score_a}-{score_b}'
 
     # Log in history
     history = PredictionHistory(
@@ -85,6 +87,9 @@ def create_prediction():
         action=action
     )
     db.session.add(history)
+    log = AccessLog(user_id=current_user.id, action='prediction_submitted',
+                    page=log_page, ip_address=request.remote_addr)
+    db.session.add(log)
     db.session.commit()
 
     return jsonify({'message': 'Prediction saved', 'id': prediction.id}), 201
