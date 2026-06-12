@@ -482,7 +482,11 @@ button[type="submit"]:disabled {
   gap: 0;
   border-bottom: 2px solid #e0e0e0;
   margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.page-tabs::-webkit-scrollbar { display: none; }
 
 .tab-btn {
   padding: 0.6rem 1.5rem;
@@ -1236,8 +1240,8 @@ button[type="submit"]:disabled {
   align-items: center;
   justify-content: center;
   margin-left: 0.35rem;
-  background: rgba(212, 172, 13, 0.2);
-  color: #7a6000;
+  background: #D4AC0D;
+  color: #fff;
   border-radius: 10px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -1247,8 +1251,8 @@ button[type="submit"]:disabled {
 }
 
 .tab-btn.active .tab-my-rank {
-  background: rgba(255, 215, 0, 0.35);
-  color: #ffe066;
+  background: #f5c800;
+  color: #1B1464;
 }
 
 .rankings-table-wrap {
@@ -2814,8 +2818,8 @@ tr:hover .email-edit-btn { opacity: 1; }
   .team-filter-search,
   .gp-search { font-size: 16px; }
 
-  /* Tabs */
-  .tab-btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
+  /* Tabs — horizontally scrollable, no wrap */
+  .tab-btn { padding: 0.6rem 0.85rem; font-size: 0.85rem; flex-shrink: 0; white-space: nowrap; }
 
   /* Game cards */
   .game-card { padding: 0.75rem 1rem; }
