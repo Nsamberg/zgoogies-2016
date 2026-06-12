@@ -587,7 +587,7 @@ export default function PredictionsPage() {
                         </div>
                         <div className="gp-stat">
                           <span className="gp-stat-value">{avgA}–{avgB}</span>
-                          <span className="gp-stat-label">avg prediction</span>
+                          <span className="gp-stat-label">avg goals</span>
                         </div>
                         {topScore && (
                           <div className="gp-stat">
