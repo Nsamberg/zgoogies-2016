@@ -237,6 +237,7 @@ function RivalsView({
   currentUserId,
   onToggleRival,
   onSelectPlayer,
+  search,
 }: {
   overallRankings: Ranking[]
   rivals: number[]
