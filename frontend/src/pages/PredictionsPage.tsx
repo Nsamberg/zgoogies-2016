@@ -183,6 +183,7 @@ export default function PredictionsPage() {
   const [closedGamePreds, setClosedGamePreds] = useState<any[] | null>(null)
   const [closedGamePredsLoading, setClosedGamePredsLoading] = useState(false)
   const [closedGameSearch, setClosedGameSearch] = useState('')
+  const [closedGameScoreSearch, setClosedGameScoreSearch] = useState('')
 
   const openGamePredictions = useCallback(async (game: Game) => {
     setSelectedClosedGame(game)
@@ -203,6 +204,7 @@ export default function PredictionsPage() {
     setSelectedClosedGame(null)
     setClosedGamePreds(null)
     setClosedGameSearch('')
+    setClosedGameScoreSearch('')
   }, [])
 
   // Other players
@@ -499,7 +501,16 @@ export default function PredictionsPage() {
                 : a.username.localeCompare(b.username)
             )
             const q = closedGameSearch.toLowerCase()
-            const filtered = q ? sorted.filter(p => p.username.toLowerCase().includes(q)) : sorted
+            const qs = closedGameScoreSearch.replace(/\s/g, '').toLowerCase()
+            const filtered = sorted.filter(p => {
+              if (q && !p.username.toLowerCase().includes(q)) return false
+              if (qs) {
+                const score = `${p.team_a_score}-${p.team_b_score}`
+                const scoreAlt = `${p.team_a_score}–${p.team_b_score}`
+                if (!score.includes(qs) && !scoreAlt.includes(qs)) return false
+              }
+              return true
+            })
 
             // Stats
             const n = all.length
@@ -649,12 +660,20 @@ export default function PredictionsPage() {
                     {/* Search + table */}
                     <div className="game-predictions-header">
                       <span className="gp-count">{n} prediction{n !== 1 ? 's' : ''}</span>
-                      <input
-                        className="gp-search"
-                        placeholder="Search player…"
-                        value={closedGameSearch}
-                        onChange={e => setClosedGameSearch(e.target.value)}
-                      />
+                      <div className="gp-search-group">
+                        <input
+                          className="gp-search"
+                          placeholder="Search player…"
+                          value={closedGameSearch}
+                          onChange={e => setClosedGameSearch(e.target.value)}
+                        />
+                        <input
+                          className="gp-search"
+                          placeholder="Score (e.g. 2-1)"
+                          value={closedGameScoreSearch}
+                          onChange={e => setClosedGameScoreSearch(e.target.value)}
+                        />
+                      </div>
                     </div>
 
                     {n === 0
