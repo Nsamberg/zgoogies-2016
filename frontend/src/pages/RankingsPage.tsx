@@ -243,10 +243,16 @@ function RivalsView({
   currentUserId: number
   onToggleRival: (rivalId: number, isRival: boolean) => void
   onSelectPlayer: (r: Ranking) => void
+  search: string
 }) {
-  const filtered = overallRankings.filter(
-    r => r.user.id === currentUserId || rivals.includes(r.user.id)
-  )
+  const filtered = overallRankings
+    .filter(r => r.user.id === currentUserId || rivals.includes(r.user.id))
+    .filter(r =>
+      search === '' ||
+      r.user.username.toLowerCase().includes(search.toLowerCase()) ||
+      r.user.first_name.toLowerCase().includes(search.toLowerCase()) ||
+      r.user.surname.toLowerCase().includes(search.toLowerCase())
+    )
 
   const myEntry = filtered.find(r => r.user.id === currentUserId)
   const myPoints = myEntry?.total_points ?? 0
@@ -340,6 +346,7 @@ export default function RankingsPage() {
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
+  const [search, setSearch] = useState('')
 
   // Ref for scrolling to current user's row
   const myRowRef = useRef<HTMLTableRowElement | null>(null)
@@ -390,6 +397,7 @@ export default function RankingsPage() {
   const handleTabChange = async (tab: TabId) => {
     setActiveTab(tab)
     setSelectedPlayer(null)
+    setSearch('')
     if (tab === 'rivals') return
     const key = tab === 'overall' ? 'overall' : String(tab)
     if (cache[key]) { setRankings(cache[key]); return }
@@ -487,13 +495,24 @@ export default function RankingsPage() {
       {error && <p className="error">{error}</p>}
 
       {!loading && !error && activeTab === 'rivals' && (
-        <RivalsView
-          overallRankings={overallRankings}
-          rivals={rivals}
-          currentUserId={user!.id}
-          onToggleRival={handleToggleRival}
-          onSelectPlayer={setSelectedPlayer}
-        />
+        <>
+          <div className="rankings-search-row">
+            <input
+              className="rankings-search"
+              placeholder="Search player…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <RivalsView
+            overallRankings={overallRankings}
+            rivals={rivals}
+            currentUserId={user!.id}
+            onToggleRival={handleToggleRival}
+            onSelectPlayer={setSelectedPlayer}
+            search={search}
+          />
+        </>
       )}
 
       {!loading && !error && activeTab !== 'rivals' && rankings.length === 0 && (
@@ -513,7 +532,15 @@ export default function RankingsPage() {
               </button>
             </div>
           )}
-          <p className="rankings-click-hint">Click any player to view their ranking history</p>
+          <div className="rankings-search-row">
+            <p className="rankings-click-hint">Click any player to view their ranking history</p>
+            <input
+              className="rankings-search"
+              placeholder="Search player…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
           <table className="rankings-table">
             <thead>
               <tr>
@@ -525,7 +552,12 @@ export default function RankingsPage() {
               </tr>
             </thead>
             <tbody>
-              {rankings.map((r) => {
+              {rankings.filter(r =>
+                search === '' ||
+                r.user.username.toLowerCase().includes(search.toLowerCase()) ||
+                r.user.first_name.toLowerCase().includes(search.toLowerCase()) ||
+                r.user.surname.toLowerCase().includes(search.toLowerCase())
+              ).map((r) => {
                 const isMe = r.user.id === user?.id
                 const isRival = rivals.includes(r.user.id)
                 return (

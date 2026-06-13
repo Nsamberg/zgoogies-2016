@@ -1617,11 +1617,30 @@ button[type="submit"]:disabled {
 }
 .my-rank-scroll-btn:hover { background: #2d22a0; }
 
+.rankings-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.rankings-search {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 180px;
+  outline: none;
+}
+
+.rankings-search:focus { border-color: var(--navy); }
+
 .rankings-click-hint {
   font-size: 0.75rem;
   color: #aaa;
-  text-align: center;
-  margin-top: 0.6rem;
+  margin: 0;
 }
 
 /* Player history view */
@@ -2948,6 +2967,7 @@ tr:hover .email-edit-btn { opacity: 1; }
   .admin-textarea,
   .admin-search,
   .player-search,
+  .rankings-search,
   .team-filter-search,
   .gp-search { font-size: 16px; }
 
