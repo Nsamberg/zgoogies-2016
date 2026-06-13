@@ -890,6 +890,12 @@ button[type="submit"]:disabled {
   flex-wrap: wrap;
 }
 
+.gp-search-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .gp-count {
   font-size: 0.78rem;
   color: #888;
