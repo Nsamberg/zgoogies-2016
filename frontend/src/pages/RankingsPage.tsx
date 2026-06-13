@@ -456,7 +456,15 @@ export default function RankingsPage() {
 
   return (
     <div className="rankings-page">
-      <h2 className="page-title">Rankings</h2>
+      <div className="rankings-header">
+        <h2 className="page-title" style={{ margin: 0 }}>Rankings</h2>
+        <input
+          className="admin-search"
+          placeholder="Search player…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
 
       <div className="page-tabs">
         <button
@@ -496,12 +504,6 @@ export default function RankingsPage() {
 
       {!loading && !error && activeTab === 'rivals' && (
         <>
-          <input
-            className="rankings-search"
-            placeholder="Search player…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
           <RivalsView
             overallRankings={overallRankings}
             rivals={rivals}
@@ -530,12 +532,6 @@ export default function RankingsPage() {
               </button>
             </div>
           )}
-          <input
-            className="rankings-search"
-            placeholder="Search player…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
           <p className="rankings-click-hint">Click any player to view their ranking history</p>
           <div className="rankings-table-wrap">
           <table className="rankings-table">

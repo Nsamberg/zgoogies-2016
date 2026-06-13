@@ -1271,6 +1271,18 @@ button[type="submit"]:disabled {
   padding: 1.5rem 1rem;
 }
 
+.rankings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.rankings-header .admin-search {
+  max-width: 180px;
+}
+
 .tab-btn--current {
   font-style: italic;
 }
