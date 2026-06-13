@@ -515,8 +515,10 @@ export default function PredictionsPage() {
             const topScore = n > 0
               ? Object.entries(scoreMap).sort((a, b) => b[1] - a[1])[0]
               : null
-            const avgA = (all.reduce((s: number, p: any) => s + p.team_a_score, 0) / n).toFixed(1)
-            const avgB = (all.reduce((s: number, p: any) => s + p.team_b_score, 0) / n).toFixed(1)
+            const sortedScores = Object.entries(scoreMap).sort((a, b) => b[1] - a[1])
+            const actualScore = game.is_scored && game.team_a.score != null && game.team_b.score != null
+              ? `${game.team_a.score}–${game.team_b.score}`
+              : null
 
             let exact = 0, correctResult = 0
             let avgPoints: string | null = null
@@ -585,10 +587,6 @@ export default function PredictionsPage() {
                           <span className="gp-stat-value">{n}</span>
                           <span className="gp-stat-label">predictions</span>
                         </div>
-                        <div className="gp-stat">
-                          <span className="gp-stat-value">{avgA}–{avgB}</span>
-                          <span className="gp-stat-label">avg goals</span>
-                        </div>
                         {topScore && (
                           <div className="gp-stat">
                             <span className="gp-stat-value">{topScore[0]}</span>
@@ -625,6 +623,26 @@ export default function PredictionsPage() {
                             )}
                           </>
                         )}
+                      </div>
+                    )}
+
+                    {/* Score distribution bar chart */}
+                    {sortedScores.length > 0 && (
+                      <div className="gp-chart">
+                        {sortedScores.map(([score, count]) => {
+                          const barPct = Math.round(count / n * 100)
+                          const isActual = score === actualScore
+                          return (
+                            <div key={score} className={`gp-chart-row${isActual ? ' gp-chart-row--actual' : ''}`}>
+                              <span className="gp-chart-score">{score}</span>
+                              <div className="gp-chart-bar-wrap">
+                                <div className="gp-chart-bar" style={{ width: `${barPct}%` }} />
+                              </div>
+                              <span className="gp-chart-pct">{barPct}%</span>
+                              <span className="gp-chart-count">({count})</span>
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
 
