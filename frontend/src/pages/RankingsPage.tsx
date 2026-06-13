@@ -518,7 +518,7 @@ export default function RankingsPage() {
       )}
 
       {!loading && !error && activeTab !== 'rivals' && rankings.length > 0 && (
-        <div className="rankings-table-wrap">
+        <>
           {myRow && (
             <div className="my-rank-card">
               <span className="my-rank-label">Your position</span>
@@ -537,6 +537,7 @@ export default function RankingsPage() {
             onChange={e => setSearch(e.target.value)}
           />
           <p className="rankings-click-hint">Click any player to view their ranking history</p>
+          <div className="rankings-table-wrap">
           <table className="rankings-table">
             <thead>
               <tr>
@@ -594,7 +595,8 @@ export default function RankingsPage() {
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </div>
   )
