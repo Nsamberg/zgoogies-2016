@@ -1657,6 +1657,14 @@ button[type="submit"]:disabled {
   margin-top: 0.4rem;
 }
 
+.rankings-pending-notice {
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+  margin: 0.5rem 0 0.25rem;
+  font-style: italic;
+}
+
 /* Player history view */
 .player-history-view { }
 

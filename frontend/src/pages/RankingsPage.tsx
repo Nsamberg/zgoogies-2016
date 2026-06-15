@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts'
-import { rankingsAPI, rivalsAPI, playersAPI } from '../services/api'
+import { rankingsAPI, rivalsAPI, playersAPI, gamesAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
@@ -375,6 +375,7 @@ export default function RankingsPage() {
   const [error, setError] = useState('')
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
   const [rivals, setRivals] = useState<number[]>([])
+  const [closedGames, setClosedGames] = useState<{ is_scored: boolean; competition_round: { id: number } | null }[]>([])
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
@@ -419,6 +420,12 @@ export default function RankingsPage() {
         setRivals(rivalsRes.data)
       } catch {
         // rivals fetch failing should not block the rankings page
+      }
+      try {
+        const gamesRes = await gamesAPI.getClosed()
+        setClosedGames(gamesRes.data)
+      } catch {
+        // closed games count is non-critical
       } finally {
         setLoading(false)
       }
@@ -478,6 +485,17 @@ export default function RankingsPage() {
   }
 
   const myRow = rankings.find(r => r.user.id === user?.id)
+
+  // Games still to be scored (closed but result not entered yet)
+  const pendingCount = (() => {
+    if (activeTab === 'overall') {
+      return closedGames.filter(g => !g.is_scored).length
+    }
+    if (typeof activeTab === 'number') {
+      return closedGames.filter(g => !g.is_scored && g.competition_round?.id === activeTab).length
+    }
+    return 0
+  })()
 
   // Derive my rank for each cached tab (overall + any loaded round)
   const myRankByTab: Record<string, number> = {}
@@ -563,6 +581,11 @@ export default function RankingsPage() {
                 Scroll to my row ↓
               </button>
             </div>
+          )}
+          {pendingCount > 0 && (
+            <p className="rankings-pending-notice">
+              {pendingCount} game{pendingCount !== 1 ? 's' : ''} still to be scored — more points to come
+            </p>
           )}
           <p className="rankings-click-hint">Click any player to view their ranking history</p>
           <div className="rankings-table-wrap">
