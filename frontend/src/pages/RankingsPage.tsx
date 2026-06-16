@@ -375,7 +375,7 @@ export default function RankingsPage() {
   const [error, setError] = useState('')
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
   const [rivals, setRivals] = useState<number[]>([])
-  const [closedGames, setClosedGames] = useState<{ is_scored: boolean; competition_round: { id: number } | null }[]>([])
+  const [pendingGames, setPendingGames] = useState<{ competition_round: { id: number } | null }[]>([])
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
@@ -422,10 +422,14 @@ export default function RankingsPage() {
         // rivals fetch failing should not block the rankings page
       }
       try {
-        const gamesRes = await gamesAPI.getClosed()
-        setClosedGames(gamesRes.data)
+        const [closedRes, upcomingRes] = await Promise.all([
+          gamesAPI.getClosed(),
+          gamesAPI.getUpcoming(),
+        ])
+        const unscoredClosed = closedRes.data.filter((g: any) => !g.is_scored)
+        setPendingGames([...unscoredClosed, ...upcomingRes.data])
       } catch {
-        // closed games count is non-critical
+        // pending games count is non-critical
       } finally {
         setLoading(false)
       }
@@ -486,13 +490,13 @@ export default function RankingsPage() {
 
   const myRow = rankings.find(r => r.user.id === user?.id)
 
-  // Games still to be scored (closed but result not entered yet)
+  // Games still to be scored (open for predictions or closed but not yet scored)
   const pendingCount = (() => {
     if (activeTab === 'overall') {
-      return closedGames.filter(g => !g.is_scored).length
+      return pendingGames.length
     }
     if (typeof activeTab === 'number') {
-      return closedGames.filter(g => !g.is_scored && g.competition_round?.id === activeTab).length
+      return pendingGames.filter(g => g.competition_round?.id === activeTab).length
     }
     return 0
   })()
