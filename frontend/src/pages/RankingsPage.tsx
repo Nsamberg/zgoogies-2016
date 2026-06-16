@@ -191,8 +191,35 @@ function PlayerHistoryView({
         const pending = predictions.filter(p =>
           !p.is_scored && (roundId === null || p.competition_round?.id === roundId)
         )
+        if (scored.length === 0 && pending.length === 0) return null
         return (
           <>
+            {pending.length > 0 && (
+              <div className="ph-games-section">
+                <h3 className="ph-games-title ph-games-title--pending">Awaiting result</h3>
+                <div className="ph-games-table-wrap">
+                  <table className="ph-games-table">
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Predicted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pending.map(p => (
+                        <tr key={p.game_id} className="ph-row-pending">
+                          <td className="ph-game-teams">
+                            {p.team_a.name} v {p.team_b.name}
+                            {p.is_double_points && <span className="ph-double-badge">×2</span>}
+                          </td>
+                          <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
             {scored.length > 0 && (
               <div className="ph-games-section">
                 <h3 className="ph-games-title">
@@ -220,32 +247,6 @@ function PlayerHistoryView({
                           <td className={`ph-pts ph-pts--${(p.prediction.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
                             {p.prediction.points ?? 0}
                           </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-            {pending.length > 0 && (
-              <div className="ph-games-section">
-                <h3 className="ph-games-title ph-games-title--pending">Awaiting result</h3>
-                <div className="ph-games-table-wrap">
-                  <table className="ph-games-table">
-                    <thead>
-                      <tr>
-                        <th>Game</th>
-                        <th>Predicted</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pending.map(p => (
-                        <tr key={p.game_id} className="ph-row-pending">
-                          <td className="ph-game-teams">
-                            {p.team_a.name} v {p.team_b.name}
-                            {p.is_double_points && <span className="ph-double-badge">×2</span>}
-                          </td>
-                          <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
                         </tr>
                       ))}
                     </tbody>
