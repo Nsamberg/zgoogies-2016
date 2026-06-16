@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { rankingsAPI, playersAPI } from '../services/api'
 
 const ROUND_PRIZES = [30, 17, 11, 7, 5]
-const OVERALL_PRIZES = [75, 45, 30, 15, 10]
+const OVERALL_PRIZES = [70, 45, 30, 15, 10]
 const ROUND_PRIZE_TOTAL = ROUND_PRIZES.reduce((s, v) => s + v, 0)
 const OVERALL_PRIZE_TOTAL = OVERALL_PRIZES.reduce((s, v) => s + v, 0)
 
