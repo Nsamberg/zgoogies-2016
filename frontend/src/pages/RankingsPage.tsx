@@ -185,44 +185,76 @@ function PlayerHistoryView({
       {/* Game-by-game predictions table */}
       {(() => {
         const roundId = (histTab === 'overall' || histTab === 'rivals') ? null : (histTab as number)
-        const filtered = predictions.filter(p =>
+        const scored = predictions.filter(p =>
           p.is_scored && (roundId === null || p.competition_round?.id === roundId)
         )
-        if (filtered.length === 0) return null
-        const totalPts = filtered.reduce((sum, p) => sum + (p.prediction.points ?? 0), 0)
+        const pending = predictions.filter(p =>
+          !p.is_scored && (roundId === null || p.competition_round?.id === roundId)
+        )
+        if (scored.length === 0 && pending.length === 0) return null
         return (
-          <div className="ph-games-section">
-            <h3 className="ph-games-title">
-              Games · <span className="ph-games-pts">{totalPts} pts</span>
-            </h3>
-            <div className="ph-games-table-wrap">
-              <table className="ph-games-table">
-                <thead>
-                  <tr>
-                    <th>Game</th>
-                    <th>Result</th>
-                    <th>Predicted</th>
-                    <th>Pts</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(p => (
-                    <tr key={p.game_id}>
-                      <td className="ph-game-teams">
-                        {p.team_a.name} v {p.team_b.name}
-                        {p.is_double_points && <span className="ph-double-badge">×2</span>}
-                      </td>
-                      <td className="ph-score">{p.team_a.score}–{p.team_b.score}</td>
-                      <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
-                      <td className={`ph-pts ph-pts--${(p.prediction.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
-                        {p.prediction.points ?? 0}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <>
+            {pending.length > 0 && (
+              <div className="ph-games-section">
+                <h3 className="ph-games-title ph-games-title--pending">Awaiting result</h3>
+                <div className="ph-games-table-wrap">
+                  <table className="ph-games-table">
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Predicted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pending.map(p => (
+                        <tr key={p.game_id} className="ph-row-pending">
+                          <td className="ph-game-teams">
+                            {p.team_a.name} v {p.team_b.name}
+                            {p.is_double_points && <span className="ph-double-badge">×2</span>}
+                          </td>
+                          <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {scored.length > 0 && (
+              <div className="ph-games-section">
+                <h3 className="ph-games-title">
+                  Games · <span className="ph-games-pts">{scored.reduce((sum, p) => sum + (p.prediction.points ?? 0), 0)} pts</span>
+                </h3>
+                <div className="ph-games-table-wrap">
+                  <table className="ph-games-table">
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Result</th>
+                        <th>Predicted</th>
+                        <th>Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scored.map(p => (
+                        <tr key={p.game_id}>
+                          <td className="ph-game-teams">
+                            {p.team_a.name} v {p.team_b.name}
+                            {p.is_double_points && <span className="ph-double-badge">×2</span>}
+                          </td>
+                          <td className="ph-score">{p.team_a.score}–{p.team_b.score}</td>
+                          <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
+                          <td className={`ph-pts ph-pts--${(p.prediction.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
+                            {p.prediction.points ?? 0}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
         )
       })()}
     </div>
