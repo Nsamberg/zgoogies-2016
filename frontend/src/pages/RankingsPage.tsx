@@ -270,6 +270,7 @@ function RivalsView({
   onToggleRival,
   onSelectPlayer,
   search,
+  nextClosed,
 }: {
   overallRankings: Ranking[]
   rivals: number[]
@@ -277,14 +278,8 @@ function RivalsView({
   onToggleRival: (rivalId: number, isRival: boolean) => void
   onSelectPlayer: (r: Ranking) => void
   search: string
+  nextClosed: NextClosedGame | null
 }) {
-  const [nextClosed, setNextClosed] = useState<NextClosedGame | null>(null)
-
-  useEffect(() => {
-    predictionsAPI.getNextClosed()
-      .then(res => setNextClosed(res.data))
-      .catch(() => setNextClosed(null))
-  }, [])
 
   const filtered = overallRankings
     .filter(r => r.user.id === currentUserId || rivals.includes(r.user.id))
@@ -395,6 +390,7 @@ export default function RankingsPage() {
   const [cache, setCache] = useState<Record<string, Ranking[]>>({})
   const [rivals, setRivals] = useState<number[]>([])
   const [pendingGames, setPendingGames] = useState<{ competition_round: { id: number } | null }[]>([])
+  const [nextClosed, setNextClosed] = useState<NextClosedGame | null>(null)
 
   // Selected player for history view
   const [selectedPlayer, setSelectedPlayer] = useState<Ranking | null>(null)
@@ -439,6 +435,12 @@ export default function RankingsPage() {
         setRivals(rivalsRes.data)
       } catch {
         // rivals fetch failing should not block the rankings page
+      }
+      try {
+        const nextClosedRes = await predictionsAPI.getNextClosed()
+        setNextClosed(nextClosedRes.data)
+      } catch {
+        // non-critical
       }
       try {
         const [closedRes, upcomingRes] = await Promise.all([
@@ -584,6 +586,7 @@ export default function RankingsPage() {
             onToggleRival={handleToggleRival}
             onSelectPlayer={setSelectedPlayer}
             search={search}
+            nextClosed={nextClosed}
           />
         </>
       )}
@@ -618,6 +621,7 @@ export default function RankingsPage() {
                 <th className="col-rank">#</th>
                 <th className="col-player">Player</th>
                 <th className="col-points">Points</th>
+                {nextClosed && <th className="col-next">{nextClosed.game.team_a_code}–{nextClosed.game.team_b_code}</th>}
                 <th className="col-trend">Trend</th>
                 <th className="col-rival-star" aria-label="Rivals"></th>
               </tr>
@@ -649,6 +653,13 @@ export default function RankingsPage() {
                       <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
                     </td>
                     <td className="col-points">{r.total_points}</td>
+                    {nextClosed && (
+                      <td className="col-next">
+                        {nextClosed.predictions[String(r.user.id)]
+                          ? `${nextClosed.predictions[String(r.user.id)].team_a_score}–${nextClosed.predictions[String(r.user.id)].team_b_score}`
+                          : '—'}
+                      </td>
+                    )}
                     <td className="col-trend">
                       <TrendIcon rank={r.rank} previous={r.previous_rank} />
                     </td>

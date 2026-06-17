@@ -1480,6 +1480,14 @@ button[type="submit"]:disabled {
   line-height: 1.4;
 }
 
+/* Next closed game prediction column */
+.col-next {
+  width: 65px;
+  text-align: center;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 /* Rivals point delta */
 .col-delta {
   width: 60px;
@@ -3056,9 +3064,11 @@ tr:hover .email-edit-btn { opacity: 1; }
 }
 
 @media (max-width: 480px) {
-  /* Hide trend column in rankings on small phones */
+  /* Hide trend and next columns in rankings on small phones */
   .rankings-table th.col-trend,
-  .rankings-table td.col-trend { display: none; }
+  .rankings-table td.col-trend,
+  .rankings-table th.col-next,
+  .rankings-table td.col-next { display: none; }
 
   /* Stack prediction score inputs vertically */
   .prediction-input-row {
