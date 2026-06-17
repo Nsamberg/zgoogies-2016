@@ -411,9 +411,12 @@ function ScoreEntryTab() {
 
       <div className="admin-games-list">
         {visible.length === 0 && <p className="admin-empty">No games match the current filter.</p>}
-        {visible.map(game => (
+        {(() => {
+          const gameNumber = Object.fromEntries(games.map((g, i) => [g.id, i + 1]))
+          return visible.map(game => (
           <div key={game.id} className={`admin-game-card ${game.is_double_points ? 'double-pts' : ''}`}>
             <div className="admin-game-meta">
+              <span className="admin-game-number">#{gameNumber[game.id]}</span>
               <span className="admin-game-round">{game.competition_round.name}</span>
               {game.is_double_points && <span className="double-pts-badge">2×</span>}
               <span className="admin-game-date">{formatDate(game.game_date)}</span>
@@ -514,7 +517,8 @@ function ScoreEntryTab() {
               </div>
             )}
           </div>
-        ))}
+        ))
+        })()}
       </div>
     </div>
   )

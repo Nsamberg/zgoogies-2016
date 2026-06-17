@@ -2631,6 +2631,13 @@ tr:hover .email-edit-btn { opacity: 1; }
   flex-wrap: wrap;
 }
 
+.admin-game-number {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #aaa;
+  min-width: 2rem;
+}
+
 .admin-game-round {
   background: var(--navy);
   color: white;
