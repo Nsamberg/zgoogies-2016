@@ -232,8 +232,47 @@ def enter_score(game_id):
     if not game.is_prediction_closed():
         return jsonify({'error': 'Cannot enter score: predictions are still open for this game.'}), 400
 
-    game.team_a_score = data['team_a_score']
-    game.team_b_score = data['team_b_score']
+    score_a = data['team_a_score']
+    score_b = data['team_b_score']
+    winner_team_id = data.get('winner_team_id')
+
+    # Determine winner and loser
+    if score_a > score_b:
+        winner, loser = game.team_a, game.team_b
+    elif score_b > score_a:
+        winner, loser = game.team_b, game.team_a
+    else:
+        # Draw — winner_team_id required if there are placeholders to fill
+        winner = loser = None
+        if winner_team_id:
+            if winner_team_id == game.team_a_id:
+                winner, loser = game.team_a, game.team_b
+            elif winner_team_id == game.team_b_id:
+                winner, loser = game.team_b, game.team_a
+            else:
+                return jsonify({'error': 'winner_team_id must be one of the two teams'}), 400
+
+    # Compute this game's chronological number (same as the # shown in the UI)
+    all_games = Game.query.order_by(Game.game_date.asc()).all()
+    game_number = next((i + 1 for i, g in enumerate(all_games) if g.id == game_id), None)
+
+    if game_number:
+        w_placeholder = Team.query.filter_by(name=f'W{game_number}').first()
+        l_placeholder = Team.query.filter_by(name=f'L{game_number}').first()
+
+        # If placeholders exist and it's a draw with no winner selected, reject
+        if (w_placeholder or l_placeholder) and score_a == score_b and not winner:
+            return jsonify({'error': 'This is a knockout game — select the winner before saving.'}), 400
+
+        if winner and w_placeholder:
+            Game.query.filter_by(team_a_id=w_placeholder.id).update({'team_a_id': winner.id})
+            Game.query.filter_by(team_b_id=w_placeholder.id).update({'team_b_id': winner.id})
+        if loser and l_placeholder:
+            Game.query.filter_by(team_a_id=l_placeholder.id).update({'team_a_id': loser.id})
+            Game.query.filter_by(team_b_id=l_placeholder.id).update({'team_b_id': loser.id})
+
+    game.team_a_score = score_a
+    game.team_b_score = score_b
     game.is_scored = True
     game.scored_at = db.func.now()
 

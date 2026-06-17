@@ -119,7 +119,7 @@ export const adminAPI = {
 
   // Score entry
   getGames: () => api.get('/admin/games'),
-  enterScore: (gameId: number, data: { team_a_score: number; team_b_score: number }) =>
+  enterScore: (gameId: number, data: { team_a_score: number; team_b_score: number; winner_team_id?: number }) =>
     api.post(`/admin/score/${gameId}`, data),
   rollbackScore: (gameId: number) => api.delete(`/admin/score/${gameId}`),
   updateGameTeams: (gameId: number, data: { team_a_id: number; team_b_id: number }) =>

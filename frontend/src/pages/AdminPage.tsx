@@ -303,6 +303,7 @@ function ScoreEntryTab() {
   const [roundFilter, setRoundFilter] = useState<number | 'all'>('all')
   const [allTeams, setAllTeams] = useState<Team[]>([])
   const [editingTeams, setEditingTeams] = useState<Record<number, { a: string; b: string }>>({})
+  const [winners, setWinners] = useState<Record<number, string>>({})
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -339,9 +340,12 @@ function ScoreEntryTab() {
     setBusy(game.id)
     setMsg(null)
     try {
-      await adminAPI.enterScore(game.id, { team_a_score: Number(s.a), team_b_score: Number(s.b) })
+      const isDraw = Number(s.a) === Number(s.b)
+      const winner_team_id = isDraw && winners[game.id] ? Number(winners[game.id]) : undefined
+      await adminAPI.enterScore(game.id, { team_a_score: Number(s.a), team_b_score: Number(s.b), winner_team_id })
       setMsg({ text: `Score saved: ${game.team_a.name} ${s.a}–${s.b} ${game.team_b.name}`, type: 'ok' })
       setScores(prev => { const n = { ...prev }; delete n[game.id]; return n })
+      setWinners(prev => { const n = { ...prev }; delete n[game.id]; return n })
       await load()
     } catch (e: any) {
       setMsg({ text: e.response?.data?.error ?? 'Error saving score', type: 'err' })
@@ -413,111 +417,144 @@ function ScoreEntryTab() {
         {visible.length === 0 && <p className="admin-empty">No games match the current filter.</p>}
         {(() => {
           const gameNumber = Object.fromEntries(games.map((g, i) => [g.id, i + 1]))
-          return visible.map(game => (
-          <div key={game.id} className={`admin-game-card ${game.is_double_points ? 'double-pts' : ''}`}>
-            <div className="admin-game-meta">
-              <span className="admin-game-number">#{gameNumber[game.id]}</span>
-              <span className="admin-game-round">{game.competition_round.name}</span>
-              {game.is_double_points && <span className="double-pts-badge">2×</span>}
-              <span className="admin-game-date">{formatDate(game.game_date)}</span>
-              <span className="admin-game-location">{game.location}</span>
-              {game.group && <span className="admin-game-stage">Group {game.group}</span>}
-            </div>
-
-            <div className="admin-game-teams">
-              <span className="admin-team-name team-a">{game.team_a.name}</span>
-
-              {game.is_scored ? (
-                <div className="admin-score-display">
-                  <span className="admin-score-result">
-                    {game.team_a_score} — {game.team_b_score}
-                  </span>
-                  <button
-                    className="admin-btn-sm btn-warning"
-                    onClick={() => rollback(game)}
-                    disabled={busy === game.id}
-                  >
-                    {busy === game.id ? '...' : 'Rollback'}
-                  </button>
+          return visible.map(game => {
+            const sa = scores[game.id]?.a ?? ''
+            const sb = scores[game.id]?.b ?? ''
+            const isDraw = sa !== '' && sb !== '' && !isNaN(Number(sa)) && !isNaN(Number(sb)) && Number(sa) === Number(sb)
+            const isKnockout = !game.stage?.toLowerCase().startsWith('group')
+            const needsWinner = isDraw && isKnockout && !winners[game.id]
+            return (
+              <div key={game.id} className={`admin-game-card ${game.is_double_points ? 'double-pts' : ''}`}>
+                <div className="admin-game-meta">
+                  <span className="admin-game-number">#{gameNumber[game.id]}</span>
+                  <span className="admin-game-round">{game.competition_round.name}</span>
+                  {game.is_double_points && <span className="double-pts-badge">2×</span>}
+                  <span className="admin-game-date">{formatDate(game.game_date)}</span>
+                  <span className="admin-game-location">{game.location}</span>
+                  {game.group && <span className="admin-game-stage">Group {game.group}</span>}
                 </div>
-              ) : game.is_prediction_closed ? (
-                <div className="admin-score-inputs">
-                  <input
-                    type="number"
-                    min="0"
-                    className="admin-score-input"
-                    placeholder="0"
-                    value={scores[game.id]?.a ?? ''}
-                    onChange={e => setScore(game.id, 'a', e.target.value)}
-                  />
-                  <span className="score-sep">—</span>
-                  <input
-                    type="number"
-                    min="0"
-                    className="admin-score-input"
-                    placeholder="0"
-                    value={scores[game.id]?.b ?? ''}
-                    onChange={e => setScore(game.id, 'b', e.target.value)}
-                  />
-                  <button
-                    className="admin-btn-sm btn-primary"
-                    onClick={() => submitScore(game)}
-                    disabled={busy === game.id}
-                  >
-                    {busy === game.id ? '...' : 'Save'}
-                  </button>
+
+                <div className="admin-game-teams">
+                  <span className="admin-team-name team-a">{game.team_a.name}</span>
+
+                  {game.is_scored ? (
+                    <div className="admin-score-display">
+                      <span className="admin-score-result">
+                        {game.team_a_score} — {game.team_b_score}
+                      </span>
+                      <button
+                        className="admin-btn-sm btn-warning"
+                        onClick={() => rollback(game)}
+                        disabled={busy === game.id}
+                      >
+                        {busy === game.id ? '...' : 'Rollback'}
+                      </button>
+                    </div>
+                  ) : game.is_prediction_closed ? (
+                    <div className="admin-score-inputs">
+                      <input
+                        type="number"
+                        min="0"
+                        className="admin-score-input"
+                        placeholder="0"
+                        value={sa}
+                        onChange={e => setScore(game.id, 'a', e.target.value)}
+                      />
+                      <span className="score-sep">—</span>
+                      <input
+                        type="number"
+                        min="0"
+                        className="admin-score-input"
+                        placeholder="0"
+                        value={sb}
+                        onChange={e => setScore(game.id, 'b', e.target.value)}
+                      />
+                      <button
+                        className="admin-btn-sm btn-primary"
+                        onClick={() => submitScore(game)}
+                        disabled={busy === game.id || needsWinner}
+                      >
+                        {busy === game.id ? '...' : 'Save'}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="admin-score-open">Predictions still open</span>
+                  )}
+
+                  <span className="admin-team-name team-b">{game.team_b.name}</span>
                 </div>
-              ) : (
-                <span className="admin-score-open">Predictions still open</span>
-              )}
 
-              <span className="admin-team-name team-b">{game.team_b.name}</span>
-            </div>
-
-            {!game.is_scored && (
-              <div className="admin-game-edit-teams">
-                {editingTeams[game.id] ? (
-                  <div className="admin-team-selects">
-                    <select
-                      className="admin-select admin-select-team"
-                      value={editingTeams[game.id].a}
-                      onChange={e => setEditingTeams(prev => ({ ...prev, [game.id]: { ...prev[game.id], a: e.target.value } }))}
-                    >
-                      <option value="">Team A…</option>
-                      {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                    <span className="score-sep">vs</span>
-                    <select
-                      className="admin-select admin-select-team"
-                      value={editingTeams[game.id].b}
-                      onChange={e => setEditingTeams(prev => ({ ...prev, [game.id]: { ...prev[game.id], b: e.target.value } }))}
-                    >
-                      <option value="">Team B…</option>
-                      {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                    <button
-                      className="admin-btn-sm btn-primary"
-                      onClick={() => updateTeams(game)}
-                      disabled={busy === game.id}
-                    >{busy === game.id ? '...' : 'Save'}</button>
-                    <button
-                      className="admin-btn-sm btn-secondary"
-                      onClick={() => setEditingTeams(prev => { const n = { ...prev }; delete n[game.id]; return n })}
-                    >Cancel</button>
+                {game.is_prediction_closed && !game.is_scored && isDraw && (
+                  <div className="admin-winner-select">
+                    <span className="admin-winner-label">Winner{isKnockout ? ' *' : ''}:</span>
+                    <label className="admin-winner-option">
+                      <input
+                        type="radio"
+                        name={`winner-${game.id}`}
+                        value={game.team_a.id}
+                        checked={winners[game.id] === String(game.team_a.id)}
+                        onChange={() => setWinners(prev => ({ ...prev, [game.id]: String(game.team_a.id) }))}
+                      />
+                      {game.team_a.name}
+                    </label>
+                    <label className="admin-winner-option">
+                      <input
+                        type="radio"
+                        name={`winner-${game.id}`}
+                        value={game.team_b.id}
+                        checked={winners[game.id] === String(game.team_b.id)}
+                        onChange={() => setWinners(prev => ({ ...prev, [game.id]: String(game.team_b.id) }))}
+                      />
+                      {game.team_b.name}
+                    </label>
                   </div>
-                ) : (
-                  <button
-                    className="admin-btn-sm btn-secondary admin-edit-teams-btn"
-                    onClick={() => setEditingTeams(prev => ({
-                      ...prev,
-                      [game.id]: { a: String(game.team_a.id), b: String(game.team_b.id) }
-                    }))}
-                  >Edit teams</button>
+                )}
+
+                {!game.is_scored && (
+                  <div className="admin-game-edit-teams">
+                    {editingTeams[game.id] ? (
+                      <div className="admin-team-selects">
+                        <select
+                          className="admin-select admin-select-team"
+                          value={editingTeams[game.id].a}
+                          onChange={e => setEditingTeams(prev => ({ ...prev, [game.id]: { ...prev[game.id], a: e.target.value } }))}
+                        >
+                          <option value="">Team A…</option>
+                          {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                        <span className="score-sep">vs</span>
+                        <select
+                          className="admin-select admin-select-team"
+                          value={editingTeams[game.id].b}
+                          onChange={e => setEditingTeams(prev => ({ ...prev, [game.id]: { ...prev[game.id], b: e.target.value } }))}
+                        >
+                          <option value="">Team B…</option>
+                          {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                        <button
+                          className="admin-btn-sm btn-primary"
+                          onClick={() => updateTeams(game)}
+                          disabled={busy === game.id}
+                        >{busy === game.id ? '...' : 'Save'}</button>
+                        <button
+                          className="admin-btn-sm btn-secondary"
+                          onClick={() => setEditingTeams(prev => { const n = { ...prev }; delete n[game.id]; return n })}
+                        >Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        className="admin-btn-sm btn-secondary admin-edit-teams-btn"
+                        onClick={() => setEditingTeams(prev => ({
+                          ...prev,
+                          [game.id]: { a: String(game.team_a.id), b: String(game.team_b.id) }
+                        }))}
+                      >Edit teams</button>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        ))
+            )
+          })
         })()}
       </div>
     </div>

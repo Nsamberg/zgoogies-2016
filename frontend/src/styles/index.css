@@ -2712,6 +2712,31 @@ tr:hover .email-edit-btn { opacity: 1; }
   font-style: italic;
 }
 
+.admin-winner-select {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: #fffbea;
+  border: 1px solid #f0d060;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.admin-winner-label {
+  font-weight: 600;
+  color: #7a6000;
+  white-space: nowrap;
+}
+
+.admin-winner-option {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
 .admin-game-edit-teams {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
