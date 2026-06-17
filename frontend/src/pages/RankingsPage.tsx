@@ -124,30 +124,6 @@ function PlayerHistoryView({
       {!loading && history.length > 0 && (
         <div className="player-history-charts">
 
-          {/* Points progression */}
-          <div className="history-chart-card">
-            <h3 className="history-chart-title">Points progression</h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={history} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip
-                  formatter={(val: number) => [`${val} pts`, 'Points']}
-                  labelFormatter={(l: string) => l}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="total_points"
-                  stroke="#1B1464"
-                  strokeWidth={2}
-                  dot={{ r: 4, fill: '#1B1464' }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
           {/* Rank progression (inverted: lower rank = higher on chart) */}
           <div className="history-chart-card">
             <h3 className="history-chart-title">Rank progression <span className="history-chart-hint">(lower = better)</span></h3>
@@ -173,6 +149,30 @@ function PlayerHistoryView({
                   stroke="#C8102E"
                   strokeWidth={2}
                   dot={{ r: 4, fill: '#C8102E' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Points progression */}
+          <div className="history-chart-card">
+            <h3 className="history-chart-title">Points progression</h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={history} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                <Tooltip
+                  formatter={(val: number) => [`${val} pts`, 'Points']}
+                  labelFormatter={(l: string) => l}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total_points"
+                  stroke="#1B1464"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: '#1B1464' }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
