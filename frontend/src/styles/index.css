@@ -2705,6 +2705,29 @@ tr:hover .email-edit-btn { opacity: 1; }
   font-style: italic;
 }
 
+.admin-game-edit-teams {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.admin-edit-teams-btn {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.admin-team-selects {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-select-team {
+  flex: 1;
+  min-width: 130px;
+}
+
 /* Tournament Winner */
 .admin-winner-display {
   display: flex;

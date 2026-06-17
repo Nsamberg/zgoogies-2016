@@ -301,12 +301,15 @@ function ScoreEntryTab() {
   const [msg, setMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
   const [filter, setFilter] = useState<'unscored' | 'scored' | 'all'>('unscored')
   const [roundFilter, setRoundFilter] = useState<number | 'all'>('all')
+  const [allTeams, setAllTeams] = useState<Team[]>([])
+  const [editingTeams, setEditingTeams] = useState<Record<number, { a: string; b: string }>>({})
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await adminAPI.getGames()
-      setGames(res.data)
+      const [gamesRes, teamsRes] = await Promise.all([adminAPI.getGames(), teamsAPI.getAll()])
+      setGames(gamesRes.data)
+      setAllTeams(teamsRes.data)
     } finally {
       setLoading(false)
     }
@@ -342,6 +345,24 @@ function ScoreEntryTab() {
       await load()
     } catch (e: any) {
       setMsg({ text: e.response?.data?.error ?? 'Error saving score', type: 'err' })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const updateTeams = async (game: AdminGame) => {
+    const t = editingTeams[game.id]
+    if (!t?.a || !t?.b) { setMsg({ text: 'Select both teams', type: 'err' }); return }
+    if (t.a === t.b) { setMsg({ text: 'Team A and Team B must be different', type: 'err' }); return }
+    setBusy(game.id)
+    setMsg(null)
+    try {
+      await adminAPI.updateGameTeams(game.id, { team_a_id: Number(t.a), team_b_id: Number(t.b) })
+      setMsg({ text: 'Teams updated', type: 'ok' })
+      setEditingTeams(prev => { const n = { ...prev }; delete n[game.id]; return n })
+      await load()
+    } catch (e: any) {
+      setMsg({ text: e.response?.data?.error ?? 'Error updating teams', type: 'err' })
     } finally {
       setBusy(null)
     }
@@ -449,6 +470,49 @@ function ScoreEntryTab() {
 
               <span className="admin-team-name team-b">{game.team_b.name}</span>
             </div>
+
+            {!game.is_scored && (
+              <div className="admin-game-edit-teams">
+                {editingTeams[game.id] ? (
+                  <div className="admin-team-selects">
+                    <select
+                      className="admin-select admin-select-team"
+                      value={editingTeams[game.id].a}
+                      onChange={e => setEditingTeams(prev => ({ ...prev, [game.id]: { ...prev[game.id], a: e.target.value } }))}
+                    >
+                      <option value="">Team A…</option>
+                      {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                    <span className="score-sep">vs</span>
+                    <select
+                      className="admin-select admin-select-team"
+                      value={editingTeams[game.id].b}
+                      onChange={e => setEditingTeams(prev => ({ ...prev, [game.id]: { ...prev[game.id], b: e.target.value } }))}
+                    >
+                      <option value="">Team B…</option>
+                      {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                    <button
+                      className="admin-btn-sm btn-primary"
+                      onClick={() => updateTeams(game)}
+                      disabled={busy === game.id}
+                    >{busy === game.id ? '...' : 'Save'}</button>
+                    <button
+                      className="admin-btn-sm btn-secondary"
+                      onClick={() => setEditingTeams(prev => { const n = { ...prev }; delete n[game.id]; return n })}
+                    >Cancel</button>
+                  </div>
+                ) : (
+                  <button
+                    className="admin-btn-sm btn-secondary admin-edit-teams-btn"
+                    onClick={() => setEditingTeams(prev => ({
+                      ...prev,
+                      [game.id]: { a: String(game.team_a.id), b: String(game.team_b.id) }
+                    }))}
+                  >Edit teams</button>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>

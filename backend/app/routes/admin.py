@@ -182,6 +182,42 @@ def get_games_for_scoring():
     return jsonify([_game_dict(g) for g in games]), 200
 
 
+@bp.route('/games/<int:game_id>/teams', methods=['PATCH'])
+@login_required
+@admin_required
+def update_game_teams(game_id):
+    """Update the two teams playing in a game (for knockout stage fixtures)"""
+    game = Game.query.get_or_404(game_id)
+    if game.is_scored:
+        return jsonify({'error': 'Cannot change teams on a scored game.'}), 400
+
+    data = request.get_json() or {}
+    team_a_id = data.get('team_a_id')
+    team_b_id = data.get('team_b_id')
+
+    if not team_a_id or not team_b_id:
+        return jsonify({'error': 'team_a_id and team_b_id are required'}), 400
+    if team_a_id == team_b_id:
+        return jsonify({'error': 'Team A and Team B must be different'}), 400
+
+    team_a = Team.query.get(team_a_id)
+    team_b = Team.query.get(team_b_id)
+    if not team_a or not team_b:
+        return jsonify({'error': 'One or both teams not found'}), 404
+
+    game.team_a_id = team_a_id
+    game.team_b_id = team_b_id
+    db.session.add(AccessLog(
+        user_id=current_user.id,
+        action='game_teams_updated',
+        page=f'game:{game_id} {team_a.name} vs {team_b.name}',
+        ip_address=request.remote_addr,
+    ))
+    db.session.commit()
+
+    return jsonify(_game_dict(game)), 200
+
+
 @bp.route('/score/<int:game_id>', methods=['POST'])
 @login_required
 @admin_required

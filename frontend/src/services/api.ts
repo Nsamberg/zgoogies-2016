@@ -122,6 +122,8 @@ export const adminAPI = {
   enterScore: (gameId: number, data: { team_a_score: number; team_b_score: number }) =>
     api.post(`/admin/score/${gameId}`, data),
   rollbackScore: (gameId: number) => api.delete(`/admin/score/${gameId}`),
+  updateGameTeams: (gameId: number, data: { team_a_id: number; team_b_id: number }) =>
+    api.patch(`/admin/games/${gameId}/teams`, data),
 
   // Tournament winner
   getTournamentWinner: () => api.get('/admin/tournament-winner'),
