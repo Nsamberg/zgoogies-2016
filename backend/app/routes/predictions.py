@@ -115,7 +115,9 @@ def get_next_closed():
         'game': {
             'id': game.id,
             'team_a': game.team_a.name,
+            'team_a_code': game.team_a.code,
             'team_b': game.team_b.name,
+            'team_b_code': game.team_b.code,
         },
         'predictions': {
             str(p.user_id): {

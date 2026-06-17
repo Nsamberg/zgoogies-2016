@@ -53,7 +53,7 @@ export const gamesAPI = {
 
 // Predictions API
 export interface NextClosedGame {
-  game: { id: number; team_a: string; team_b: string }
+  game: { id: number; team_a: string; team_a_code: string; team_b: string; team_b_code: string }
   predictions: Record<string, { team_a_score: number; team_b_score: number }>
 }
 

@@ -310,7 +310,7 @@ function RivalsView({
     <div className="rankings-table-wrap">
       <p className="rankings-click-hint">
         Showing you vs your rivals · click a player for their history
-        {nextClosed && <> · Next: <strong>{nextClosed.game.team_a} vs {nextClosed.game.team_b}</strong></>}
+        {nextClosed && <> · Next: <strong>{nextClosed.game.team_a_code} vs {nextClosed.game.team_b_code}</strong></>}
       </p>
       <table className="rankings-table">
         <thead>
@@ -342,7 +342,7 @@ function RivalsView({
                   {nextClosed && (
                     <span className="player-next-pred">
                       {nextClosed.predictions[String(r.user.id)]
-                        ? `${nextClosed.predictions[String(r.user.id)].team_a_score}–${nextClosed.predictions[String(r.user.id)].team_b_score}`
+                        ? `${nextClosed.game.team_a_code} ${nextClosed.predictions[String(r.user.id)].team_a_score}–${nextClosed.predictions[String(r.user.id)].team_b_score} ${nextClosed.game.team_b_code}`
                         : '—'}
                     </span>
                   )}
