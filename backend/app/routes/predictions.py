@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app import db
@@ -5,6 +6,7 @@ from app.models.prediction import Prediction
 from app.models.prediction_history import PredictionHistory
 from app.models.game import Game
 from app.models.access_log import AccessLog
+from app.utils.datetime_utils import get_current_utc
 
 bp = Blueprint('predictions', __name__, url_prefix='/api/predictions')
 
@@ -93,6 +95,35 @@ def create_prediction():
     db.session.commit()
 
     return jsonify({'message': 'Prediction saved', 'id': prediction.id}), 201
+
+
+@bp.route('/next-closed', methods=['GET'])
+@login_required
+def get_next_closed():
+    """Return the earliest closed-but-unscored game and every player's prediction for it."""
+    now = get_current_utc()
+    game = Game.query.filter(
+        Game.game_date <= now + timedelta(hours=2),
+        Game.is_scored == False
+    ).order_by(Game.game_date.asc()).first()
+
+    if not game:
+        return jsonify(None), 200
+
+    predictions = Prediction.query.filter_by(game_id=game.id).all()
+    return jsonify({
+        'game': {
+            'id': game.id,
+            'team_a': game.team_a.name,
+            'team_b': game.team_b.name,
+        },
+        'predictions': {
+            str(p.user_id): {
+                'team_a_score': p.team_a_score,
+                'team_b_score': p.team_b_score,
+            } for p in predictions
+        }
+    }), 200
 
 
 @bp.route('/<int:game_id>', methods=['GET'])

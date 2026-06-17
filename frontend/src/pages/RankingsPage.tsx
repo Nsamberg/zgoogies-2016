@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts'
-import { rankingsAPI, rivalsAPI, playersAPI, gamesAPI } from '../services/api'
+import { rankingsAPI, rivalsAPI, playersAPI, gamesAPI, predictionsAPI, NextClosedGame } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
@@ -278,6 +278,14 @@ function RivalsView({
   onSelectPlayer: (r: Ranking) => void
   search: string
 }) {
+  const [nextClosed, setNextClosed] = useState<NextClosedGame | null>(null)
+
+  useEffect(() => {
+    predictionsAPI.getNextClosed()
+      .then(res => setNextClosed(res.data))
+      .catch(() => setNextClosed(null))
+  }, [])
+
   const filtered = overallRankings
     .filter(r => r.user.id === currentUserId || rivals.includes(r.user.id))
     .filter(r =>
@@ -300,7 +308,10 @@ function RivalsView({
 
   return (
     <div className="rankings-table-wrap">
-      <p className="rankings-click-hint">Showing you vs your rivals · click a player for their history</p>
+      <p className="rankings-click-hint">
+        Showing you vs your rivals · click a player for their history
+        {nextClosed && <> · Next: <strong>{nextClosed.game.team_a} vs {nextClosed.game.team_b}</strong></>}
+      </p>
       <table className="rankings-table">
         <thead>
           <tr>
@@ -328,6 +339,13 @@ function RivalsView({
                 <td className="col-player">
                   <span className="player-username">{r.user.username}</span>
                   <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
+                  {nextClosed && (
+                    <span className="player-next-pred">
+                      {nextClosed.predictions[String(r.user.id)]
+                        ? `${nextClosed.predictions[String(r.user.id)].team_a_score}–${nextClosed.predictions[String(r.user.id)].team_b_score}`
+                        : '—'}
+                    </span>
+                  )}
                 </td>
                 <td className="col-points">{r.total_points}</td>
                 <td className="col-delta">

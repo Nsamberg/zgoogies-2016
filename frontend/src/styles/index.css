@@ -1404,6 +1404,12 @@ button[type="submit"]:disabled {
   font-weight: 400;
 }
 
+.rankings-table .player-next-pred {
+  font-size: 0.75rem;
+  color: #aaa;
+  font-style: italic;
+}
+
 .medal {
   display: inline-flex;
   align-items: center;

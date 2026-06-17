@@ -52,6 +52,11 @@ export const gamesAPI = {
 }
 
 // Predictions API
+export interface NextClosedGame {
+  game: { id: number; team_a: string; team_b: string }
+  predictions: Record<string, { team_a_score: number; team_b_score: number }>
+}
+
 export const predictionsAPI = {
   getPredictions: () => api.get('/predictions/'),
   createPrediction: (data: {
@@ -60,6 +65,7 @@ export const predictionsAPI = {
     team_b_score: number
   }) => api.post('/predictions/', data),
   getGamePredictions: (gameId: number) => api.get(`/predictions/${gameId}`),
+  getNextClosed: () => api.get<NextClosedGame | null>('/predictions/next-closed'),
 }
 
 // Rankings API
