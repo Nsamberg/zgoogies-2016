@@ -613,7 +613,10 @@ export default function RankingsPage() {
               {pendingCount} game{pendingCount !== 1 ? 's' : ''} still to be scored — more points to come
             </p>
           )}
-          <p className="rankings-click-hint">Click any player to view their ranking history</p>
+          <p className="rankings-click-hint">
+            Click any player to view their ranking history
+            {nextClosed && <> · Next: <strong>{nextClosed.game.team_a} vs {nextClosed.game.team_b}</strong></>}
+          </p>
           <div className="rankings-table-wrap">
           <table className="rankings-table">
             <thead>
