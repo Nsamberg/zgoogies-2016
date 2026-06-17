@@ -305,7 +305,7 @@ function RivalsView({
     <div className="rankings-table-wrap">
       <p className="rankings-click-hint">
         Showing you vs your rivals · click a player for their history
-        {nextClosed && <> · Next: <strong>{nextClosed.game.team_a_code} vs {nextClosed.game.team_b_code}</strong></>}
+        {nextClosed && <> · Next: <strong>{nextClosed.game.team_a} vs {nextClosed.game.team_b}</strong></>}
       </p>
       <table className="rankings-table">
         <thead>
@@ -621,7 +621,7 @@ export default function RankingsPage() {
                 <th className="col-rank">#</th>
                 <th className="col-player">Player</th>
                 <th className="col-points">Points</th>
-                {nextClosed && <th className="col-next">{nextClosed.game.team_a_code}–{nextClosed.game.team_b_code}</th>}
+                {nextClosed && <th className="col-next">Next</th>}
                 <th className="col-trend">Trend</th>
                 <th className="col-rival-star" aria-label="Rivals"></th>
               </tr>
