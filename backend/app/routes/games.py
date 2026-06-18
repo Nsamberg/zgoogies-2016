@@ -7,6 +7,12 @@ from app.utils.datetime_utils import get_current_utc
 bp = Blueprint('games', __name__, url_prefix='/api/games')
 
 
+def _game_numbers():
+    """Return a dict mapping game_id → chronological position (1-indexed)."""
+    ids = [row.id for row in Game.query.order_by(Game.game_date.asc()).with_entities(Game.id).all()]
+    return {gid: i + 1 for i, gid in enumerate(ids)}
+
+
 @bp.route('/upcoming', methods=['GET'])
 @login_required
 def get_upcoming_games():
@@ -14,9 +20,11 @@ def get_upcoming_games():
     deadline = get_current_utc() + timedelta(hours=2)
 
     games = Game.query.filter(Game.game_date >= deadline).order_by(Game.game_date).all()
+    numbers = _game_numbers()
 
     return jsonify([{
         'id': g.id,
+        'game_number': numbers.get(g.id),
         'team_a': {'id': g.team_a.id, 'name': g.team_a.name},
         'team_b': {'id': g.team_b.id, 'name': g.team_b.name},
         'game_date': g.game_date.isoformat() + 'Z',
@@ -40,9 +48,11 @@ def get_closed_games():
     deadline = get_current_utc() + timedelta(hours=2)
 
     games = Game.query.filter(Game.game_date < deadline).order_by(Game.game_date.desc()).all()
+    numbers = _game_numbers()
 
     return jsonify([{
         'id': g.id,
+        'game_number': numbers.get(g.id),
         'team_a': {'id': g.team_a.id, 'name': g.team_a.name, 'score': g.team_a_score},
         'team_b': {'id': g.team_b.id, 'name': g.team_b.name, 'score': g.team_b_score},
         'game_date': g.game_date.isoformat() + 'Z',

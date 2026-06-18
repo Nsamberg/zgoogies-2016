@@ -24,6 +24,7 @@ export interface Team {
 // Game types
 export interface Game {
   id: number
+  game_number?: number
   team_a: Team
   team_b: Team
   game_date: string
