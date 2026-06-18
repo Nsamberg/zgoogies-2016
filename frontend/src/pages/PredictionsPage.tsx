@@ -88,11 +88,12 @@ function pointsLabel(points: number | null | undefined): string {
   return `${points} pt${points !== 1 ? 's' : ''}`
 }
 
-function GameCardHeader({ game }: { game: Game | PlayerGamePrediction }) {
+function GameCardHeader({ game, gameNumber }: { game: Game | PlayerGamePrediction; gameNumber?: number }) {
   const stage = game.stage
   const group = game.group
   return (
     <div className="game-card-header">
+      {gameNumber != null && <span className="game-card-number">#{gameNumber}</span>}
       <span className="game-round">{game.competition_round?.name}</span>
       {stage && (
         <span className="game-stage">
@@ -421,12 +422,15 @@ export default function PredictionsPage() {
             <p className="empty-state">No upcoming games open for predictions.</p>
           )}
           <div className="games-list">
-            {openGames.filter(matchesTeam).map((game) => {
+            {(() => {
+              const allSorted = [...openGames, ...pastGames].sort((a, b) => new Date(a.game_date).getTime() - new Date(b.game_date).getTime())
+              const gameNumberMap = Object.fromEntries(allSorted.map((g, i) => [g.id, i + 1]))
+              return openGames.filter(matchesTeam).map((game) => {
               const input = inputs[game.id] || { teamA: '0', teamB: '0', status: 'idle', existed: false, touched: false }
               const isDefault = !input.existed && !input.touched
               return (
                 <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
-                  <GameCardHeader game={game} />
+                  <GameCardHeader game={game} gameNumber={gameNumberMap[game.id]} />
                   <div className="game-teams">
                     <span className="team-name">{game.team_a.name}</span>
                     <span className="vs">vs</span>
@@ -481,7 +485,8 @@ export default function PredictionsPage() {
                   )}
                 </div>
               )
-            })}
+            })
+            })()}
           </div>
         </div>
       )}
@@ -722,11 +727,14 @@ export default function PredictionsPage() {
                 <p className="empty-state">No past games yet.</p>
               )}
               <div className="games-list">
-                {pastGames.filter(matchesTeam).map((game) => {
+                {(() => {
+                  const allSorted = [...openGames, ...pastGames].sort((a, b) => new Date(a.game_date).getTime() - new Date(b.game_date).getTime())
+                  const gameNumberMap = Object.fromEntries(allSorted.map((g, i) => [g.id, i + 1]))
+                  return pastGames.filter(matchesTeam).map((game) => {
                   const pred = pastPredictions[game.id]
                   return (
                     <div key={game.id} className={`game-card${game.is_double_points ? ' double-points' : ''}`}>
-                      <GameCardHeader game={game} />
+                      <GameCardHeader game={game} gameNumber={gameNumberMap[game.id]} />
                       <div className="game-teams">
                         <span className="team-name">{game.team_a.name}</span>
                         <span className="vs">vs</span>
@@ -771,7 +779,8 @@ export default function PredictionsPage() {
                       </button>
                     </div>
                   )
-                })}
+                })
+                })()}
               </div>
             </>
           )}

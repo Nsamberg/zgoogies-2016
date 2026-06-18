@@ -567,6 +567,12 @@ button[type="submit"]:disabled {
   font-size: 0.8rem;
 }
 
+.game-card-number {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #aaa;
+}
+
 .game-round {
   background: #E8EAF3;
   color: #1B1464;
