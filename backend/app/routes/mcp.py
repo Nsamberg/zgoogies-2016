@@ -1,10 +1,11 @@
 """
 ZGoogies MCP Server — MCP Streamable HTTP Transport (2025-03-26)
 
-Exposes 8 tools for AI assistants (Claude.ai, Google AI Studio):
-- 6 tools available to any authenticated user (predictions, rankings, games)
-- 2 admin-only tools (list_players, get_player_details) — visible to all but
-  rejected at call time if the token does not belong to an admin.
+Exposes 11 tools for AI assistants (Claude.ai, Google AI Studio):
+- 7 tools available to any authenticated user (predictions, rankings, games)
+- 4 admin-only tools (list_players, get_player_details, get_player_predictions,
+  update_player_email) — visible to all but rejected at call time if the token
+  does not belong to an admin.
 
 Tokens are obtained from Account → AI Assistant on zgoogies.online.
 A configurable daily rate limit is enforced per user.
@@ -232,6 +233,45 @@ TOOL_DEFINITIONS = [
                 }
             },
             'required': ['token', 'username', 'email']
+        }
+    },
+    {
+        'name': 'get_player_predictions',
+        'description': (
+            '[Admin only] Get all predictions submitted by a specific player, including '
+            'game details, their predicted scores, actual results, and points earned. '
+            'Useful for reviewing a player\'s full prediction history.'
+        ),
+        'inputSchema': {
+            'type': 'object',
+            'properties': {
+                'token': {
+                    'type': 'string',
+                    'description': 'Your admin ZGoogies API token'
+                },
+                'username': {
+                    'type': 'string',
+                    'description': 'The username of the player whose predictions to retrieve'
+                }
+            },
+            'required': ['token', 'username']
+        }
+    },
+    {
+        'name': 'get_game_predictions',
+        'description': (
+            'Get all predictions submitted by every player for a specific closed game, '
+            'along with points earned if the game has been scored. '
+            'Only works for games where predictions are closed (deadline passed). '
+            'Use get_game_list to find game IDs.'
+        ),
+        'inputSchema': {
+            'type': 'object',
+            'properties': {
+                'token': {'type': 'string', 'description': 'Your personal ZGoogies API token'},
+                'game_id': {'type': 'integer', 'description': 'The numeric ID of the closed game'}
+            },
+            'required': ['token', 'game_id']
         }
     },
 ]
@@ -581,16 +621,114 @@ def _tool_update_player_email(args):
     return f'Email updated for {target.username}: {old_email} → {email}'
 
 
+def _tool_get_player_predictions(args):
+    user, err = _require_admin(args.get('token'))
+    if err:
+        return err
+    _check_rate_limit(user.id)
+
+    username = (args.get('username') or '').strip()
+    if not username:
+        return 'Error: username is required.'
+
+    target = User.query.filter_by(username=username).first()
+    if not target:
+        return f'Error: No player found with username "{username}".'
+
+    predictions = Prediction.query.filter_by(user_id=target.id).all()
+    if not predictions:
+        return f'{target.first_name} ({target.username}) has not submitted any predictions yet.'
+
+    total_points = sum(p.points or 0 for p in predictions if p.points is not None)
+    scored_count = sum(1 for p in predictions if p.points is not None)
+
+    lines = [f'Predictions for {target.first_name} ({target.username}) — {len(predictions)} total:\n']
+    for pred in sorted(predictions, key=lambda p: p.game_id):
+        game = Game.query.get(pred.game_id)
+        if not game:
+            continue
+        if game.is_scored and game.team_a_score is not None:
+            result = f'{game.team_a_score}–{game.team_b_score}'
+        else:
+            result = 'Not yet played'
+        pts = f'{pred.points} pts' if pred.points is not None else '(awaiting result)'
+        double = ' [2x points]' if game.is_double_points() else ''
+        game_date = game.game_date.strftime('%d %b %H:%M UTC')
+        lines.append(f'  Game {game.id}: {game.team_a.name} vs {game.team_b.name}{double} ({game_date})')
+        lines.append(f'    Predicted: {pred.team_a_score}–{pred.team_b_score} | Result: {result} | Points: {pts}')
+
+    lines.append(f'\nTotal: {total_points} pts from {scored_count} scored game(s).')
+    return '\n'.join(lines)
+
+
+def _tool_get_game_predictions(args):
+    user = _get_user(args.get('token'))
+    if not user:
+        return 'Error: Invalid or missing token.'
+    _check_rate_limit(user.id)
+
+    try:
+        game_id = int(args['game_id'])
+    except (KeyError, ValueError, TypeError):
+        return 'Error: game_id must be provided as an integer.'
+
+    game = Game.query.get(game_id)
+    if not game:
+        return f'Error: Game {game_id} not found. Use get_game_list to find valid game IDs.'
+    if not game.is_prediction_closed():
+        return (
+            f'Error: Predictions for {game.team_a.name} vs {game.team_b.name} are still open. '
+            'This tool only works for games where the prediction deadline has passed.'
+        )
+
+    predictions = Prediction.query.filter_by(game_id=game_id).order_by(Prediction.user_id).all()
+    game_date = game.game_date.strftime('%d %b %Y %H:%M UTC')
+    stage = f' — {game.stage}' if game.stage else ''
+    double = ' [DOUBLE POINTS]' if game.is_double_points() else ''
+
+    lines = [f'Predictions for Game {game_id}: {game.team_a.name} vs {game.team_b.name}{double}']
+    lines.append(f'  Date: {game_date}{stage}')
+
+    if game.is_scored and game.team_a_score is not None:
+        lines.append(f'  Result: {game.team_a_score}–{game.team_b_score}')
+    else:
+        lines.append('  Result: Not yet scored')
+
+    lines.append(f'  Total predictions: {len(predictions)}\n')
+
+    if not predictions:
+        lines.append('  No predictions submitted for this game.')
+        return '\n'.join(lines)
+
+    for pred in predictions:
+        player = User.query.get(pred.user_id)
+        if not player:
+            continue
+        pts = f'{pred.points} pts' if pred.points is not None else '(pending)'
+        lines.append(f'  {player.username}: {pred.team_a_score}–{pred.team_b_score} — {pts}')
+
+    if game.is_scored:
+        exact = sum(
+            1 for p in predictions
+            if p.team_a_score == game.team_a_score and p.team_b_score == game.team_b_score
+        )
+        lines.append(f'\n  Exact score: {exact} player(s)')
+
+    return '\n'.join(lines)
+
+
 TOOL_HANDLERS = {
-    'get_my_predictions':    _tool_get_my_predictions,
-    'get_upcoming_games':    _tool_get_upcoming_games,
-    'get_my_ranking':        _tool_get_my_ranking,
-    'get_all_rankings':      _tool_get_all_rankings,
-    'submit_prediction':     _tool_submit_prediction,
-    'get_game_list':         _tool_get_game_list,
-    'list_players':          _tool_list_players,
-    'get_player_details':    _tool_get_player_details,
-    'update_player_email':   _tool_update_player_email,
+    'get_my_predictions':       _tool_get_my_predictions,
+    'get_upcoming_games':       _tool_get_upcoming_games,
+    'get_my_ranking':           _tool_get_my_ranking,
+    'get_all_rankings':         _tool_get_all_rankings,
+    'submit_prediction':        _tool_submit_prediction,
+    'get_game_list':            _tool_get_game_list,
+    'list_players':             _tool_list_players,
+    'get_player_details':       _tool_get_player_details,
+    'update_player_email':      _tool_update_player_email,
+    'get_player_predictions':   _tool_get_player_predictions,
+    'get_game_predictions':     _tool_get_game_predictions,
 }
 
 
