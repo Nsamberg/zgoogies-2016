@@ -2,10 +2,10 @@
 ZGoogies MCP Server — MCP Streamable HTTP Transport (2025-03-26)
 
 Exposes 11 tools for AI assistants (Claude.ai, Google AI Studio):
-- 7 tools available to any authenticated user (predictions, rankings, games)
-- 4 admin-only tools (list_players, get_player_details, get_player_predictions,
-  update_player_email) — visible to all but rejected at call time if the token
-  does not belong to an admin.
+- 8 tools available to any authenticated user (predictions, rankings, games,
+  get_player_predictions for closed games, get_game_predictions for closed games)
+- 3 admin-only tools (list_players, get_player_details, update_player_email) —
+  visible to all but rejected at call time if the token does not belong to an admin.
 
 Tokens are obtained from Account → AI Assistant on zgoogies.online.
 A configurable daily rate limit is enforced per user.
@@ -238,16 +238,16 @@ TOOL_DEFINITIONS = [
     {
         'name': 'get_player_predictions',
         'description': (
-            '[Admin only] Get all predictions submitted by a specific player, including '
-            'game details, their predicted scores, actual results, and points earned. '
-            'Useful for reviewing a player\'s full prediction history.'
+            'Get predictions submitted by a specific player for all closed games '
+            '(games whose prediction deadline has passed), including their predicted scores, '
+            'actual results, and points earned. Only closed-game predictions are shown.'
         ),
         'inputSchema': {
             'type': 'object',
             'properties': {
                 'token': {
                     'type': 'string',
-                    'description': 'Your admin ZGoogies API token'
+                    'description': 'Your personal ZGoogies API token'
                 },
                 'username': {
                     'type': 'string',
@@ -622,9 +622,9 @@ def _tool_update_player_email(args):
 
 
 def _tool_get_player_predictions(args):
-    user, err = _require_admin(args.get('token'))
-    if err:
-        return err
+    user = _get_user(args.get('token'))
+    if not user:
+        return 'Error: Invalid or missing token. Get yours from Account → AI Assistant on zgoogies.online.'
     _check_rate_limit(user.id)
 
     username = (args.get('username') or '').strip()
@@ -635,22 +635,27 @@ def _tool_get_player_predictions(args):
     if not target:
         return f'Error: No player found with username "{username}".'
 
-    predictions = Prediction.query.filter_by(user_id=target.id).all()
-    if not predictions:
-        return f'{target.first_name} ({target.username}) has not submitted any predictions yet.'
-
-    total_points = sum(p.points or 0 for p in predictions if p.points is not None)
-    scored_count = sum(1 for p in predictions if p.points is not None)
-
-    lines = [f'Predictions for {target.first_name} ({target.username}) — {len(predictions)} total:\n']
-    for pred in sorted(predictions, key=lambda p: p.game_id):
+    all_predictions = Prediction.query.filter_by(user_id=target.id).all()
+    # Only expose predictions for closed games
+    closed_predictions = []
+    for pred in all_predictions:
         game = Game.query.get(pred.game_id)
-        if not game:
-            continue
+        if game and game.is_prediction_closed():
+            closed_predictions.append((pred, game))
+
+    if not closed_predictions:
+        return f'{target.first_name} ({target.username}) has no predictions for closed games yet.'
+
+    closed_predictions.sort(key=lambda pg: pg[1].game_date)
+    total_points = sum(p.points or 0 for p, _ in closed_predictions if p.points is not None)
+    scored_count = sum(1 for p, _ in closed_predictions if p.points is not None)
+
+    lines = [f'Closed-game predictions for {target.first_name} ({target.username}) — {len(closed_predictions)} game(s):\n']
+    for pred, game in closed_predictions:
         if game.is_scored and game.team_a_score is not None:
             result = f'{game.team_a_score}–{game.team_b_score}'
         else:
-            result = 'Not yet played'
+            result = 'Not yet scored'
         pts = f'{pred.points} pts' if pred.points is not None else '(awaiting result)'
         double = ' [2x points]' if game.is_double_points() else ''
         game_date = game.game_date.strftime('%d %b %H:%M UTC')
