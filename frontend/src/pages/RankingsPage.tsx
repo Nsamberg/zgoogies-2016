@@ -26,7 +26,7 @@ interface PlayerPrediction {
   competition_round: { id: number; name: string } | null
   is_scored: boolean
   is_double_points: boolean
-  prediction: { team_a_score: number; team_b_score: number; points: number | null }
+  prediction: { team_a_score: number; team_b_score: number; points: number | null } | null
 }
 
 function TrendIcon({ rank, previous }: { rank: number; previous?: number | null }) {
@@ -207,12 +207,16 @@ function PlayerHistoryView({
                     </thead>
                     <tbody>
                       {pending.map(p => (
-                        <tr key={p.game_id} className="ph-row-pending">
+                        <tr key={p.game_id} className={`ph-row-pending${!p.prediction ? ' ph-row-no-pred' : ''}`}>
                           <td className="ph-game-teams">
                             {p.team_a.name} v {p.team_b.name}
                             {p.is_double_points && <span className="ph-double-badge">×2</span>}
                           </td>
-                          <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
+                          <td className="ph-score">
+                            {p.prediction
+                              ? `${p.prediction.team_a_score}–${p.prediction.team_b_score}`
+                              : <span className="ph-no-pred">—</span>}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -223,7 +227,7 @@ function PlayerHistoryView({
             {scored.length > 0 && (
               <div className="ph-games-section">
                 <h3 className="ph-games-title">
-                  Games · <span className="ph-games-pts">{scored.reduce((sum, p) => sum + (p.prediction.points ?? 0), 0)} pts</span>
+                  Games · <span className="ph-games-pts">{scored.reduce((sum, p) => sum + (p.prediction?.points ?? 0), 0)} pts</span>
                 </h3>
                 <div className="ph-games-table-wrap">
                   <table className="ph-games-table">
@@ -237,15 +241,19 @@ function PlayerHistoryView({
                     </thead>
                     <tbody>
                       {scored.map(p => (
-                        <tr key={p.game_id}>
+                        <tr key={p.game_id} className={!p.prediction ? 'ph-row-no-pred' : undefined}>
                           <td className="ph-game-teams">
                             {p.team_a.name} v {p.team_b.name}
                             {p.is_double_points && <span className="ph-double-badge">×2</span>}
                           </td>
                           <td className="ph-score">{p.team_a.score}–{p.team_b.score}</td>
-                          <td className="ph-score">{p.prediction.team_a_score}–{p.prediction.team_b_score}</td>
-                          <td className={`ph-pts ph-pts--${(p.prediction.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
-                            {p.prediction.points ?? 0}
+                          <td className="ph-score">
+                            {p.prediction
+                              ? `${p.prediction.team_a_score}–${p.prediction.team_b_score}`
+                              : <span className="ph-no-pred">—</span>}
+                          </td>
+                          <td className={`ph-pts ph-pts--${(p.prediction?.points ?? 0) > 0 ? 'pos' : 'zero'}`}>
+                            {p.prediction?.points ?? 0}
                           </td>
                         </tr>
                       ))}

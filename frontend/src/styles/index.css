@@ -1809,6 +1809,9 @@ button[type="submit"]:disabled {
 .ph-pts--pos { color: var(--navy); }
 .ph-pts--zero { color: #bbb; }
 
+.ph-row-no-pred { opacity: 0.55; }
+.ph-no-pred { color: #bbb; }
+
 .summary-divider {
   color: #bbb;
 }

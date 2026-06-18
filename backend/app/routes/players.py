@@ -1,10 +1,13 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required
+from datetime import timedelta
 from sqlalchemy import func
 from app import db
 from app.models.user import User
 from app.models.team import Team
+from app.models.game import Game
 from app.models.prediction import Prediction
+from app.utils.datetime_utils import get_current_utc
 
 bp = Blueprint('players', __name__, url_prefix='/api/players')
 
@@ -65,15 +68,20 @@ def get_player(user_id):
 @bp.route('/<int:user_id>/predictions', methods=['GET'])
 @login_required
 def get_player_predictions(user_id):
-    """Get a player's predictions for closed games (visible after prediction window closes)"""
+    """Get a player's results for all closed games, including games they didn't predict."""
     player = User.query.get_or_404(user_id)
-    predictions = Prediction.query.filter_by(user_id=player.id).all()
+
+    deadline = get_current_utc() + timedelta(hours=2)
+    closed_games = Game.query.filter(Game.game_date < deadline).order_by(Game.game_date.desc()).all()
+
+    pred_map = {
+        p.game_id: p
+        for p in Prediction.query.filter_by(user_id=player.id).all()
+    }
 
     result = []
-    for pred in predictions:
-        game = pred.game
-        if not game.is_prediction_closed():
-            continue  # Skip games still open for predictions
+    for game in closed_games:
+        pred = pred_map.get(game.id)
         result.append({
             'game_id': game.id,
             'team_a': {'id': game.team_a.id, 'name': game.team_a.name, 'score': game.team_a_score},
@@ -92,11 +100,9 @@ def get_player_predictions(user_id):
                 'team_a_score': pred.team_a_score,
                 'team_b_score': pred.team_b_score,
                 'points': pred.points if game.is_scored else None,
-            }
+            } if pred else None,
         })
 
-    # Sort newest first
-    result.sort(key=lambda x: x['game_date'], reverse=True)
     return jsonify(result), 200
 
 
