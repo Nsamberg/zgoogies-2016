@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { newsAPI } from '../services/api'
 import { News, NewsComment } from '../types'
 import { useAuthStore } from '../stores/authStore'
@@ -9,6 +9,24 @@ function formatDate(isoDate: string): string {
     month: 'long',
     year: 'numeric',
   })
+}
+
+function renderWithLinks(text: string) {
+  const parts: React.ReactNode[] = []
+  const regex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g
+  let last = 0
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    parts.push(
+      <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="news-link">
+        {match[1]}
+      </a>
+    )
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
 }
 
 function formatDateTime(isoDate: string): string {
@@ -193,7 +211,7 @@ export default function NewsPage() {
                 <span className="separator">·</span>
                 <span>{formatDate(item.created_at)}</span>
               </div>
-              <p className="news-content">{item.content}</p>
+              <p className="news-content">{renderWithLinks(item.content)}</p>
 
               {/* Reactions */}
               <div className="news-reactions">

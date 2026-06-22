@@ -1110,6 +1110,11 @@ button[type="submit"]:disabled {
   white-space: pre-wrap;
 }
 
+.news-link {
+  color: var(--navy);
+  text-decoration: underline;
+}
+
 .news-reactions {
   display: flex;
   gap: 0.5rem;
@@ -2898,6 +2903,9 @@ tr:hover .email-edit-btn { opacity: 1; }
 }
 
 .optional { font-weight: 400; color: #aaa; text-transform: none; letter-spacing: 0; }
+
+.admin-form-hint { display: block; font-size: 0.75rem; color: #999; margin-top: 0.35rem; }
+.admin-form-hint code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 0.72rem; color: #555; }
 
 .admin-input,
 .admin-textarea {

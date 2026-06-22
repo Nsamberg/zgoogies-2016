@@ -133,9 +133,9 @@ export const adminAPI = {
 
   // News management
   getNews: () => api.get('/admin/news'),
-  createNews: (data: { title: string; content: string; image_url?: string }) =>
+  createNews: (data: { title: string; content: string; image_url?: string | null }) =>
     api.post('/admin/news', data),
-  updateNews: (newsId: number, data: { title?: string; content?: string; image_url?: string }) =>
+  updateNews: (newsId: number, data: { title?: string; content?: string; image_url?: string | null }) =>
     api.put(`/admin/news/${newsId}`, data),
   deleteNews: (newsId: number) => api.delete(`/admin/news/${newsId}`),
 

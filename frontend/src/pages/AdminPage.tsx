@@ -703,7 +703,7 @@ function NewsTab() {
     setBusy(true)
     setMsg(null)
     try {
-      const payload = { title: form.title.trim(), content: form.content.trim(), image_url: form.image_url.trim() || undefined }
+      const payload = { title: form.title.trim(), content: form.content.trim(), image_url: form.image_url.trim() || null }
       if (editing) {
         await adminAPI.updateNews(editing.id, payload)
         setMsg({ text: 'Article updated', type: 'ok' })
@@ -758,6 +758,7 @@ function NewsTab() {
           <div className="admin-form-group">
             <label>Content</label>
             <textarea className="admin-textarea" rows={6} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Article content..." />
+            <span className="admin-form-hint">Add hyperlinks with <code>[link text](https://...)</code></span>
           </div>
           <div className="admin-form-group">
             <label>Image URL <span className="optional">(optional)</span></label>
