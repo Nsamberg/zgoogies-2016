@@ -325,7 +325,11 @@ function ScoreEntryTab() {
     if (filter === 'scored' && !g.is_scored) return false
     if (roundFilter !== 'all' && g.competition_round.id !== roundFilter) return false
     return true
-  })
+  }).sort((a, b) =>
+    filter === 'scored'
+      ? new Date(b.game_date).getTime() - new Date(a.game_date).getTime()
+      : new Date(a.game_date).getTime() - new Date(b.game_date).getTime()
+  )
 
   const setScore = (gameId: number, side: 'a' | 'b', val: string) => {
     setScores(prev => ({ ...prev, [gameId]: { ...prev[gameId], [side]: val } }))

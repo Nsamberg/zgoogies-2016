@@ -3102,9 +3102,10 @@ tr:hover .email-edit-btn { opacity: 1; }
     gap: 0.75rem;
   }
   .admin-filters { flex-wrap: wrap; }
-  .admin-game-teams { flex-direction: column; gap: 0.5rem; }
+  .admin-game-teams { gap: 0.4rem; }
+  .admin-team-name { font-size: 0.78rem; }
   .admin-score-inputs,
-  .admin-score-display { justify-content: center; }
+  .admin-score-display { justify-content: center; flex-shrink: 0; }
   .admin-winner-controls { flex-direction: column; }
   .admin-table th:nth-child(3),
   .admin-table td:nth-child(3) { display: none; }
