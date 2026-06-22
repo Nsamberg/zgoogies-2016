@@ -408,6 +408,7 @@ export default function RankingsPage() {
   const myRowRef = useRef<HTMLTableRowElement | null>(null)
 
   useEffect(() => {
+    const initialHash = window.location.hash.slice(1).toLowerCase() // e.g. "round2", "rivals"
     setLoading(true)
     setError('')
     setActiveTab('overall')
@@ -435,6 +436,21 @@ export default function RankingsPage() {
           if (res.status === 'fulfilled') fullCache[String(r.id)] = res.value.data
         })
         setCache(fullCache)
+
+        // Apply hash-based tab after cache is fully populated
+        if (initialHash && initialHash !== 'overall') {
+          if (initialHash === 'rivals') {
+            setActiveTab('rivals')
+          } else {
+            const matchedRound = fetchedRounds.find(
+              r => r.name.replace(/\s+/g, '').toLowerCase() === initialHash
+            )
+            if (matchedRound && fullCache[String(matchedRound.id)]) {
+              setActiveTab(matchedRound.id)
+              setRankings(fullCache[String(matchedRound.id)])
+            }
+          }
+        }
       } catch {
         setError('Failed to load rankings. Please refresh.')
       }
@@ -470,6 +486,15 @@ export default function RankingsPage() {
     setActiveTab(tab)
     setSelectedPlayer(null)
     setSearch('')
+    // Update URL hash without adding a browser history entry
+    if (tab === 'overall') {
+      history.replaceState(null, '', window.location.pathname)
+    } else if (tab === 'rivals') {
+      history.replaceState(null, '', '#Rivals')
+    } else {
+      const round = rounds.find(r => r.id === tab)
+      if (round) history.replaceState(null, '', `#${round.name.replace(/\s+/g, '')}`)
+    }
     if (tab === 'rivals') return
     const key = tab === 'overall' ? 'overall' : String(tab)
     if (cache[key]) { setRankings(cache[key]); return }
