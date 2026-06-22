@@ -482,6 +482,30 @@ export default function RankingsPage() {
     init()
   }, [])
 
+  // React to manual URL hash changes (user edits address bar on an existing tab)
+  useEffect(() => {
+    if (rounds.length === 0) return
+    const onHashChange = () => {
+      const hash = window.location.hash.slice(1).toLowerCase()
+      if (!hash || hash === 'overall') {
+        setActiveTab('overall')
+        if (cache['overall']) setRankings(cache['overall'])
+        return
+      }
+      if (hash === 'rivals') {
+        setActiveTab('rivals')
+        return
+      }
+      const matchedRound = rounds.find(r => r.name.replace(/\s+/g, '').toLowerCase() === hash)
+      if (matchedRound && cache[String(matchedRound.id)]) {
+        setActiveTab(matchedRound.id)
+        setRankings(cache[String(matchedRound.id)])
+      }
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [rounds, cache])
+
   const handleTabChange = async (tab: TabId) => {
     setActiveTab(tab)
     setSelectedPlayer(null)
