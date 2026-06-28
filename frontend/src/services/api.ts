@@ -49,6 +49,7 @@ export const gamesAPI = {
   getUpcoming: () => api.get('/games/upcoming'),
   getClosed: () => api.get('/games/closed'),
   getGame: (gameId: number) => api.get(`/games/${gameId}`),
+  getKnockout: () => api.get('/games/knockout'),
 }
 
 // Predictions API

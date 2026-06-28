@@ -14,6 +14,7 @@ import AdminPage from './pages/AdminPage'
 import NewsPage from './pages/NewsPage'
 import RulesPage from './pages/RulesPage'
 import PrizesPage from './pages/PrizesPage'
+import KnockoutPage from './pages/KnockoutPage'
 
 function App() {
   const { setUser, setInitialized, setDatetimeOffset } = useAuthStore()
@@ -51,6 +52,7 @@ function App() {
             <Route path="/news" element={<NewsPage />} />
             <Route path="/predictions" element={<PredictionsPage />} />
             <Route path="/rankings" element={<RankingsPage />} />
+            <Route path="/knockout" element={<KnockoutPage />} />
             <Route path="/players" element={<PlayersPage />} />
             <Route path="/prizes" element={<PrizesPage />} />
             <Route path="/account" element={<AccountPage />} />
