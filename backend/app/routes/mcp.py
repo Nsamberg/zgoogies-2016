@@ -14,6 +14,7 @@ from flask import Blueprint, request, jsonify, current_app, Response, stream_wit
 from app import db
 from app.models.user import User
 from app.models.ai_usage import AiUsage
+from app.models.access_log import AccessLog
 from app.models.app_setting import AppSetting
 from app.models.game import Game
 from app.models.prediction import Prediction
@@ -459,6 +460,12 @@ def _tool_submit_prediction(args):
         user_id=user.id, game_id=game_id,
         team_a_score=score_a, team_b_score=score_b, action=action
     ))
+    db.session.add(AccessLog(
+        user_id=user.id,
+        action='prediction_submitted',
+        page=f'MCP: {game.team_a.name} vs {game.team_b.name} — {score_a}–{score_b}',
+        ip_address=request.remote_addr
+    ))
     db.session.commit()
 
     double = ' (double points game!)' if game.is_double_points() else ''
@@ -617,6 +624,12 @@ def _tool_update_player_email(args):
 
     old_email = target.email
     target.email = email
+    db.session.add(AccessLog(
+        user_id=user.id,
+        action='profile_updated',
+        page=f'MCP: email for {target.username} changed from {old_email} to {email}',
+        ip_address=request.remote_addr
+    ))
     db.session.commit()
     return f'Email updated for {target.username}: {old_email} → {email}'
 
