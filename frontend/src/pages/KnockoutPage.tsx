@@ -14,14 +14,14 @@ interface KOGame {
   prediction: { team_a_score: number; team_b_score: number; points: number | null } | null
 }
 
-// Canonical ordering for knockout stages
+// Canonical ordering: R32 → R16 → QF → SF → Final → Third Place
 const STAGE_RANK: Record<string, number> = {}
 ;[
   'round of 32', 'round of 16',
   'quarter-final', 'quarter final', 'quarterfinal', 'quarter finals',
   'semi-final', 'semi final', 'semifinal', 'semi finals',
-  'third place', 'third-place', '3rd place',
   'final',
+  'third place', 'third-place', '3rd place',
 ].forEach((s, i) => { STAGE_RANK[s] = i })
 
 function rankStage(stage: string): number {

@@ -52,8 +52,11 @@ function App() {
             <Route path="/news" element={<NewsPage />} />
             <Route path="/predictions" element={<PredictionsPage />} />
             <Route path="/rankings" element={<RankingsPage />} />
-            <Route path="/knockout" element={<KnockoutPage />} />
             <Route path="/players" element={<PlayersPage />} />
+            {/* Admin/Cashier-only routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/knockout" element={<KnockoutPage />} />
+            </Route>
             <Route path="/prizes" element={<PrizesPage />} />
             <Route path="/account" element={<AccountPage />} />
             {/* Admin-only routes */}

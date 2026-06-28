@@ -95,7 +95,7 @@ export default function Layout() {
             <nav className="nav">
               <Link to="/predictions">Predictions</Link>
               <Link to="/rankings">Rankings</Link>
-              <Link to="/knockout">Knockout</Link>
+              {(user.is_admin || user.is_cachier) && <Link to="/knockout">Knockout</Link>}
               <Link to="/news">News</Link>
               <Link to="/players">Players</Link>
               <Link to="/prizes">Prizes</Link>
@@ -119,7 +119,7 @@ export default function Layout() {
                 </div>
                 <Link to="/predictions" onClick={() => setMenuOpen(false)}>Predictions</Link>
                 <Link to="/rankings" onClick={() => setMenuOpen(false)}>Rankings</Link>
-                <Link to="/knockout" onClick={() => setMenuOpen(false)}>Knockout</Link>
+                {(user?.is_admin || user?.is_cachier) && <Link to="/knockout" onClick={() => setMenuOpen(false)}>Knockout</Link>}
                 <Link to="/news" onClick={() => setMenuOpen(false)}>News</Link>
                 <Link to="/players" onClick={() => setMenuOpen(false)}>Players</Link>
                 <Link to="/prizes" onClick={() => setMenuOpen(false)}>Prizes</Link>
