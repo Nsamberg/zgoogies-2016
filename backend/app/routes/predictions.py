@@ -5,6 +5,7 @@ from app import db
 from app.models.prediction import Prediction
 from app.models.prediction_history import PredictionHistory
 from app.models.game import Game
+from app.models.user import User
 from app.models.access_log import AccessLog
 from app.utils.datetime_utils import get_current_utc
 
@@ -138,10 +139,22 @@ def get_game_predictions(game_id):
         return jsonify({'error': 'Predictions are still open'}), 403
 
     predictions = Prediction.query.filter_by(game_id=game_id).all()
-    return jsonify([{
-        'user_id': p.user_id,
-        'username': p.user.username,
-        'team_a_score': p.team_a_score,
-        'team_b_score': p.team_b_score,
-        'points': p.points if game.is_scored else None
-    } for p in predictions]), 200
+    pred_user_ids = {p.user_id for p in predictions}
+
+    paid_users = User.query.filter_by(has_paid=True).all()
+    non_predictors = [
+        {'user_id': u.id, 'username': u.username}
+        for u in paid_users
+        if u.id not in pred_user_ids
+    ]
+
+    return jsonify({
+        'predictions': [{
+            'user_id': p.user_id,
+            'username': p.user.username,
+            'team_a_score': p.team_a_score,
+            'team_b_score': p.team_b_score,
+            'points': p.points if game.is_scored else None
+        } for p in predictions],
+        'non_predictors': non_predictors
+    }), 200
