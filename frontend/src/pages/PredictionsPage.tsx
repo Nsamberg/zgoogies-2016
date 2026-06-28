@@ -181,19 +181,25 @@ export default function PredictionsPage() {
   // Game predictions page-view (selected closed game → show all predictions)
   const [selectedClosedGame, setSelectedClosedGame] = useState<Game | null>(null)
   const [closedGamePreds, setClosedGamePreds] = useState<any[] | null>(null)
+  const [closedGameNonPredictors, setClosedGameNonPredictors] = useState<any[] | null>(null)
   const [closedGamePredsLoading, setClosedGamePredsLoading] = useState(false)
   const [closedGameSearch, setClosedGameSearch] = useState('')
+  const [closedGameScoreSearch, setClosedGameScoreSearch] = useState('')
 
   const openGamePredictions = useCallback(async (game: Game) => {
     setSelectedClosedGame(game)
     setClosedGameSearch('')
+    setClosedGameScoreSearch('')
     setClosedGamePreds(null)
+    setClosedGameNonPredictors(null)
     setClosedGamePredsLoading(true)
     try {
       const res = await predictionsAPI.getGamePredictions(game.id)
-      setClosedGamePreds(res.data)
+      setClosedGamePreds(res.data.predictions ?? [])
+      setClosedGameNonPredictors(res.data.non_predictors ?? [])
     } catch {
       setClosedGamePreds([])
+      setClosedGameNonPredictors([])
     } finally {
       setClosedGamePredsLoading(false)
     }
@@ -202,7 +208,9 @@ export default function PredictionsPage() {
   const closeGamePredictions = useCallback(() => {
     setSelectedClosedGame(null)
     setClosedGamePreds(null)
+    setClosedGameNonPredictors(null)
     setClosedGameSearch('')
+    setClosedGameScoreSearch('')
   }, [])
 
   // Other players
@@ -499,10 +507,21 @@ export default function PredictionsPage() {
                 : a.username.localeCompare(b.username)
             )
             const q = closedGameSearch.toLowerCase()
-            const filtered = q ? sorted.filter(p => p.username.toLowerCase().includes(q)) : sorted
+            const qs = closedGameScoreSearch.replace(/\s/g, '').toLowerCase()
+            const filtered = sorted.filter(p => {
+              if (q && !p.username.toLowerCase().includes(q)) return false
+              if (qs) {
+                const score = `${p.team_a_score}-${p.team_b_score}`
+                const scoreAlt = `${p.team_a_score}–${p.team_b_score}`
+                if (!score.includes(qs) && !scoreAlt.includes(qs)) return false
+              }
+              return true
+            })
 
             // Stats
+            const noPred = closedGameNonPredictors ?? []
             const n = all.length
+            const total = n + noPred.length
             const homeW = all.filter((p: any) => p.team_a_score > p.team_b_score).length
             const draws = all.filter((p: any) => p.team_a_score === p.team_b_score).length
             const awayW = all.filter((p: any) => p.team_a_score < p.team_b_score).length
@@ -625,43 +644,79 @@ export default function PredictionsPage() {
                             )}
                           </>
                         )}
+                        {noPred.length > 0 && (
+                          <div className="gp-stat">
+                            <span className="gp-stat-value">{Math.round(noPred.length / total * 100)}%</span>
+                            <span className="gp-stat-label">no prediction</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
                     {/* Search + table */}
                     <div className="game-predictions-header">
-                      <span className="gp-count">{n} prediction{n !== 1 ? 's' : ''}</span>
-                      <input
-                        className="gp-search"
-                        placeholder="Search player…"
-                        value={closedGameSearch}
-                        onChange={e => setClosedGameSearch(e.target.value)}
-                      />
+                      <span className="gp-count">{n} of {total} predicted</span>
+                      <div className="gp-search-group">
+                        <input
+                          className="gp-search"
+                          placeholder="Search player…"
+                          value={closedGameSearch}
+                          onChange={e => setClosedGameSearch(e.target.value)}
+                        />
+                        <input
+                          className="gp-search"
+                          placeholder="Score (e.g. 2-1)"
+                          value={closedGameScoreSearch}
+                          onChange={e => setClosedGameScoreSearch(e.target.value)}
+                        />
+                      </div>
                     </div>
 
-                    {n === 0
-                      ? <p className="empty-state">No predictions submitted for this game.</p>
-                      : filtered.length === 0
-                        ? <p className="empty-state">No matching players.</p>
-                        : <table className="game-predictions-table">
-                            <thead>
-                              <tr>
-                                <th>Player</th>
-                                <th>Prediction</th>
-                                {game.is_scored && <th>Points</th>}
+                    {(() => {
+                      const filteredNoPred = !qs
+                        ? (q ? noPred.filter((p: any) => p.username.toLowerCase().includes(q)) : noPred)
+                        : []
+                      if (total === 0) {
+                        return <p className="empty-state">No predictions submitted for this game.</p>
+                      }
+                      if (filtered.length === 0 && filteredNoPred.length === 0) {
+                        return <p className="empty-state">No matching players.</p>
+                      }
+                      return (
+                        <table className="game-predictions-table">
+                          <thead>
+                            <tr>
+                              <th>Player</th>
+                              <th>Prediction</th>
+                              {game.is_scored && <th>Points</th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filtered.map((p: any) => (
+                              <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
+                                <td>{p.username}</td>
+                                <td>{p.team_a_score} – {p.team_b_score}</td>
+                                {game.is_scored && <td>{pointsLabel(p.points)}</td>}
                               </tr>
-                            </thead>
-                            <tbody>
-                              {filtered.map((p: any) => (
-                                <tr key={p.user_id} className={p.username === user?.username ? 'gp-row-self' : ''}>
-                                  <td>{p.username}</td>
-                                  <td>{p.team_a_score} – {p.team_b_score}</td>
-                                  {game.is_scored && <td>{pointsLabel(p.points)}</td>}
+                            ))}
+                            {filteredNoPred.length > 0 && (
+                              <>
+                                <tr className="gp-nopred-divider">
+                                  <td colSpan={game.is_scored ? 3 : 2}>Did not predict ({filteredNoPred.length})</td>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                    }
+                                {filteredNoPred.map((p: any) => (
+                                  <tr key={`np-${p.user_id}`} className={`gp-row-nopred${p.username === user?.username ? ' gp-row-self' : ''}`}>
+                                    <td>{p.username}</td>
+                                    <td>—</td>
+                                    {game.is_scored && <td>—</td>}
+                                  </tr>
+                                ))}
+                              </>
+                            )}
+                          </tbody>
+                        </table>
+                      )
+                    })()}
                   </>
                 )}
               </div>

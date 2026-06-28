@@ -872,6 +872,8 @@ button[type="submit"]:disabled {
   border-bottom: 1px solid #f5f5f5;
 }
 .gp-row-self td { font-weight: 700; color: var(--navy); }
+.gp-nopred-divider td { background: #f5f5f5; color: #888; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.3rem 0.4rem; }
+.gp-row-nopred td { color: #aaa; font-style: italic; }
 
 /* ===== Shared page title ===== */
 .page-title {
