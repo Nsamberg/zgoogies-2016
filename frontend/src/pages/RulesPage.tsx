@@ -64,6 +64,7 @@ export default function RulesPage() {
           </tbody>
         </table>
         <p className="rules-note">Maximum per game: <strong>7 points</strong> (exact score = 1 + 3 + 1 + 1 + 1)</p>
+        <p className="rules-note">For knockout matches, the score used is the result at the end of extra time — <strong>penalty shootouts are excluded</strong>.</p>
       </div>
 
       <div className="rules-section">
