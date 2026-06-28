@@ -1250,7 +1250,13 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   rival_added: 'Rival added', rival_removed: 'Rival removed',
   score_entered: 'Score entered', score_rolled_back: 'Score rolled back',
   payment_recorded: 'Payment recorded', payment_removed: 'Payment removed',
-  role_changed: 'Role changed',
+  role_changed: 'Role changed', email_updated: 'Email updated',
+  user_registered: 'Registered', user_deleted: 'User deleted',
+  token_regenerated: 'API token regenerated',
+  news_created: 'News created', news_updated: 'News updated', news_deleted: 'News deleted',
+  tournament_winner_set: 'Tournament winner set', tournament_winner_rolled_back: 'Tournament winner rolled back',
+  datetime_override_set: 'Datetime override set', datetime_override_cleared: 'Datetime override cleared',
+  settings_updated: 'Settings updated', reset_all: 'Full reset',
 }
 
 function AuditTab() {

@@ -124,6 +124,10 @@ def delete_user(user_id):
     User.query.filter_by(payment_received_by_id=user_id).update({'payment_received_by_id': None})
 
     db.session.delete(user)
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='user_deleted',
+        page=f'user:{user.username}', ip_address=request.remote_addr
+    ))
     db.session.commit()
 
     return jsonify({'message': f'User {user.username} deleted'}), 200
@@ -164,7 +168,12 @@ def update_user_email(user_id):
     existing = User.query.filter(User.email == email, User.id != user_id).first()
     if existing:
         return jsonify({'error': 'Email already in use by another account'}), 400
+    old_email = user.email
     user.email = email
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='email_updated',
+        page=f'user:{user.username} {old_email}→{email}', ip_address=request.remote_addr
+    ))
     db.session.commit()
     return jsonify({'message': 'Email updated'}), 200
 
@@ -367,6 +376,11 @@ def set_tournament_winner():
     award_tournament_winner_bonus(winner_team_id)
 
     correct_users = User.query.filter_by(tournament_winner_id=winner_team_id).count()
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='tournament_winner_set',
+        page=f'winner:{team.name}', ip_address=request.remote_addr
+    ))
+    db.session.commit()
     return jsonify({
         'message': f'Tournament winner set to {team.name}',
         'correct_predictions': correct_users
@@ -395,6 +409,10 @@ def rollback_tournament_winner():
         if ranking:
             ranking.total_points = max(0, ranking.total_points - bonus_points)
 
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='tournament_winner_rolled_back',
+        page=f'team_id:{team_id}', ip_address=request.remote_addr
+    ))
     db.session.commit()
     recalculate_overall_rankings()
 
@@ -436,6 +454,11 @@ def create_news():
         author_id=current_user.id
     )
     db.session.add(news_item)
+    db.session.flush()  # populate news_item.id before logging
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='news_created',
+        page=f'news:{news_item.id} "{news_item.title}"', ip_address=request.remote_addr
+    ))
     db.session.commit()
     return jsonify({'message': 'News created', 'id': news_item.id}), 201
 
@@ -450,6 +473,10 @@ def update_news(news_id):
     news_item.title = data.get('title', news_item.title)
     news_item.content = data.get('content', news_item.content)
     news_item.image_url = data.get('image_url', news_item.image_url) or None
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='news_updated',
+        page=f'news:{news_item.id} "{news_item.title}"', ip_address=request.remote_addr
+    ))
     db.session.commit()
     return jsonify({'message': 'News updated'}), 200
 
@@ -460,6 +487,10 @@ def update_news(news_id):
 def delete_news(news_id):
     """Delete a news article"""
     news_item = News.query.get_or_404(news_id)
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='news_deleted',
+        page=f'news:{news_item.id} "{news_item.title}"', ip_address=request.remote_addr
+    ))
     db.session.delete(news_item)
     db.session.commit()
     return jsonify({'message': 'News deleted'}), 200
@@ -503,6 +534,11 @@ def set_datetime_override():
     offset_secs = offset.total_seconds()
     AppSetting.set('datetime_override_offset', str(offset_secs))
     simulated = datetime.utcnow() + timedelta(seconds=offset_secs)
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='datetime_override_set',
+        page=f'simulated:{simulated.strftime("%Y-%m-%d %H:%M")} UTC', ip_address=request.remote_addr
+    ))
+    db.session.commit()
     return jsonify({
         'message': f'Datetime override set — offset {offset_secs:.0f}s from real time',
         'override': simulated.isoformat() + 'Z',
@@ -517,6 +553,11 @@ def clear_datetime_override():
     """Clear the datetime override — app reverts to using the real system clock."""
     AppSetting.delete('datetime_override_offset')
     AppSetting.delete('datetime_override')  # clean up legacy key if present
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='datetime_override_cleared',
+        page=None, ip_address=request.remote_addr
+    ))
+    db.session.commit()
     return jsonify({'message': 'Datetime override cleared — using real system time'}), 200
 
 
@@ -545,6 +586,11 @@ def set_ai_limit():
     except (ValueError, TypeError):
         return jsonify({'error': 'Limit must be an integer'}), 400
     AppSetting.set('ai_daily_limit', str(limit))
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='settings_updated',
+        page=f'ai_daily_limit:{limit}', ip_address=request.remote_addr
+    ))
+    db.session.commit()
     return jsonify({'message': f'AI daily limit set to {limit}', 'limit': limit}), 200
 
 
@@ -581,6 +627,11 @@ def reset_all():
     # 4. Clear tournament winner setting
     AppSetting.delete(TOURNAMENT_WINNER_KEY)
 
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='reset_all',
+        page=f'deleted {deleted_p} predictions, {deleted_r} rankings, reset {len(games)} games',
+        ip_address=request.remote_addr
+    ))
     db.session.commit()
 
     return jsonify({

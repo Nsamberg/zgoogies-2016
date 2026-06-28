@@ -99,6 +99,11 @@ def register():
 
     db.session.add(user)
     db.session.commit()
+    db.session.add(AccessLog(
+        user_id=user.id, action='user_registered',
+        page=f'user:{user.username}', ip_address=request.remote_addr
+    ))
+    db.session.commit()
 
     # Send registration email in background thread to avoid blocking the response
     app = current_app._get_current_object()
@@ -291,6 +296,10 @@ def get_api_token():
 def regenerate_api_token():
     """Issue a new API token, invalidating the previous one."""
     current_user.api_token = uuid.uuid4().hex
+    db.session.add(AccessLog(
+        user_id=current_user.id, action='token_regenerated',
+        page=None, ip_address=request.remote_addr
+    ))
     db.session.commit()
     return jsonify({'token': current_user.api_token}), 200
 
