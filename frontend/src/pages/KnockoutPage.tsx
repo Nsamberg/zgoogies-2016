@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 
 interface KOGame {
   id: number
+  game_number: number | null
   stage: string
   team_a: { id: number; name: string; score: number | null }
   team_b: { id: number; name: string; score: number | null }
@@ -14,29 +15,49 @@ interface KOGame {
   prediction: { team_a_score: number; team_b_score: number; points: number | null } | null
 }
 
-// Canonical ordering: R32 → R16 → QF → SF → Final → Third Place
-const STAGE_RANK: Record<string, number> = {}
-;[
-  'round of 32', 'round of 16',
-  'quarter-final', 'quarter final', 'quarterfinal', 'quarter finals',
-  'semi-final', 'semi final', 'semifinal', 'semi finals',
-  'final',
-  'third place', 'third-place', '3rd place',
-].forEach((s, i) => { STAGE_RANK[s] = i })
+// Round names by index (0 = earliest / most games)
+const ROUND_NAMES = ['Round of 32', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final']
 
-function rankStage(stage: string): number {
-  return STAGE_RANK[stage.toLowerCase()] ?? 99
+// Layout constants (px)
+const CARD_H = 88
+const CARD_W = 180
+const COL_GAP = 80   // horizontal gap between columns — SVG lines pass through here
+const BASE_SLOT = 96 // slot height for the leaf round
+const HEADER_H = 36  // height of the round label row
+const PAD = 20       // bottom/right padding inside the canvas
+
+function stageToRound(stage: string): number {
+  const s = stage.toLowerCase().trim()
+  if (/\b32\b/.test(s)) return 0
+  if (/\b16\b/.test(s)) return 1
+  if (/quarter/.test(s)) return 2
+  if (/semi/.test(s)) return 3
+  if (/^final$/.test(s)) return 4
+  return -1 // third place, group stage, unknown — excluded
 }
 
-function isThirdPlace(stage: string): boolean {
-  const s = stage.toLowerCase()
-  return s.includes('third') || s.includes('3rd')
+function parseWRef(name: string): number | null {
+  const m = name.match(/^W(\d+)$/i)
+  return m ? parseInt(m[1]) : null
+}
+
+// Recursively find the minimum game_number among the R32 leaf games for bracket ordering
+function minLeafNumber(game: KOGame, round: number, minRound: number, byNumber: Map<number, KOGame>): number {
+  if (round <= minRound) return game.game_number ?? 99999
+  const refs = ([parseWRef(game.team_a.name), parseWRef(game.team_b.name)]
+    .filter((x): x is number => x !== null))
+  if (refs.length > 0) {
+    const feeders = refs.map(n => byNumber.get(n)).filter((g): g is KOGame => g != null)
+    if (feeders.length > 0) {
+      return Math.min(...feeders.map(f => minLeafNumber(f, round - 1, minRound, byNumber)))
+    }
+  }
+  return game.game_number ?? 99999
 }
 
 function formatDate(isoDate: string, timezone: string): string {
   return new Date(isoDate).toLocaleString('en-GB', {
-    timeZone: timezone,
-    weekday: 'short', day: 'numeric', month: 'short',
+    timeZone: timezone, weekday: 'short', day: 'numeric', month: 'short',
     hour: '2-digit', minute: '2-digit',
   })
 }
@@ -46,113 +67,126 @@ function pointsLabel(pts: number | null | undefined): string {
   return `${pts} pt${pts !== 1 ? 's' : ''}`
 }
 
-function KOCard({ game, timezone }: { game: KOGame; timezone: string }) {
-  const aWon = game.is_scored && game.team_a.score != null && game.team_b.score != null
-    && game.team_a.score > game.team_b.score
-  const bWon = game.is_scored && game.team_a.score != null && game.team_b.score != null
-    && game.team_b.score > game.team_a.score
-
-  return (
-    <div className={`ko-card${game.is_double_points ? ' ko-card--double' : ''}`}>
-      <div className="ko-card-location">{game.location}</div>
-      <div className="ko-card-teams">
-        <div className={`ko-card-team${game.is_scored && !aWon ? ' ko-team-lost' : ''}`}>
-          <span className="ko-team-name">{game.team_a.name}</span>
-          {game.is_scored && game.team_a.score != null && (
-            <span className="ko-team-score">{game.team_a.score}</span>
-          )}
-        </div>
-        <div className={`ko-card-team${game.is_scored && !bWon ? ' ko-team-lost' : ''}`}>
-          <span className="ko-team-name">{game.team_b.name}</span>
-          {game.is_scored && game.team_b.score != null && (
-            <span className="ko-team-score">{game.team_b.score}</span>
-          )}
-        </div>
-      </div>
-      {!game.is_scored && (
-        <div className="ko-card-date">{formatDate(game.game_date, timezone)}</div>
-      )}
-      {game.prediction ? (
-        <div className="ko-card-pred">
-          {game.prediction.team_a_score} – {game.prediction.team_b_score}
-          {game.is_scored && (
-            <span className="ko-card-pts"> · {pointsLabel(game.prediction.points)}</span>
-          )}
-        </div>
-      ) : game.is_scored ? (
-        <div className="ko-card-pred ko-card-pred--none">No prediction</div>
-      ) : null}
-    </div>
-  )
-}
-
 export default function KnockoutPage() {
   const { user } = useAuthStore()
   const timezone = user?.timezone || 'UTC'
 
   const [games, setGames] = useState<KOGame[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeStage, setActiveStage] = useState('')
+  const [activeRound, setActiveRound] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const tabsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     gamesAPI.getKnockout()
-      .then(res => {
-        const data: KOGame[] = res.data
-        setGames(data)
-        if (data.length > 0) {
-          const stages = [...new Set(data.map(g => g.stage))].sort((a, b) => rankStage(a) - rankStage(b))
-          // Default: earliest stage with unscored games, else last stage
-          const active = stages.find(s => data.some(g => g.stage === s && !g.is_scored)) ?? stages[stages.length - 1]
-          setActiveStage(active)
-        }
-      })
+      .then(res => setGames(res.data))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const stages = [...new Set(games.map(g => g.stage))].sort((a, b) => rankStage(a) - rankStage(b))
+  // ── Build bracket layout ──────────────────────────────────────────────────
 
-  const gamesForStage = useCallback((stage: string) =>
-    games.filter(g => g.stage === stage), [games])
+  // game_number → game lookup
+  const byNumber = new Map<number, KOGame>()
+  for (const g of games) {
+    if (g.game_number != null) byNumber.set(g.game_number, g)
+  }
 
-  // For a given stage, find the "next bracket stage" (skip third-place)
-  const nextMainStage = useCallback((stage: string): string | null => {
-    const idx = stages.indexOf(stage)
-    for (let i = idx + 1; i < stages.length; i++) {
-      if (!isThirdPlace(stages[i])) return stages[i]
-    }
-    return null
-  }, [stages])
+  // Group by round index
+  const roundMap = new Map<number, KOGame[]>()
+  for (const g of games) {
+    const r = stageToRound(g.stage)
+    if (r < 0) continue
+    if (!roundMap.has(r)) roundMap.set(r, [])
+    roundMap.get(r)!.push(g)
+  }
 
-  const scrollToStage = useCallback((stage: string) => {
-    const col = scrollRef.current?.querySelector<HTMLElement>(`[data-stage="${CSS.escape(stage)}"]`)
-    col?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
-    setActiveStage(stage)
+  const availableRounds = [...roundMap.keys()].sort()
+  const minRound = availableRounds.length > 0 ? availableRounds[0] : 0
+  const maxRound = availableRounds.length > 0 ? availableRounds[availableRounds.length - 1] : -1
 
-    // Scroll the tab into view
-    const tab = tabsRef.current?.querySelector<HTMLElement>(`[data-tab="${CSS.escape(stage)}"]`)
-    tab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-  }, [])
+  // Sort games within each round by their bracket order
+  const sortedRounds = new Map<number, KOGame[]>()
+  roundMap.forEach((gs, r) => {
+    sortedRounds.set(r, [...gs].sort(
+      (a, b) => minLeafNumber(a, r, minRound, byNumber) - minLeafNumber(b, r, minRound, byNumber)
+    ))
+  })
 
-  // Track which stage column is most visible to update the active tab
-  useEffect(() => {
-    const scroll = scrollRef.current
-    if (!scroll) return
-    const observer = new IntersectionObserver(entries => {
-      for (const entry of entries) {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-          const stage = (entry.target as HTMLElement).dataset.stage ?? ''
-          if (stage) setActiveStage(stage)
-        }
+  // game.id → { round, pos }
+  const gamePos = new Map<number, { round: number; pos: number }>()
+  sortedRounds.forEach((gs, r) => gs.forEach((g, pos) => gamePos.set(g.id, { round: r, pos })))
+
+  // Layout helpers (all normalized to minRound)
+  const slotH    = (r: number) => BASE_SLOT * Math.pow(2, r - minRound)
+  const colLeft   = (r: number) => (r - minRound) * (CARD_W + COL_GAP)
+  const cardTopY  = (r: number, pos: number) => { const sh = slotH(r); return HEADER_H + pos * sh + (sh - CARD_H) / 2 }
+  const centerY   = (r: number, pos: number) => cardTopY(r, pos) + CARD_H / 2
+
+  const numLeafGames = sortedRounds.get(minRound)?.length ?? 1
+  const totalH = HEADER_H + numLeafGames * BASE_SLOT + PAD
+  const totalW = maxRound >= 0 ? colLeft(maxRound) + CARD_W + PAD : CARD_W + PAD
+
+  // ── SVG connector lines ───────────────────────────────────────────────────
+  const lines: Array<{ x1: number; y1: number; x2: number; y2: number; key: string }> = []
+  sortedRounds.forEach((gs, r) => {
+    if (r <= minRound) return
+    gs.forEach((g, pos) => {
+      const refs = ([parseWRef(g.team_a.name), parseWRef(g.team_b.name)]
+        .filter((x): x is number => x !== null))
+      const feeders = refs.map(n => byNumber.get(n)).filter((f): f is KOGame => f != null)
+      if (feeders.length !== 2) return
+
+      const midX = colLeft(r - 1) + CARD_W + COL_GAP / 2
+      const pY   = centerY(r, pos)
+
+      // Horizontal lines from each feeder's right edge to midX
+      feeders.forEach(f => {
+        const fp = gamePos.get(f.id)
+        if (!fp) return
+        const fY = centerY(fp.round, fp.pos)
+        lines.push({ x1: colLeft(r - 1) + CARD_W, y1: fY, x2: midX, y2: fY, key: `h1-${f.id}` })
+      })
+
+      // Vertical line between the two feeders at midX, then horizontal to parent
+      const fYs = feeders.map(f => { const fp = gamePos.get(f.id); return fp ? centerY(fp.round, fp.pos) : null }).filter((y): y is number => y !== null)
+      if (fYs.length === 2) {
+        lines.push({ x1: midX, y1: Math.min(fYs[0], fYs[1]), x2: midX, y2: Math.max(fYs[0], fYs[1]), key: `v-${g.id}` })
+        lines.push({ x1: midX, y1: pY, x2: colLeft(r), y2: pY, key: `h2-${g.id}` })
       }
-    }, { root: scroll, threshold: 0.5 })
+    })
+  })
 
-    scroll.querySelectorAll<HTMLElement>('[data-stage]').forEach(el => observer.observe(el))
-    return () => observer.disconnect()
-  }, [games])
+  // ── Default active round and scroll tracking ──────────────────────────────
+  useEffect(() => {
+    if (availableRounds.length === 0) return
+    const firstUnscored = availableRounds.find(r => sortedRounds.get(r)?.some(g => !g.is_scored))
+    setActiveRound(firstUnscored ?? availableRounds[availableRounds.length - 1])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [games.length])
 
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || availableRounds.length === 0) return
+    const onScroll = () => {
+      const x = el.scrollLeft
+      let best = availableRounds[0]
+      for (const r of availableRounds) {
+        if (x >= colLeft(r) - PAD) best = r
+      }
+      setActiveRound(best)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableRounds.join(',')])
+
+  const scrollToRound = useCallback((r: number) => {
+    scrollRef.current?.scrollTo({ left: colLeft(r), behavior: 'smooth' })
+    setActiveRound(r)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minRound])
+
+  // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="knockout-page">
@@ -162,7 +196,7 @@ export default function KnockoutPage() {
     )
   }
 
-  if (stages.length === 0) {
+  if (maxRound < 0) {
     return (
       <div className="knockout-page">
         <h2 className="page-title">Knockout Bracket</h2>
@@ -175,98 +209,87 @@ export default function KnockoutPage() {
     <div className="knockout-page">
       <h2 className="page-title">Knockout Bracket</h2>
 
-      {/* Stage navigation tabs — horizontally scrollable */}
-      <div className="ko-tabs" ref={tabsRef}>
-        {stages.map(stage => (
+      {/* Round navigation tabs */}
+      <div className="ko-tabs">
+        {availableRounds.map(r => (
           <button
-            key={stage}
-            data-tab={stage}
-            className={`ko-tab${activeStage === stage ? ' ko-tab--active' : ''}`}
-            onClick={() => scrollToStage(stage)}
+            key={r}
+            className={`ko-tab${activeRound === r ? ' ko-tab--active' : ''}`}
+            onClick={() => scrollToRound(r)}
           >
-            {stage}
+            {ROUND_NAMES[r] ?? `Round ${r}`}
           </button>
         ))}
       </div>
 
-      {/* Horizontally scrollable bracket */}
-      <div className="ko-bracket-scroll" ref={scrollRef}>
-        {stages.map(stage => {
-          const stageGames = gamesForStage(stage)
-          const next = nextMainStage(stage)
-          const nextGames = next ? gamesForStage(next) : []
+      {/* Scrollable bracket canvas */}
+      <div className="ko-bracket-wrap" ref={scrollRef}>
+        <div className="ko-bracket-inner" style={{ width: totalW, height: totalH }}>
 
-          // Pair games within this stage by game date order (already sorted)
-          const pairs: KOGame[][] = []
-          for (let i = 0; i < stageGames.length; i += 2) {
-            pairs.push(stageGames.slice(i, i + 2))
-          }
+          {/* SVG connector lines rendered beneath the cards */}
+          <svg className="ko-bracket-svg" width={totalW} height={totalH} aria-hidden="true">
+            {lines.map(l => (
+              <line key={l.key} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
+                stroke="#c8c8d8" strokeWidth={2} strokeLinecap="round" />
+            ))}
+          </svg>
 
-          return (
-            <div key={stage} className="ko-stage-col" data-stage={stage}>
-              <div className="ko-stage-header">{stage}</div>
-
-              <div className="ko-pairs-list">
-                {pairs.map((pair, pairIdx) => {
-                  const nextGame = nextGames[pairIdx]
-                  const hasPair = pair.length === 2
-
-                  return (
-                    <div key={pairIdx} className="ko-pair-row">
-                      {/* Left: the one or two game cards */}
-                      <div className="ko-pair-games">
-                        {pair.map(g => (
-                          <KOCard key={g.id} game={g} timezone={timezone} />
-                        ))}
-                      </div>
-
-                      {/* Bracket arm + next-round preview (only for pairs of 2) */}
-                      {hasPair && (
-                        <>
-                          <div className="ko-arm" aria-hidden="true">
-                            <div className="ko-arm-top" />
-                            <div className="ko-arm-bot" />
-                          </div>
-                          <div className="ko-next-preview">
-                            {nextGame ? (
-                              <div
-                                className="ko-next-card"
-                                onClick={() => scrollToStage(next!)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={e => e.key === 'Enter' && scrollToStage(next!)}
-                              >
-                                <div className="ko-next-location">{nextGame.location}</div>
-                                <div className="ko-next-teams">
-                                  <div className={`ko-next-team${nextGame.is_scored && nextGame.team_b.score != null && nextGame.team_a.score != null && nextGame.team_a.score < nextGame.team_b.score ? ' ko-team-lost' : ''}`}>
-                                    {nextGame.team_a.name}
-                                  </div>
-                                  <div className={`ko-next-team${nextGame.is_scored && nextGame.team_a.score != null && nextGame.team_b.score != null && nextGame.team_b.score < nextGame.team_a.score ? ' ko-team-lost' : ''}`}>
-                                    {nextGame.team_b.name}
-                                  </div>
-                                </div>
-                                {nextGame.is_scored && nextGame.team_a.score != null && (
-                                  <div className="ko-next-score">
-                                    {nextGame.team_a.score} – {nextGame.team_b.score}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="ko-next-card ko-next-card--tbd">
-                                <div className="ko-next-team">TBD</div>
-                                <div className="ko-next-team">TBD</div>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+          {/* Round header labels */}
+          {availableRounds.map(r => (
+            <div
+              key={`hdr-${r}`}
+              className="ko-round-header"
+              style={{ left: colLeft(r), width: CARD_W }}
+            >
+              {ROUND_NAMES[r] ?? `Round ${r}`}
             </div>
-          )
-        })}
+          ))}
+
+          {/* Game cards */}
+          {games.filter(g => gamePos.has(g.id)).map(g => {
+            const { round: r, pos } = gamePos.get(g.id)!
+            const aWon = g.is_scored && g.team_a.score != null && g.team_b.score != null && g.team_a.score > g.team_b.score
+            const bWon = g.is_scored && g.team_a.score != null && g.team_b.score != null && g.team_b.score > g.team_a.score
+
+            return (
+              <div
+                key={g.id}
+                className={`ko-card${g.is_double_points ? ' ko-card--double' : ''}`}
+                style={{ left: colLeft(r), top: cardTopY(r, pos), width: CARD_W }}
+              >
+                <div className="ko-card-location">{g.location}</div>
+                <div className="ko-card-teams">
+                  <div className={`ko-card-team${g.is_scored && !aWon ? ' ko-team-lost' : ''}`}>
+                    <span className="ko-team-name">{g.team_a.name}</span>
+                    {g.is_scored && g.team_a.score != null && (
+                      <span className="ko-team-score">{g.team_a.score}</span>
+                    )}
+                  </div>
+                  <div className={`ko-card-team${g.is_scored && !bWon ? ' ko-team-lost' : ''}`}>
+                    <span className="ko-team-name">{g.team_b.name}</span>
+                    {g.is_scored && g.team_b.score != null && (
+                      <span className="ko-team-score">{g.team_b.score}</span>
+                    )}
+                  </div>
+                </div>
+                {!g.is_scored && (
+                  <div className="ko-card-date">{formatDate(g.game_date, timezone)}</div>
+                )}
+                {g.prediction ? (
+                  <div className="ko-card-pred">
+                    {g.prediction.team_a_score}–{g.prediction.team_b_score}
+                    {g.is_scored && (
+                      <span className="ko-card-pts"> · {pointsLabel(g.prediction.points)}</span>
+                    )}
+                  </div>
+                ) : g.is_scored ? (
+                  <div className="ko-card-pred ko-card-pred--none">No prediction</div>
+                ) : null}
+              </div>
+            )
+          })}
+
+        </div>
       </div>
 
       <p className="ko-scroll-hint">← Scroll to see other rounds →</p>

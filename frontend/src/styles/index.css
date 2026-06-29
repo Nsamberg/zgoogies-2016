@@ -947,11 +947,11 @@ button[type="submit"]:disabled {
 
 /* ===== Knockout bracket page ===== */
 .knockout-page {
-  max-width: 960px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
-/* Stage navigation tabs */
+/* Round navigation tabs */
 .ko-tabs {
   display: flex;
   gap: 0.4rem;
@@ -979,170 +979,92 @@ button[type="submit"]:disabled {
 .ko-tab:hover { border-color: #1B1464; color: #1B1464; }
 .ko-tab--active { border-color: #1B1464; background: #1B1464; color: #fff; }
 
-/* Horizontally scrollable bracket columns */
-.ko-bracket-scroll {
-  display: flex;
-  align-items: flex-start;
+/* Scrollable bracket canvas */
+.ko-bracket-wrap {
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  gap: 1rem;
-  padding-bottom: 1rem;
-  /* Negative margin so content bleeds to viewport edge for scroll feel */
+  max-height: 78vh;
+  /* Bleed to viewport edges on mobile for a nicer scroll feel */
   margin-left: -1rem;
   margin-right: -1rem;
   padding-left: 1rem;
   padding-right: 1rem;
 }
-.ko-bracket-scroll::-webkit-scrollbar { height: 4px; }
-.ko-bracket-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+.ko-bracket-wrap::-webkit-scrollbar { height: 4px; width: 4px; }
+.ko-bracket-wrap::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 
-.ko-stage-col {
-  flex-shrink: 0;
-  /* On mobile: almost full width so next col is barely peeking */
-  width: min(calc(100vw - 5rem), 420px);
-  scroll-snap-align: start;
+/* Fixed-size inner canvas — width/height set by inline style */
+.ko-bracket-inner {
+  position: relative;
 }
 
-.ko-stage-header {
-  font-size: 0.78rem;
+/* SVG connector lines layer */
+.ko-bracket-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Round header row — absolutely positioned at top of each column */
+.ko-round-header {
+  position: absolute;
+  top: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #1B1464;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.4rem;
   border-bottom: 2px solid #E8EAF3;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.ko-pairs-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-/* One "pair" row: games + bracket arm + next preview */
-.ko-pair-row {
-  display: flex;
-  align-items: stretch;
-}
-
-.ko-pair-games {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-/* The bracket arm (visual connector) */
-.ko-arm {
-  width: 18px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-}
-.ko-arm-top {
-  flex: 1;
-  border-top: 2px solid #bbb;
-  border-right: 2px solid #bbb;
-}
-.ko-arm-bot {
-  flex: 1;
-  border-bottom: 2px solid #bbb;
-  border-right: 2px solid #bbb;
-}
-
-/* Next-round preview card */
-.ko-next-preview {
-  width: 110px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.ko-next-card {
-  width: 100%;
-  background: #f4f5fb;
-  border: 1px solid #d8daf0;
+/* Individual game card — absolutely positioned by JS */
+.ko-card {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-top: 3px solid #1B1464;
   border-radius: 8px;
-  padding: 0.5rem 0.6rem;
-  cursor: pointer;
-  transition: border-color 0.15s;
+  padding: 0.6rem 0.75rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  box-sizing: border-box;
 }
-.ko-next-card:hover { border-color: #1B1464; }
-.ko-next-card--tbd { cursor: default; }
-.ko-next-card--tbd:hover { border-color: #d8daf0; }
+.ko-card--double { border-left: 4px solid #D4AC0D; }
 
-.ko-next-location {
-  font-size: 0.65rem;
-  color: #888;
+.ko-card-location {
+  font-size: 0.66rem;
+  color: #999;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 0.3rem;
 }
 
-.ko-next-teams {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.ko-next-team {
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #222;
-}
-.ko-next-team.ko-team-lost { text-decoration: line-through; color: #aaa; }
-
-.ko-next-score {
-  margin-top: 0.3rem;
-  font-size: 0.7rem;
-  color: #555;
-}
-
-/* Individual game card inside the bracket */
-.ko-card {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-top: 3px solid #1B1464;
-  border-radius: 8px;
-  padding: 0.65rem 0.85rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-.ko-card--double { border-left: 4px solid #D4AC0D; }
-
-.ko-card-location {
-  font-size: 0.68rem;
-  color: #888;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 0.35rem;
-}
-
 .ko-card-teams {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 0.35rem;
+  gap: 0.28rem;
+  margin-bottom: 0.3rem;
 }
 
 .ko-card-team {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
-.ko-card-team.ko-team-lost { opacity: 0.45; }
+.ko-card-team.ko-team-lost { opacity: 0.4; }
 .ko-card-team.ko-team-lost .ko-team-name { text-decoration: line-through; }
 
 .ko-team-name {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
   min-width: 0;
   white-space: nowrap;
@@ -1151,27 +1073,31 @@ button[type="submit"]:disabled {
 }
 
 .ko-team-score {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #1B1464;
   flex-shrink: 0;
 }
 
 .ko-card-date {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #666;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ko-card-pred {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #555;
   background: #f4f5fb;
   border-radius: 4px;
-  padding: 0.2rem 0.4rem;
+  padding: 0.18rem 0.4rem;
   display: inline-block;
+  max-width: 100%;
 }
-.ko-card-pred--none { color: #aaa; background: none; padding: 0; }
+.ko-card-pred--none { color: #bbb; background: none; padding: 0; font-style: italic; }
 
 .ko-card-pts {
   font-weight: 700;
