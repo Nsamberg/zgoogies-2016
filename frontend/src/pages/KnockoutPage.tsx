@@ -18,7 +18,7 @@ interface KOGame {
 const ROUND_NAMES = ['Round of 32', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final']
 
 // Layout constants (px)
-const CARD_H = 88
+const CARD_H = 72
 const CARD_W = 180
 const COL_GAP = 80   // horizontal gap between columns — SVG lines pass through here
 const BASE_SLOT = 96 // slot height for leaf-round games
@@ -127,6 +127,7 @@ export default function KnockoutPage() {
   const [loading, setLoading] = useState(true)
   const [activeRound, setActiveRound] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     gamesAPI.getKnockout()
@@ -252,6 +253,12 @@ export default function KnockoutPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minRound])
 
+  // Scroll the active tab into view whenever activeRound changes (e.g. from bracket scroll)
+  useEffect(() => {
+    const tab = tabsRef.current?.querySelector<HTMLElement>(`[data-round="${activeRound}"]`)
+    tab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, [activeRound])
+
   // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -276,10 +283,11 @@ export default function KnockoutPage() {
       <h2 className="page-title">Knockout Bracket</h2>
 
       {/* Round navigation tabs */}
-      <div className="ko-tabs">
+      <div className="ko-tabs" ref={tabsRef}>
         {availableRounds.map(r => (
           <button
             key={r}
+            data-round={r}
             className={`ko-tab${activeRound === r ? ' ko-tab--active' : ''}`}
             onClick={() => scrollToRound(r)}
           >
@@ -323,7 +331,6 @@ export default function KnockoutPage() {
                 className={`ko-card${g.is_double_points ? ' ko-card--double' : ''}`}
                 style={{ left: colLeft(r, minRound), top: cardTopY(r, pos, minRound), width: CARD_W }}
               >
-                <div className="ko-card-location">{g.location}</div>
                 <div className="ko-card-teams">
                   <div className={`ko-card-team${g.is_scored && !aWon ? ' ko-team-lost' : ''}`}>
                     <span className="ko-team-name">{g.team_a.name}</span>
