@@ -18,10 +18,10 @@ interface KOGame {
 const ROUND_NAMES = ['Round of 32', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final']
 
 // Layout constants (px)
-const CARD_H = 58
-const CARD_W = 180
-const COL_GAP = 72   // horizontal gap between columns — SVG lines pass through here
-const BASE_SLOT = 70 // slot height for leaf-round games
+const CARD_H = 68
+const CARD_W = 176
+const COL_GAP = 68   // horizontal gap between columns — SVG lines pass through here
+const BASE_SLOT = 96 // slot height for leaf-round games
 const HEADER_H = 36  // height of round label row at top
 const PAD = 20       // extra padding at bottom/right of canvas
 
@@ -107,13 +107,21 @@ function cardTopY(r: number, pos: number, minR: number) {
 }
 function centerY(r: number, pos: number, minR: number) { return cardTopY(r, pos, minR) + CARD_H / 2 }
 
+function formatDate(isoDate: string, timezone: string): string {
+  return new Date(isoDate).toLocaleString('en-GB', {
+    timeZone: timezone, day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
 function pointsLabel(pts: number | null | undefined): string {
   if (pts == null) return '—'
   return `${pts} pt${pts !== 1 ? 's' : ''}`
 }
 
 export default function KnockoutPage() {
-  const { user: _user } = useAuthStore()
+  const { user } = useAuthStore()
+  const timezone = user?.timezone || 'UTC'
 
   const [games, setGames] = useState<KOGame[]>([])
   const [loading, setLoading] = useState(true)
@@ -337,16 +345,19 @@ export default function KnockoutPage() {
                     )}
                   </div>
                 </div>
-                {g.prediction ? (
-                  <div className="ko-card-pred">
-                    {g.prediction.team_a_score}–{g.prediction.team_b_score}
-                    {g.is_scored && (
-                      <span className="ko-card-pts"> · {pointsLabel(g.prediction.points)}</span>
-                    )}
-                  </div>
-                ) : g.is_scored ? (
-                  <div className="ko-card-pred ko-card-pred--none">—</div>
-                ) : null}
+                <div className="ko-card-footer">
+                  {!g.is_scored && (
+                    <span className="ko-card-date">{formatDate(g.game_date, timezone)}</span>
+                  )}
+                  {g.prediction && (
+                    <span className="ko-card-pred">
+                      {g.prediction.team_a_score}–{g.prediction.team_b_score}
+                      {g.is_scored && (
+                        <span className="ko-card-pts"> · {pointsLabel(g.prediction.points)}</span>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
             )
           })}
