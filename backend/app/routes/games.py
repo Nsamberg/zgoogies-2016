@@ -84,8 +84,11 @@ def get_knockout_games():
     ) if game_ids else []
     pred_map = {p.game_id: p for p in preds}
 
+    numbers = _game_numbers()
+
     return jsonify([{
         'id': g.id,
+        'game_number': numbers.get(g.id),
         'stage': g.stage or 'Unknown',
         'team_a': {'id': g.team_a.id, 'name': g.team_a.name, 'score': g.team_a_score},
         'team_b': {'id': g.team_b.id, 'name': g.team_b.name, 'score': g.team_b_score},
