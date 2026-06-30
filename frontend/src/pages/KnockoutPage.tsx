@@ -324,6 +324,7 @@ export default function KnockoutPage() {
             const { round: r, pos } = gamePos.get(g.id)!
             const aWon = g.is_scored && g.team_a.score != null && g.team_b.score != null && g.team_a.score > g.team_b.score
             const bWon = g.is_scored && g.team_a.score != null && g.team_b.score != null && g.team_b.score > g.team_a.score
+            const hasWinner = aWon || bWon
 
             return (
               <div
@@ -332,13 +333,13 @@ export default function KnockoutPage() {
                 style={{ left: colLeft(r, minRound), top: cardTopY(r, pos, minRound), width: CARD_W }}
               >
                 <div className="ko-card-teams">
-                  <div className={`ko-card-team${g.is_scored && !aWon ? ' ko-team-lost' : ''}`}>
+                  <div className={`ko-card-team${hasWinner && !aWon ? ' ko-team-lost' : ''}`}>
                     <span className="ko-team-name">{g.team_a.name}</span>
                     {g.is_scored && g.team_a.score != null && (
                       <span className="ko-team-score">{g.team_a.score}</span>
                     )}
                   </div>
-                  <div className={`ko-card-team${g.is_scored && !bWon ? ' ko-team-lost' : ''}`}>
+                  <div className={`ko-card-team${hasWinner && !bWon ? ' ko-team-lost' : ''}`}>
                     <span className="ko-team-name">{g.team_b.name}</span>
                     {g.is_scored && g.team_b.score != null && (
                       <span className="ko-team-score">{g.team_b.score}</span>
