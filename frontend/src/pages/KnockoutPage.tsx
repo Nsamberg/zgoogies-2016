@@ -11,6 +11,7 @@ interface KOGame {
   game_date: string
   location: string
   is_scored: boolean
+  winner_team_id: number | null
   is_double_points: boolean
   prediction: { team_a_score: number; team_b_score: number; points: number | null } | null
 }
@@ -322,8 +323,8 @@ export default function KnockoutPage() {
           {/* Game cards */}
           {games.filter(g => gamePos.has(g.id)).map(g => {
             const { round: r, pos } = gamePos.get(g.id)!
-            const aWon = g.is_scored && g.team_a.score != null && g.team_b.score != null && g.team_a.score > g.team_b.score
-            const bWon = g.is_scored && g.team_a.score != null && g.team_b.score != null && g.team_b.score > g.team_a.score
+            const aWon = g.is_scored && (g.winner_team_id != null ? g.winner_team_id === g.team_a.id : g.team_a.score != null && g.team_b.score != null && g.team_a.score > g.team_b.score)
+            const bWon = g.is_scored && (g.winner_team_id != null ? g.winner_team_id === g.team_b.id : g.team_b.score != null && g.team_a.score != null && g.team_b.score > g.team_a.score)
             const hasWinner = aWon || bWon
 
             return (
