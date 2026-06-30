@@ -95,6 +95,7 @@ def get_knockout_games():
         'game_date': g.game_date.isoformat() + 'Z',
         'location': g.location.stadium or g.location.city,
         'is_scored': g.is_scored,
+        'winner_team_id': g.winner_team_id,
         'is_double_points': g.is_double_points(),
         'prediction': {
             'team_a_score': pred_map[g.id].team_a_score,
