@@ -26,7 +26,6 @@ class Game(db.Model):
     team_a_score = db.Column(db.Integer, nullable=True)
     team_b_score = db.Column(db.Integer, nullable=True)
     is_scored = db.Column(db.Boolean, default=False, nullable=False)  # True when admin enters scores
-    winner_team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=True)
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

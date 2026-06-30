@@ -282,7 +282,6 @@ def enter_score(game_id):
 
     game.team_a_score = score_a
     game.team_b_score = score_b
-    game.winner_team_id = winner.id if winner else None
     game.is_scored = True
     game.scored_at = db.func.now()
 
@@ -319,7 +318,6 @@ def rollback_score(game_id):
     # Reset game
     game.team_a_score = None
     game.team_b_score = None
-    game.winner_team_id = None
     game.is_scored = False
     game.scored_at = None
 
