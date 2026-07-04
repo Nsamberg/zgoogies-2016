@@ -37,7 +37,10 @@ def sync():
         skipped = 0
         not_found = []
 
-        for entry in games_data:
+        import re
+        W_REF = re.compile(r'^W\d+$|^\d[A-Z]$|^[123][A-Z]+$')  # placeholder patterns
+
+        for json_idx, entry in enumerate(games_data):
             team_a_name = entry.get('teamA', '').strip()
             team_b_name = entry.get('teamB', '').strip()
             iso = entry.get('dateTimeUTC', '')
@@ -52,24 +55,34 @@ def sync():
             team_a = db.session.query(Team).filter_by(name=team_a_name).first()
             team_b = db.session.query(Team).filter_by(name=team_b_name).first()
 
-            if not team_a or not team_b:
-                not_found.append(f"{team_a_name} vs {team_b_name}")
-                continue
+            game = None
 
-            game = db.session.query(Game).filter_by(
-                team_a_id=team_a.id,
-                team_b_id=team_b.id,
-            ).first()
-
-            if not game:
-                # Also try reversed
+            if team_a and team_b:
                 game = db.session.query(Game).filter_by(
-                    team_a_id=team_b.id,
-                    team_b_id=team_a.id,
+                    team_a_id=team_a.id,
+                    team_b_id=team_b.id,
                 ).first()
+                if not game:
+                    game = db.session.query(Game).filter_by(
+                        team_a_id=team_b.id,
+                        team_b_id=team_a.id,
+                    ).first()
 
-            if not game:
-                not_found.append(f"{team_a_name} vs {team_b_name}")
+            display = f"{team_a_name} vs {team_b_name}"
+
+            if not game and (W_REF.match(team_a_name) or W_REF.match(team_b_name)):
+                # Knockout placeholder not yet resolved in team table — fall back to
+                # JSON insertion order: games are inserted sequentially so
+                # game.id == json_idx + 1 (1-indexed position in the JSON array).
+                fallback_id = json_idx + 1
+                game = db.session.query(Game).get(fallback_id)
+                if game:
+                    display = f"{team_a_name} vs {team_b_name} [id={fallback_id}, by position]"
+                else:
+                    not_found.append(display)
+                    continue
+            elif not game:
+                not_found.append(display)
                 continue
 
             if game.game_date == new_date_naive:
@@ -77,7 +90,7 @@ def sync():
             else:
                 old = game.game_date.strftime('%Y-%m-%d %H:%M') if game.game_date else 'None'
                 new = new_date_naive.strftime('%Y-%m-%d %H:%M')
-                print(f"  UPDATE #{game.id:3d} {team_a_name:22s} vs {team_b_name:22s}  {old} → {new} UTC")
+                print(f"  UPDATE #{game.id:3d} {display:50s}  {old} → {new} UTC")
                 game.game_date = new_date_naive
                 updated += 1
 

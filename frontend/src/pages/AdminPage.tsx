@@ -1423,7 +1423,7 @@ export default function AdminPage() {
           {isAdmin && (
             <>
               {' '}·{' '}
-              <a href="/db-admin" target="_blank" rel="noopener noreferrer" className="db-admin-link">
+              <a href="/api/db-admin" target="_blank" rel="noopener noreferrer" className="db-admin-link">
                 DB Browser ↗
               </a>
             </>

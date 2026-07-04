@@ -53,8 +53,9 @@ def init_admin(app):
         app,
         name='ZGoogies DB Browser',
         template_mode='bootstrap4',
-        url='/db-admin',
-        endpoint='db_admin'
+        url='/api/db-admin',
+        endpoint='db_admin',
+        static_url_path='/api/_admin_static'
     )
 
     admin.add_view(UserAdminView(User, db.session, name='Users', endpoint='admin_users'))
