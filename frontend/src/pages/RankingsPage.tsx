@@ -342,9 +342,6 @@ function RivalsView({
                 <td className="col-player">
                   <span className="player-username">{r.user.username}</span>
                   <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
-                  {r.user.tournament_winner && (
-                    <span className="player-winner-pick">🏆 {r.user.tournament_winner}</span>
-                  )}
                   {nextClosed && (
                     <span className="player-next-pred">
                       {nextClosed.predictions[String(r.user.id)]
@@ -714,7 +711,7 @@ export default function RankingsPage() {
                     <td className="col-player">
                       <span className="player-username">{r.user.username}</span>
                       <span className="player-fullname">{r.user.first_name} {r.user.surname}</span>
-                      {r.user.tournament_winner && (
+                      {activeTab === 'overall' && r.user.tournament_winner && (
                         <span className="player-winner-pick">🏆 {r.user.tournament_winner}</span>
                       )}
                     </td>
