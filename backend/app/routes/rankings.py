@@ -20,7 +20,8 @@ def get_overall_ranking():
             'id': r.user.id,
             'username': r.user.username,
             'first_name': r.user.first_name,
-            'surname': r.user.surname
+            'surname': r.user.surname,
+            'tournament_winner': r.user.tournament_winner_team.name if r.user.tournament_winner_team else None
         },
         'total_points': r.total_points,
         'previous_rank': r.previous_rank
@@ -39,7 +40,8 @@ def get_round_ranking(round_id):
             'id': r.user.id,
             'username': r.user.username,
             'first_name': r.user.first_name,
-            'surname': r.user.surname
+            'surname': r.user.surname,
+            'tournament_winner': r.user.tournament_winner_team.name if r.user.tournament_winner_team else None
         },
         'total_points': r.total_points,
         'previous_rank': r.previous_rank
