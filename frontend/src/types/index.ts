@@ -61,6 +61,7 @@ export interface Ranking {
     username: string
     first_name: string
     surname: string
+    tournament_winner: string | null
   }
   total_points: number
   previous_rank?: number | null
