@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts'
-import { rankingsAPI, rivalsAPI, playersAPI, gamesAPI, predictionsAPI, NextClosedGame } from '../services/api'
+import { rankingsAPI, rivalsAPI, playersAPI, gamesAPI, predictionsAPI, teamsAPI, NextClosedGame } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { Ranking, CompetitionRound } from '../types'
 
@@ -51,6 +51,7 @@ function PlayerHistoryView({
   const [history, setHistory] = useState<HistoryPoint[]>([])
   const [predictions, setPredictions] = useState<PlayerPrediction[]>([])
   const [loading, setLoading] = useState(true)
+  const [tournamentWinner, setTournamentWinner] = useState<{ id: number; name: string } | null>(null)
 
   const fetchHistory = useCallback(async (tab: TabId) => {
     setLoading(true)
@@ -74,6 +75,9 @@ function PlayerHistoryView({
     playersAPI.getPlayerPredictions(player.user.id)
       .then(res => setPredictions(res.data))
       .catch(() => setPredictions([]))
+    teamsAPI.getTournamentWinner()
+      .then(res => setTournamentWinner(res.data.team))
+      .catch(() => {})
   }, [fetchHistory, player.user.id])
 
   const handleHistTab = (tab: TabId) => {
@@ -179,6 +183,25 @@ function PlayerHistoryView({
             </ResponsiveContainer>
           </div>
 
+        </div>
+      )}
+
+      {/* Tournament winner pick */}
+      {histTab === 'overall' && player.user.tournament_winner && (
+        <div className="ph-winner-section">
+          <h3 className="ph-games-title">Tournament Winner Pick</h3>
+          <div className="ph-winner-row">
+            <span className="ph-winner-team">🏆 {player.user.tournament_winner}</span>
+            {tournamentWinner ? (
+              tournamentWinner.name === player.user.tournament_winner ? (
+                <span className="ph-winner-pts ph-winner-pts--correct">+15 pts</span>
+              ) : (
+                <span className="ph-winner-pts ph-winner-pts--wrong">0 pts</span>
+              )
+            ) : (
+              <span className="ph-winner-pts ph-winner-pts--pending">pending</span>
+            )}
+          </div>
         </div>
       )}
 

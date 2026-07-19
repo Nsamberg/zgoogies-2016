@@ -179,6 +179,7 @@ export const rivalsAPI = {
 // Teams API
 export const teamsAPI = {
   getAll: () => api.get('/teams/'),
+  getTournamentWinner: () => api.get<{ team: { id: number; name: string } | null }>('/teams/tournament-winner'),
 }
 
 export default api

@@ -1917,6 +1917,50 @@ button[type="submit"]:disabled {
   font-size: 0.78rem;
 }
 
+.ph-winner-section {
+  margin-top: 1.5rem;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  padding: 1rem 1.25rem;
+}
+
+.ph-winner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.ph-winner-team {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.ph-winner-pts {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+}
+
+.ph-winner-pts--correct {
+  background: #e6f9f0;
+  color: #1a7a4a;
+}
+
+.ph-winner-pts--wrong {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.ph-winner-pts--pending {
+  background: #fff8e1;
+  color: #b08800;
+  font-weight: 500;
+}
+
 .ph-games-section {
   margin-top: 1.5rem;
   background: #fff;
