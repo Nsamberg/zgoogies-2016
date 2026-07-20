@@ -224,21 +224,37 @@ def recalculate_overall_rankings():
     db.session.commit()
 
 
+def _rerank_overall(game=None):
+    """Re-assign ranks from current stored total_points without recalculating them."""
+    rankings = (
+        Ranking.query
+        .filter_by(competition_round_id=None)
+        .order_by(Ranking.total_points.desc())
+        .all()
+    )
+    prev_rank = 1
+    prev_points = None
+    for i, ranking in enumerate(rankings):
+        if ranking.total_points != prev_points:
+            prev_rank = i + 1
+        prev_points = ranking.total_points
+        ranking.previous_rank = ranking.rank
+        ranking.rank = prev_rank
+        if game:
+            ranking.last_game_id = game.id
+    db.session.commit()
+
+
 def award_tournament_winner_bonus(winner_team_id):
     """Award bonus points to users who predicted the tournament winner correctly"""
     from app.models.game import Game
     from config import Config
 
-    # Find users who predicted correctly
     correct_users = User.query.filter_by(tournament_winner_id=winner_team_id).all()
-
     bonus_points = Config.TOURNAMENT_WINNER_POINTS
-
-    # Get the last game (final)
     last_game = Game.query.filter_by(is_scored=True).order_by(Game.game_date.desc()).first()
 
     for user in correct_users:
-        # Update overall ranking
         ranking = Ranking.query.filter_by(
             user_id=user.id,
             competition_round_id=None
@@ -247,7 +263,6 @@ def award_tournament_winner_bonus(winner_team_id):
         if ranking:
             ranking.total_points += bonus_points
 
-            # Save history
             history = RankingHistory(
                 user_id=user.id,
                 competition_round_id=None,
@@ -259,6 +274,6 @@ def award_tournament_winner_bonus(winner_team_id):
 
     db.session.commit()
 
-    # Recalculate ranks after bonus points
-    if last_game:
-        update_overall_ranking(last_game)
+    # Re-rank based on updated totals — do NOT recalculate from predictions
+    # (update_overall_ranking would overwrite the bonus by summing prediction points only)
+    _rerank_overall(last_game)
